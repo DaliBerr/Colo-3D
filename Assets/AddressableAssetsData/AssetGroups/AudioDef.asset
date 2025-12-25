@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: AudioDef
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: AudioDef
+  m_GUID: acf730d75ab406445bbc3313c4ce2218
+  m_SerializeEntries:
+  - m_GUID: 505aa45ee17840b40b01160549179b30
+    m_Address: Defs/Audio/bgm_test
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - AudioDef
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d230be531b1f6ff41baed74c83dc7f51
+    m_Address: Assets/Defs/Audio/bgm_main.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - AudioDef
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 889350db87d913a439e61c52c4f0bc31, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: acdd216445611834fb3d63c282c42e3a, type: 2}
+    - {fileID: 11400000, guid: a570557ca2cd6c6468aed9f56723acf4, type: 2}

@@ -1,0 +1,35 @@
+{
+    "version": 1,
+    "name": "UIControl",
+    "maps": [
+        {
+            "name": "UI",
+            "id": "34ba629a-68d1-437d-9611-a376c9f34574",
+            "actions": [
+                {
+                    "name": "Router",
+                    "type": "Button",
+                    "id": "3d17ce0d-9471-412f-92ce-8b8cfffa639f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "800cc893-f35f-4e64-bf02-ee497f9cb020",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Router",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: UI
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: UI
+  m_GUID: 31cd563e5c4228b43beb5f5bbc6ea4a9
+  m_SerializeEntries:
+  - m_GUID: 2c74b1ecd3339b543a18e6e91f9b71e8
+    m_Address: Prefabs/UI/OptionsModal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51dcfdd85e847f54594bed153c79545e
+    m_Address: Prefabs/UI/OptionPopup
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 53df12f578c31764b8c24af14a254802
+    m_Address: Prefabs/UI/LoadingModal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60668e54d2b849446aea47f27fda31be
+    m_Address: Prefabs/UI/MainMenuUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 791083132d9c7744db2bd5fd307012e0
+    m_Address: Prefabs/UI/Main UI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 794d59edf41064443973e97a2e4d34e1
+    m_Address: Prefabs/UI/QuitPopup
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c6fe48fa90f8e64439b5d4ab3458f881
+    m_Address: Prefabs/UI/PauseMenuUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 889350db87d913a439e61c52c4f0bc31, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: fdb8fb09071150d41858ded138e371bb, type: 2}
+    - {fileID: 11400000, guid: c158ff1ad419e5848a9bd4e9655c24ad, type: 2}

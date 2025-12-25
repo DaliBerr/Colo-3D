@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: AudioClip
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: AudioClip
+  m_GUID: 3102ce3e6fe0d004581fe7b51ae84e6e
+  m_SerializeEntries:
+  - m_GUID: 12f5c98598f8c1744b897e4b590d8db1
+    m_Address: AudioClip/BGM/Aurora
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9325d6086089064498053f9fd64a6ec
+    m_Address: Assets/AudioClip/BGM/Forced_landing.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 889350db87d913a439e61c52c4f0bc31, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 0da845ec7cb15854184a013a86b74a00, type: 2}
+    - {fileID: 11400000, guid: 82bb063897c5b82479fbeca335665a0d, type: 2}

@@ -1,0 +1,83 @@
+{
+    "version": 1,
+    "name": "AnimationControl",
+    "maps": [
+        {
+            "name": "Animation",
+            "id": "248a6a9d-4e0c-402e-9307-ba45b8a7b139",
+            "actions": [
+                {
+                    "name": "ET1",
+                    "type": "Button",
+                    "id": "3292dc22-a864-41b5-ab8e-b0faefb249da",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ET2",
+                    "type": "Button",
+                    "id": "333646b7-b55a-4ea0-9cfe-3bf1f58fc6e6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a889b1ed-cfc2-481a-a438-481b7cf65042",
+                    "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ET1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f7a599d2-a2eb-4904-b09d-d6fbf66b1f09",
+                    "path": "<Keyboard>/k",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ET2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Instantiate",
+            "id": "ac82c70f-3251-4894-93d9-4bed17829c62",
+            "actions": [
+                {
+                    "name": "Cube",
+                    "type": "Button",
+                    "id": "85afe71b-af0d-49d0-8fc3-e58b05c8a279",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d7b1f4eb-5342-46f8-8b3d-758c54ed84d8",
+                    "path": "<Keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cube",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

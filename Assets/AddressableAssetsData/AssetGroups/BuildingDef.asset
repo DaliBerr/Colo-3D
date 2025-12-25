@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: BuildingDef
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: BuildingDef
+  m_GUID: c2dc0bf403da4094f93e6b72d4d79ec9
+  m_SerializeEntries:
+  - m_GUID: 1952540fb717e064e8f787ddc0b34bef
+    m_Address: Defs/Buildings/generator_small
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BuildingDef
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 889350db87d913a439e61c52c4f0bc31, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 55ef4a5201fc73e4c940288a2b605002, type: 2}
+    - {fileID: 11400000, guid: 3fb50575eb28dbe4bb49295be6a1d30e, type: 2}

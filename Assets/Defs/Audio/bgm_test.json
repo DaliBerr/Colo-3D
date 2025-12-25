@@ -1,0 +1,10 @@
+{
+    "id": "bgm_test",
+    "name": "测试BGM",
+    "description": "用于测试的背景音乐。",
+    "address": "AudioClips/BGM/Forced_landing",
+    "category": "Bgm",
+    "volume": 0.5,
+    "loop": true,
+    "tags": ["bgm", "test"]
+}

@@ -1,0 +1,75 @@
+{
+    "version": 1,
+    "name": "Dev Control",
+    "maps": [
+        {
+            "name": "Map",
+            "id": "51838c01-955d-48a2-a5f4-2b0b0f219a4b",
+            "actions": [
+                {
+                    "name": "RegenerateMiniMap",
+                    "type": "Button",
+                    "id": "3c111978-8d05-455e-9524-e3821015fbe0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RegenerateWorldMap",
+                    "type": "Button",
+                    "id": "3b96a9c0-33ce-4e5f-a62b-2510f7248270",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ClearWorldMap",
+                    "type": "Button",
+                    "id": "b87b4b0a-92ea-4f6e-9c09-9506b2942037",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "75ed49d6-d846-454f-a70d-651c6a2354b8",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RegenerateMiniMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0041da6d-aebe-4223-8de5-1df91682f3b5",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RegenerateWorldMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "958bc888-cfea-43a5-b8d7-3523f38629bf",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ClearWorldMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

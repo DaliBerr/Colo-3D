@@ -1,0 +1,14 @@
+{
+    "id": "iron_sword",
+    "name": "铁剑",
+    "description": "笨重但可靠的家伙。",
+    "icon": "icons/sword_iron",
+    "prefab": "prefabs/weapon_sword_iron",
+    "maxStack": 1,
+    "rarity": "common",
+    "stats": { "price": 60, "weight": 3.5, "durability": 100 },
+    "tags": ["weapon", "melee"],
+    "components": [
+    { "type": "equippable", "params": { "slot": "mainhand", "mods": { "attack": 8, "speed": -0.1 } } }
+    ]
+}

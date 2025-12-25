@@ -1,0 +1,63 @@
+{
+    "version": 1,
+    "name": "MapControl",
+    "maps": [
+        {
+            "name": "GenerateMap",
+            "id": "99ee2be6-68da-4b4f-a438-ad687756c45e",
+            "actions": [
+                {
+                    "name": "Confirm",
+                    "type": "Button",
+                    "id": "6b85c58a-73d5-4eea-a7d7-c5b25ed1fa51",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b687dc1b-0d53-4228-bc01-7094eb70b37d",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Confirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "OverlayClick",
+            "id": "815664e2-0137-4ed3-b92b-fb41a9056c59",
+            "actions": [
+                {
+                    "name": "Position",
+                    "type": "Value",
+                    "id": "99e28e0d-c9fb-4764-8e84-7bd05b94e85f",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "0098d462-4f16-41b3-ae1c-931beca6d5cc",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Position",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

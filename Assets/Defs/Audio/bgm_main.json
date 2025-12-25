@@ -1,0 +1,10 @@
+{
+  "id": "bgm_main",
+  "name": "主菜单BGM",
+  "description": "游戏主界面播放的主题音乐。",
+  "address": "AudioClips/BGM/Aurora",
+  "category": "Bgm",
+  "volume": 0.7,
+  "loop": true,
+  "tags": ["bgm", "menu"]
+}

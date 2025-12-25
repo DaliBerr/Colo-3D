@@ -1,0 +1,115 @@
+{
+    "version": 1,
+    "name": "SpeedControl",
+    "maps": [
+        {
+            "name": "Speed",
+            "id": "b43503a7-dd95-48ef-9946-628ec3aab789",
+            "actions": [
+                {
+                    "name": "Normal",
+                    "type": "Button",
+                    "id": "36bc4d63-ecec-41e5-9229-7e1f3495f84a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Fast",
+                    "type": "Button",
+                    "id": "0ea5f391-657d-46ce-8dc5-80cbdcca3c62",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SuperFast",
+                    "type": "Button",
+                    "id": "b957891b-ce44-413a-9b2c-00b47f4245ef",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "30d7d7e6-e2c8-4b34-8410-888470606e28",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "StepOneTick",
+                    "type": "Button",
+                    "id": "7f4ea22d-8468-48bd-9b97-38d7ff31d6a4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b06ca0c2-19b7-4648-a9c9-54ba61221bb5",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Normal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "47edd5ea-8ba4-428b-a48f-e411415842e2",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fast",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "de03fac2-1c12-41da-8baa-eebf7eb044e1",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SuperFast",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f4187192-1520-4353-882e-3ccd658fae28",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "52e31fc8-efa1-4c5c-b25e-984783feabd8",
+                    "path": "<Keyboard>/0",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StepOneTick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
