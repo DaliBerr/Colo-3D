@@ -7,7 +7,7 @@ namespace Colo.Animation
     public class CubeRotate : MonoBehaviour
     {
         [SerializeField] private Animator _animator;
-        [SerializeField, Range(0f, 1f)] private float _speedLerp = 10f;
+        // [SerializeField, Range(0f, 1f)] private float _speedLerp = 10f;
         
         private AnimationControls inputActions;
 
@@ -18,8 +18,7 @@ namespace Colo.Animation
             {
                 TryGetComponent(out _animator);
             }
-            inputActions = new AnimationControls();
-            inputActions.Animation.Enable();
+            inputActions = InputActionManager.Instance.Animation;
         }
 
         private void Update()

@@ -32,8 +32,8 @@ namespace Kernel.Building
         /// </summary>
         private void Awake()
         {
-            buildingControls = new BuildingControls();
-            cameraControls = new CameraControls();
+            buildingControls = InputActionManager.Instance.Building;
+            cameraControls = InputActionManager.Instance.Camera;
             buildingControls.Enable();
             cameraControls.Enable();
         }

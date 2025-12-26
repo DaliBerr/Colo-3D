@@ -49,7 +49,11 @@ namespace Kernel.World
             }
             Instance = this;
         }
-
+        private void Start()
+        {
+            chunkWidthCells = GetComponentInChildren<WorldChunkMeshGenerator>().chunkWidth;
+            chunkHeightCells = GetComponentInChildren<WorldChunkMeshGenerator>().chunkHeight;
+        }
         #region 坐标转换
 
         /// <summary>
@@ -249,7 +253,12 @@ namespace Kernel.World
                 normal = Vector3.up;
                 return false;
             }
-
+            int expectOriginX = chunkCoord.x * chunkWidthCells;
+            int expectOriginZ = chunkCoord.y * chunkHeightCells;
+            if (chunk.originCell.x != expectOriginX || chunk.originCell.y != expectOriginZ)
+            {
+                GameDebug.LogWarning($"HeightFieldChunk originCell mismatch. key={chunkCoord} originCell={chunk.originCell} expected=({expectOriginX},{expectOriginZ})");
+            }
             float localX = cellX - chunk.originCell.x;
             float localZ = cellZ - chunk.originCell.y;
 

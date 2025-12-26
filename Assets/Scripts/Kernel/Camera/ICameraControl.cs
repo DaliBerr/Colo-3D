@@ -82,7 +82,7 @@ namespace Kernel
         private void Awake()
         {
             HandleAwake();
-            controls = new CameraControls();
+            controls = InputActionManager.Instance.Camera;
             controls.Camera.Enable();
             
         }

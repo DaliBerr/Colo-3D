@@ -207,6 +207,15 @@ namespace Lonize
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MousePos"",
+                    ""type"": ""Value"",
+                    ""id"": ""85db1884-5b7e-40b4-973e-6a16296a1060"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -229,6 +238,17 @@ namespace Lonize
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Confirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e869fdbb-9f6d-48de-af8a-093a8ba7da58"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MousePos"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -297,6 +317,7 @@ namespace Lonize
             m_Removal = asset.FindActionMap("Removal", throwIfNotFound: true);
             m_Removal_Cancel = m_Removal.FindAction("Cancel", throwIfNotFound: true);
             m_Removal_Confirm = m_Removal.FindAction("Confirm", throwIfNotFound: true);
+            m_Removal_MousePos = m_Removal.FindAction("MousePos", throwIfNotFound: true);
             // Selection
             m_Selection = asset.FindActionMap("Selection", throwIfNotFound: true);
             m_Selection_Confirm = m_Selection.FindAction("Confirm", throwIfNotFound: true);
@@ -600,6 +621,7 @@ namespace Lonize
         private List<IRemovalActions> m_RemovalActionsCallbackInterfaces = new List<IRemovalActions>();
         private readonly InputAction m_Removal_Cancel;
         private readonly InputAction m_Removal_Confirm;
+        private readonly InputAction m_Removal_MousePos;
         /// <summary>
         /// Provides access to input actions defined in input action map "Removal".
         /// </summary>
@@ -619,6 +641,10 @@ namespace Lonize
             /// Provides access to the underlying input action "Removal/Confirm".
             /// </summary>
             public InputAction @Confirm => m_Wrapper.m_Removal_Confirm;
+            /// <summary>
+            /// Provides access to the underlying input action "Removal/MousePos".
+            /// </summary>
+            public InputAction @MousePos => m_Wrapper.m_Removal_MousePos;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -651,6 +677,9 @@ namespace Lonize
                 @Confirm.started += instance.OnConfirm;
                 @Confirm.performed += instance.OnConfirm;
                 @Confirm.canceled += instance.OnConfirm;
+                @MousePos.started += instance.OnMousePos;
+                @MousePos.performed += instance.OnMousePos;
+                @MousePos.canceled += instance.OnMousePos;
             }
 
             /// <summary>
@@ -668,6 +697,9 @@ namespace Lonize
                 @Confirm.started -= instance.OnConfirm;
                 @Confirm.performed -= instance.OnConfirm;
                 @Confirm.canceled -= instance.OnConfirm;
+                @MousePos.started -= instance.OnMousePos;
+                @MousePos.performed -= instance.OnMousePos;
+                @MousePos.canceled -= instance.OnMousePos;
             }
 
             /// <summary>
@@ -873,6 +905,13 @@ namespace Lonize
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnConfirm(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "MousePos" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnMousePos(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Selection" which allows adding and removing callbacks.

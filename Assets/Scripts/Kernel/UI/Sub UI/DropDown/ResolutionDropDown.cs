@@ -18,7 +18,7 @@ public class ResolutionDropDown : DropdownHolder
 
     // 真实分辨率映射：index -> (width,height)
     private readonly List<Vector2Int> _resolutionMap = new List<Vector2Int>();
-    private bool _suppressCallback;
+    // private bool _suppressCallback;
     public override TMP_Dropdown dropdown => _dropdown;
     public override List<string> Options { get => _options; set => _options = value; }
 
@@ -52,10 +52,10 @@ public class ResolutionDropDown : DropdownHolder
     {
         if (index < 0) return;
 
-        _suppressCallback = true;
+        // _suppressCallback = true;
         _dropdown.SetValueWithoutNotify(index);
         _dropdown.RefreshShownValue();
-        _suppressCallback = false;
+        // _suppressCallback = false;
     }
     /// <summary>
     /// 从 Screen.resolutions 生成可选分辨率列表（去重并排序），并构建 index->分辨率映射。
@@ -121,7 +121,6 @@ public class ResolutionDropDown : DropdownHolder
         OptionsManager.Instance.Settings.Resolution = chosen;
 
         Events.eventBus?.Publish(new SettingChanged(true));
-        // TODO: 添加确认弹窗，并计时回退
         UIManager.Instance.ShowModal<OptionConfirmPopupModal>();
     }
 

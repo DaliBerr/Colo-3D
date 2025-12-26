@@ -24,16 +24,23 @@ namespace Kernel.Building
 
         [Header("输入")]
         private BuildingControls buildingControls;
-        private CameraControls cameraControls;
 
         private bool _isRemoving = false;
 
+
+        
+        // 当前鼠标下方“被 ghost 预览”的建筑缓存
+        private BuildingView _hoverGhostView;
+        private BuildingRuntimeHost _hoverGhostHost;
+        private long _hoverGhostId = -1;
+        private BuildingViewBaseMode _hoverGhostPrevBaseMode = BuildingViewBaseMode.Normal;
+
+
+
         private void Awake()
         {
-            buildingControls = new BuildingControls();
-            cameraControls = new CameraControls();
-            buildingControls.Enable();
-            cameraControls.Enable();
+            buildingControls = InputActionManager.Instance.Building;
+
 
             if (worldGrid == null) worldGrid = WorldGrid.Instance;
             if (occupancyMap == null) occupancyMap = OccupancyMap.Instance;
@@ -64,6 +71,7 @@ namespace Kernel.Building
         public void StopRemoveMode()
         {
             StatusController.RemoveStatus(StatusList.BuildingDestroyingStatus);
+            ClearHoverGhost();
             _isRemoving = false;
             GameDebug.Log("[BuildingRemove] 退出拆除模式。");
             Log.Info("[BuildingRemove] 退出拆除模式。");
@@ -81,11 +89,74 @@ namespace Kernel.Building
                 StopRemoveMode();
                 return;
             }
-
+            TryGhostBuildingUnderMouse();
             if (buildingControls.Removal.Confirm.IsPressed())
                 TryRemoveBuildingUnderMouse();
         }
+        private void TryGhostBuildingUnderMouse()
+        {
+            if (mainCamera == null)
+                return;
 
+            // 鼠标在 UI 上：不做建筑预览，并恢复之前的 ghost
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                ClearHoverGhost();
+                return;
+            }
+
+            // 读取指针位置（与 SelectionController 一致的写法）
+            Vector2 pointer = buildingControls.Removal.MousePos.ReadValue<Vector2>();
+            Ray ray = mainCamera.ScreenPointToRay(pointer);
+
+            if (!Physics.Raycast(ray, out var hit, 5000f, buildingLayerMask, QueryTriggerInteraction.Collide))
+            {
+                ClearHoverGhost();
+                return;
+            }
+            // GameDebug.Log("collider:" + hit.collider.name);
+            // collider 往上找更稳（常见 collider 在子节点）
+            var host =
+                hit.collider.GetComponentInParent<BuildingRuntimeHost>() ??
+                hit.collider.GetComponentInChildren<BuildingRuntimeHost>();
+
+            var view =
+                hit.collider.GetComponentInParent<BuildingView>() ??
+                hit.collider.GetComponentInChildren<BuildingView>();
+
+            if (host == null || view == null || host.Runtime == null)
+            {
+                // GameDebug.LogWarning("[BuildingRemove] 鼠标下的对象不包含 BuildingRuntimeHost 或 BuildingView，无法预览。");
+                ClearHoverGhost();
+                return;
+            }
+
+            long id = host.Runtime.BuildingID;
+            if (id < 0)
+            {
+                // GameDebug.LogWarning("[BuildingRemove] 鼠标下的建筑 ID 无效，无法预览。");
+                ClearHoverGhost();
+                return;
+            }
+
+            // 命中同一个建筑：不重复设置，避免每帧刷状态
+            if (_hoverGhostId == id && _hoverGhostView == view)
+                return;
+
+            // 命中切换：先恢复旧的，再应用新的
+            ClearHoverGhost();
+
+            _hoverGhostId = id;
+            _hoverGhostHost = host;
+            _hoverGhostView = view;
+
+            // 保存旧的 base mode，移开鼠标时能恢复（不覆盖 Disabled 等状态）
+            _hoverGhostPrevBaseMode = _hoverGhostView.GetBaseMode();
+
+            // 应用 ghost 显示（移除预览一般不需要 blocked；如果你想红色可改为 SetGhostBlocked(true)）
+            _hoverGhostView.SetBaseMode(BuildingViewBaseMode.Ghost);
+            _hoverGhostView.SetGhostBlocked(true);
+        }
         /// <summary>
         /// summary: 在鼠标位置发射 3D 射线，找到建筑并移除。
         /// param: 无
@@ -99,7 +170,7 @@ namespace Kernel.Building
                 return;
             }
 
-            Vector2 pointer = cameraControls.Camera.PointerPosition.ReadValue<Vector2>();
+            Vector2 pointer = buildingControls.Removal.MousePos.ReadValue<Vector2>();
             Ray ray = mainCamera.ScreenPointToRay(pointer);
 
             if (!Physics.Raycast(ray, out var hit, 5000f, buildingLayerMask, QueryTriggerInteraction.Ignore))
@@ -176,5 +247,25 @@ namespace Kernel.Building
 
             occ.UpdateAreaBlocked(anchorCell, width, height, rotSteps, false);
         }
+
+                /// <summary>
+        /// summary: 清理当前鼠标悬停 ghost 预览，并恢复建筑原本的 base mode。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void ClearHoverGhost()
+        {
+            if (_hoverGhostView != null)
+            {
+                // 恢复原 base mode（不动 Selected overlay）
+                _hoverGhostView.SetBaseMode(_hoverGhostPrevBaseMode);
+            }
+
+            _hoverGhostId = -1;
+            _hoverGhostHost = null;
+            _hoverGhostView = null;
+            _hoverGhostPrevBaseMode = BuildingViewBaseMode.Normal;
+        }
+
     }
 }

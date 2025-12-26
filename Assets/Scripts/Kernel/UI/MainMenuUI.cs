@@ -5,6 +5,7 @@ using Kernel.GameState;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using Lonize.Logging;
+using System.Collections;
 
 namespace Kernel.UI
 {
@@ -24,7 +25,7 @@ namespace Kernel.UI
         protected override void OnInit()
         {
             startBtn.onClick.AddListener(
-                () => TryStartGame()
+                () => StartCoroutine(TryStartGame())
             );
             // loadBtn.onClick.AddListener(() => UIManager.Instance.PushScreen<LoadGameModal>());
             optionsBtn.onClick.AddListener(
@@ -36,20 +37,20 @@ namespace Kernel.UI
             //TODO: 在没有存档的情况下禁用加载按钮
             // TODO: 随机背景图
 
-            // 启动时的加载已经在 Startup 中完成，这里就不再自动打开 GameLoading 了喵。
+
         }
         /// <summary>
         /// 开始游戏按钮逻辑：根据当前状态决定如何进入游戏。
         /// </summary>
         /// <returns>无返回值。</returns>
-        private void TryStartGame()
+        private IEnumerator TryStartGame()
         {
             if (StatusController.HasStatus(StatusList.DevModeStatus))
             {
+                yield return SceneManager.LoadSceneAsync("Main");
                 // 开发模式：直接切到主场景
-                // UIManager.Instance.PushScreen<MainUI>();
-                SceneManager.LoadScene("Main");
                 StatusController.AddStatus(StatusList.PlayingStatus);
+                UIManager.Instance.RequestStartGame();
             }
             else
             {

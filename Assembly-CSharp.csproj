@@ -127,6 +127,7 @@
     <Compile Include="Assets\Scripts\Lonize\Flow\FlowSystem.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIPrefabAttribute.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\ScrobePolymorph.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\test.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\OptionConfirmPopupModal.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\ScribeDeep.cs" />
     <Compile Include="Assets\Scripts\Lonize\Log\LogForwarder.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Assets\Scripts\Kernel\Save\PolySaveData.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\IsaveItem.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemFactory.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Input\InputActionManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Input\Pref.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\WorldGrid.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\Scribe.cs" />

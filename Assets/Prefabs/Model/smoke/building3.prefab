@@ -99,6 +99,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3243966925859993608}
   m_SourcePrefab: {fileID: 100100000, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
+--- !u!23 &323969898811196316 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
+  m_PrefabInstance: {fileID: 1422976170830143256}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &444389439583598467 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1555330247027435675, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
@@ -4977,6 +4982,14 @@ PrefabInstance:
       propertyPath: _selectionHighlight
       value: 
       objectReference: {fileID: 8797819924863636610}
+    - target: {fileID: 4673232694813487765, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
+      propertyPath: _tintRenderers.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4673232694813487765, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
+      propertyPath: '_tintRenderers.Array.data[0]'
+      value: 
+      objectReference: {fileID: 323969898811196316}
     - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

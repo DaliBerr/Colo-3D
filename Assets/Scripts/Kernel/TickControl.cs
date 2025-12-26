@@ -23,8 +23,8 @@ namespace Kernel
                 enabled = false;
                 return;
             }
-            speedControls = new SpeedControls();
-            speedControls.Speed.Enable();
+            speedControls = InputActionManager.Instance.Speed;
+            // speedControls.Speed.Enable();
 
         }
         // private TickController controller;

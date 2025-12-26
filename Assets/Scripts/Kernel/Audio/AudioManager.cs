@@ -73,7 +73,7 @@ namespace Kernel.Audio
         /// <summary>
         /// 当前是否正在进行BGM淡入淡出。
         /// </summary>
-        private bool _isFadingBgm;
+        // private bool _isFadingBgm;
 
         /// <summary>
         /// Awake中初始化单例、音量字典和必要的AudioSource。
@@ -434,7 +434,7 @@ namespace Kernel.Audio
         /// <returns>协程迭代器。</returns>
         private IEnumerator CrossFadeBgmCoroutine(AudioSource from, AudioSource to, float fadeTime, float targetVolume)
         {
-            _isFadingBgm = true;
+            // _isFadingBgm = true;
 
             float time = 0f;
             float fromStartVolume = (from != null) ? from.volume : 0f;
@@ -457,7 +457,7 @@ namespace Kernel.Audio
 
             to.volume = targetVolume;
             _currentBgmSource = to;
-            _isFadingBgm = false;
+            // _isFadingBgm = false;
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 
+using System.Collections;
 using Kernel.GameState;
 using Lonize.Logging;
 using Lonize.UI;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Kernel.UI
@@ -56,7 +58,7 @@ namespace Kernel.UI
             mainMenuButton.onClick.AddListener(() =>
             {
                 // GameDebug.Log("Main Menu Button Clicked!");
-                TryReturnToMainMenu();
+                StartCoroutine(TryReturnToMainMenu());
             });
             quitButton.onClick.AddListener(() =>
             {
@@ -65,7 +67,11 @@ namespace Kernel.UI
                 // Application.Quit();
             });
         }
-
+        // private IEnumerator WaitUINotNavigating(UIManager ui)
+        // {
+        //     while (ui != null && ui.IsNavigating())
+        //         yield return null;
+        // }
         private void TryResumeGame()
         {
             try{
@@ -105,21 +111,20 @@ namespace Kernel.UI
                 GameDebug.LogError($"Error while trying to load game: {e.Message}");
             }
         }
-        private void TryReturnToMainMenu()
+        private IEnumerator TryReturnToMainMenu()
         {
-            try{
-                UIManager.Instance.PopScreen(); // 关闭暂停菜单
-                UIManager.Instance.PopScreen(); // 关闭主游戏界面
-                // SceneManager.LoadScene("MainMenu");
+                // yield return WaitUINotNavigating(ui);
+
+                yield return SceneManager.LoadSceneAsync("StartPage");
+                // yield return WaitUINotNavigating(ui);
+                // yield return UIManager.Instance.PushScreenAndWait<MainMenuScreen>();
                 // SceneManager.UnloadSceneAsync("Main");
                 StatusController.RemoveStatus(StatusList.PlayingStatus);
                 StatusController.RemoveStatus(StatusList.InPauseMenuStatus);
                 StatusController.AddStatus(StatusList.InMainMenuStatus);
-                // GameDebug.Log("Returning to Main Menu...");
-            }
-            catch(System.Exception e){
-                GameDebug.LogError($"Error while trying to return to main menu: {e.Message}");
-            }
+                UIManager.Instance.RequestReturnToMainMenu();
+
+
         }
         private void TryQuitGame()
         {

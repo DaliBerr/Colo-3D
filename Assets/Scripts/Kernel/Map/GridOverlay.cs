@@ -21,6 +21,10 @@ namespace Kernel.DebugView
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class GridOverlayRenderer3D : MonoBehaviour
     {
+        private const int MaxOverlaySizeCells = 201;   // 最大显示范围：201x201 cells
+        private const int MinOverlaySizeCells = 1;     // 最小显示范围：1x1 cells（必须为奇数）
+        private const int MaxHalfExtentCells = 100;    // (201-1)/2 = 100
+
         [Header("Refs")]
         public WorldGrid worldGrid;
         public Camera targetCamera;
@@ -29,12 +33,22 @@ namespace Kernel.DebugView
         public LayerMask groundMask;
         [Min(1f)] public float rayDistance = 5000f;
 
-        [Header("Range (~100 cells)")]
-        [Min(1)] public int halfExtentCells = 5; // 11x11=121 cells
+        [Header("Range (cells, odd, max 201x201)")]
+        public Vector2Int overlaySizeCells = new Vector2Int(41, 41); // (宽, 高)，会自动修正为奇数并Clamp到1..201
         [Min(0f)] public float yOffset = 0.03f;
 
+        [Header("Performance")]
+        [Tooltip("网格重建的最小间隔(秒)，用于降频减轻CPU开销。")]
+        [Min(0f)] public float rebuildMinInterval = 0.05f;
+
+        [Tooltip("是否启用高度采样缓存（范围越大越推荐）。")]
+        public bool enableHeightCache = true;
+
+        [Tooltip("高度缓存容量上限（条目数），超出会按先进先出淘汰。")]
+        [Min(0)] public int heightCacheCapacity = 200000;
+
         [Header("Colors (minor depends on mode)")]
-        public Color minorLineColorPlace = new Color(0.2f, 1f, 0.2f, 0.35f);   // 绿色
+        public Color minorLineColorPlace = new Color(0.2f, 1f, 0.2f, 0.35f);    // 绿色
         public Color minorLineColorRemove = new Color(1f, 0.25f, 0.25f, 0.35f); // 红色
         public Color majorLineColor = new Color(1f, 0.9f, 0.3f, 0.85f);         // 高亮
 
@@ -45,7 +59,7 @@ namespace Kernel.DebugView
         [Header("Map Bounds (clip outside)")]
         public bool useMapBounds = false;
         public Vector2Int mapMinCell = Vector2Int.zero;
-        public Vector2Int mapSizeCells = new Vector2Int(256, 256); // 你的地图总格数（宽/高）
+        public Vector2Int mapSizeCells = new Vector2Int(256, 256); // 地图总格数（宽/高）
 
         [Header("Render")]
         public Material lineMaterial;
@@ -55,66 +69,101 @@ namespace Kernel.DebugView
         private Mesh _mesh;
 
         private bool _visible;
+        private bool _dirty;
+        private float _nextAllowedRebuildTime;
+
         private GridOverlayMode _mode = GridOverlayMode.Placement;
-        private GridOverlayMode _lastMode = (GridOverlayMode)(-1);
 
         private Vector3Int _lastHoverCell = new Vector3Int(int.MinValue, int.MinValue, 0);
+        private Vector2Int _lastOverlaySizeCells = new Vector2Int(int.MinValue, int.MinValue);
 
-        // 采样点缓存：((N+1)*(N+1))
+        // 采样点缓存：(pointsX * pointsZ)
         private readonly List<Vector3> _gridPoints = new();
         private readonly List<byte> _gridPointValid = new(); // 1=valid,0=invalid
 
+        // Mesh数据
         private readonly List<Vector3> _verts = new();
         private readonly List<Color> _colors = new();
         private readonly List<int> _indices = new();
 
+        // 高度缓存：key=(gx,gz) -> height；height=NaN 表示采样失败（无效点）
+        private readonly Dictionary<long, float> _heightCache = new();
+        private readonly Queue<long> _heightCacheOrder = new();
+
         private MapControls mapControls;
+
         private void Awake()
         {
-            mapControls = new MapControls();
-            mapControls.Enable();
+            mapControls = InputActionManager.Instance != null ? InputActionManager.Instance.Map : null;
+            // mapControls.Enable();
+
+            SanitizeOverlaySizeInPlace(ref overlaySizeCells);
+            _lastOverlaySizeCells = overlaySizeCells;
+
             InitRefs();
             InitMesh();
             ApplyMaterial();
             SetVisible(false);
         }
 
+        private void OnValidate()
+        {
+            var old = overlaySizeCells;
+            SanitizeOverlaySizeInPlace(ref overlaySizeCells);
+            if (old != overlaySizeCells)
+            {
+                _dirty = true;
+            }
+
+            heightCacheCapacity = Mathf.Max(0, heightCacheCapacity);
+        }
+
         private void Update()
         {
-
             bool placing = StatusController.HasStatus(StatusList.BuildingPlacementStatus);
             bool removing = StatusController.HasStatus(StatusList.BuildingDestroyingStatus);
-            if (placing || removing)
+
+            bool desiredVisible = placing || removing;
+            if (desiredVisible != _visible)
             {
-                _visible = true;
+                SetVisible(desiredVisible);
             }
-            else
-            {
-                _visible = false;
-            }
-            
-            SetVisible(_visible);
-            if (_visible)
-            {
-                SetMode(removing ? GridOverlayMode.Removal : GridOverlayMode.Placement);
-            }
+
             if (!_visible)
                 return;
 
+            SetMode(removing ? GridOverlayMode.Removal : GridOverlayMode.Placement);
+
+            // 运行时如果在Inspector或代码修改了范围，标脏
+            if (_lastOverlaySizeCells != overlaySizeCells)
+            {
+                SanitizeOverlaySizeInPlace(ref overlaySizeCells);
+                _lastOverlaySizeCells = overlaySizeCells;
+                _dirty = true;
+            }
+
             if (!TryGetHoverCell(out var hoverCell))
             {
-                _mr.enabled = false;
+                if (_mr != null) _mr.enabled = false;
                 return;
             }
 
-            _mr.enabled = true;
+            if (_mr != null && !_mr.enabled)
+                _mr.enabled = true;
 
-            // hoverCell 改变 or mode 改变 都要重建（因为 minor 颜色随 mode 变化）
-            if (hoverCell.x != _lastHoverCell.x || hoverCell.y != _lastHoverCell.y || _mode != _lastMode)
+            bool hoverChanged = (hoverCell.x != _lastHoverCell.x || hoverCell.y != _lastHoverCell.y);
+            if (hoverChanged)
             {
                 _lastHoverCell = hoverCell;
-                _lastMode = _mode;
-                RebuildMesh(hoverCell);
+                _dirty = true;
+            }
+
+            // 降频：到点再重建
+            if (_dirty && Time.unscaledTime >= _nextAllowedRebuildTime)
+            {
+                _nextAllowedRebuildTime = Time.unscaledTime + rebuildMinInterval;
+                _dirty = false;
+                RebuildMesh(_lastHoverCell);
             }
         }
 
@@ -126,11 +175,19 @@ namespace Kernel.DebugView
         public void SetVisible(bool visible)
         {
             _visible = visible;
-            if (_mr != null) _mr.enabled = visible;
-            if (!visible)
+
+            if (_mr != null)
+                _mr.enabled = visible;
+
+            if (visible)
+            {
+                // 刚显示时强制下一次尽快重建
+                _dirty = true;
+                _nextAllowedRebuildTime = 0f;
+            }
+            else
             {
                 _lastHoverCell = new Vector3Int(int.MinValue, int.MinValue, 0);
-                _lastMode = (GridOverlayMode)(-1);
             }
         }
 
@@ -141,7 +198,42 @@ namespace Kernel.DebugView
         /// </summary>
         public void SetMode(GridOverlayMode mode)
         {
+            if (_mode == mode)
+                return;
+
             _mode = mode;
+            _dirty = true; // 颜色变化需要重建
+        }
+
+        /// <summary>
+        /// summary: 设置叠加层显示范围（cell宽高，自动修正为奇数并Clamp到1..201）。
+        /// param: widthCells 宽度（cell）
+        /// param: heightCells 高度（cell）
+        /// return: 是否发生变化
+        /// </summary>
+        public bool SetOverlaySizeCells(int widthCells, int heightCells)
+        {
+            var size = new Vector2Int(widthCells, heightCells);
+            SanitizeOverlaySizeInPlace(ref size);
+
+            if (overlaySizeCells == size)
+                return false;
+
+            overlaySizeCells = size;
+            _lastOverlaySizeCells = overlaySizeCells;
+            _dirty = true;
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 清空高度采样缓存（当地形高度发生变化/Chunk重新生成后建议调用）。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        public void ClearHeightCache()
+        {
+            _heightCache.Clear();
+            _heightCacheOrder.Clear();
         }
 
         /// <summary>
@@ -181,8 +273,10 @@ namespace Kernel.DebugView
         /// </summary>
         private void InitMesh()
         {
-            _mesh = new Mesh();
-            _mesh.name = "GridOverlayLines";
+            _mesh = new Mesh
+            {
+                name = "GridOverlayLines"
+            };
             _mesh.MarkDynamic();
             _mf.sharedMesh = _mesh;
         }
@@ -194,6 +288,9 @@ namespace Kernel.DebugView
         /// </summary>
         private void ApplyMaterial()
         {
+            if (_mr == null)
+                return;
+
             if (lineMaterial != null)
             {
                 _mr.sharedMaterial = lineMaterial;
@@ -221,7 +318,10 @@ namespace Kernel.DebugView
             if (targetCamera == null || worldGrid == null)
                 return false;
 
-            Vector3 mousePos = mapControls.OverlayClick.Position.ReadValue<Vector2>();
+            Vector2 mousePos = (mapControls != null)
+                ? mapControls.OverlayClick.Position.ReadValue<Vector2>()
+                : (Vector2)Input.mousePosition;
+
             Ray ray = targetCamera.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out var hit, rayDistance, groundMask, QueryTriggerInteraction.Ignore))
                 return false;
@@ -237,12 +337,17 @@ namespace Kernel.DebugView
         /// </summary>
         private void RebuildMesh(Vector3Int hoverCell)
         {
-            if (worldGrid == null) return;
+            if (worldGrid == null || _mesh == null)
+                return;
 
-            int minX = hoverCell.x - halfExtentCells;
-            int maxX = hoverCell.x + halfExtentCells;
-            int minZ = hoverCell.y - halfExtentCells;
-            int maxZ = hoverCell.y + halfExtentCells;
+            // overlaySizeCells 是奇数：half = (size-1)/2
+            int halfX = Mathf.Clamp((overlaySizeCells.x - 1) / 2, 0, MaxHalfExtentCells);
+            int halfZ = Mathf.Clamp((overlaySizeCells.y - 1) / 2, 0, MaxHalfExtentCells);
+
+            int minX = hoverCell.x - halfX;
+            int maxX = hoverCell.x + halfX;
+            int minZ = hoverCell.y - halfZ;
+            int maxZ = hoverCell.y + halfZ;
 
             // 裁剪到地图边界（cell 边界）
             if (useMapBounds)
@@ -263,10 +368,30 @@ namespace Kernel.DebugView
             int pointsX = cellsX + 1;
             int pointsZ = cellsZ + 1;
 
+            EnsureMeshCapacity(pointsX, pointsZ);
             BuildGridPoints(minX, minZ, pointsX, pointsZ);
             BuildLineSegments(minX, minZ, pointsX, pointsZ, hoverCell);
-
             UploadMesh();
+        }
+
+        /// <summary>
+        /// summary: 预估线段/顶点数量并为List预留容量，减少扩容与GC。
+        /// param: pointsX X方向格点数
+        /// param: pointsZ Z方向格点数
+        /// return: 无
+        /// </summary>
+        private void EnsureMeshCapacity(int pointsX, int pointsZ)
+        {
+            int segCount = pointsX * (pointsZ - 1) + (pointsX - 1) * pointsZ;
+            int vCount = segCount * 2;
+
+            if (_verts.Capacity < vCount) _verts.Capacity = vCount;
+            if (_colors.Capacity < vCount) _colors.Capacity = vCount;
+            if (_indices.Capacity < vCount) _indices.Capacity = vCount;
+
+            int pCount = pointsX * pointsZ;
+            if (_gridPoints.Capacity < pCount) _gridPoints.Capacity = pCount;
+            if (_gridPointValid.Capacity < pCount) _gridPointValid.Capacity = pCount;
         }
 
         /// <summary>
@@ -324,10 +449,6 @@ namespace Kernel.DebugView
             _gridPoints.Clear();
             _gridPointValid.Clear();
 
-            int total = pointsX * pointsZ;
-            _gridPoints.Capacity = Mathf.Max(_gridPoints.Capacity, total);
-            _gridPointValid.Capacity = Mathf.Max(_gridPointValid.Capacity, total);
-
             float cs = worldGrid.cellSize;
             Vector3 origin = worldGrid.worldOrigin;
 
@@ -346,16 +467,11 @@ namespace Kernel.DebugView
                         continue;
                     }
 
-                    float wx = origin.x + gx * cs;
-                    float wz = origin.z + gz * cs;
-
-                    var p = new Vector3(wx, 0f, wz);
-
-                    // 关键：采样失败的点视为无效（边界外不要渲染/避免悬空线）
-                    if (worldGrid.TrySampleHeightAndNormalAtWorld(p, out float h, out _))
+                    float sampledHeight;
+                    bool hasHeight = TryGetPointHeight(gx, gz, origin, cs, out sampledHeight);
+                    if (hasHeight)
                     {
-                        p.y = h + yOffset;
-                        _gridPoints.Add(p);
+                        _gridPoints.Add(new Vector3(origin.x + gx * cs, sampledHeight + yOffset, origin.z + gz * cs));
                         _gridPointValid.Add(1);
                     }
                     else
@@ -365,6 +481,64 @@ namespace Kernel.DebugView
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// summary: 获取格点高度（可走缓存），失败则返回false。
+        /// param: gx 格点X
+        /// param: gz 格点Z
+        /// param: origin WorldGrid原点
+        /// param: cs cellSize
+        /// param: height 输出高度（不含yOffset）
+        /// return: 是否成功获取高度
+        /// </summary>
+        private bool TryGetPointHeight(int gx, int gz, Vector3 origin, float cs, out float height)
+        {
+            height = 0f;
+
+            if (enableHeightCache)
+            {
+                long key = MakeKey(gx, gz);
+                if (_heightCache.TryGetValue(key, out float cached))
+                {
+                    if (float.IsNaN(cached))
+                        return false;
+
+                    height = cached;
+                    return true;
+                }
+
+                bool ok = SampleHeightAtPoint(gx, gz, origin, cs, out float h);
+                PutHeightCache(key, ok ? h : float.NaN);
+                if (!ok) return false;
+
+                height = h;
+                return true;
+            }
+            else
+            {
+                return SampleHeightAtPoint(gx, gz, origin, cs, out height);
+            }
+        }
+
+        /// <summary>
+        /// summary: 对指定格点进行真实高度采样。
+        /// param: gx 格点X
+        /// param: gz 格点Z
+        /// param: origin WorldGrid原点
+        /// param: cs cellSize
+        /// param: height 输出高度
+        /// return: 是否采样成功
+        /// </summary>
+        private bool SampleHeightAtPoint(int gx, int gz, Vector3 origin, float cs, out float height)
+        {
+            height = 0f;
+
+            float wx = origin.x + gx * cs;
+            float wz = origin.z + gz * cs;
+            var p = new Vector3(wx, 0f, wz);
+
+            return worldGrid.TrySampleHeightAndNormalAtWorld(p, out height, out _);
         }
 
         /// <summary>
@@ -515,6 +689,58 @@ namespace Kernel.DebugView
             _mesh.SetColors(_colors);
             _mesh.SetIndices(_indices, MeshTopology.Lines, 0, true);
             _mesh.RecalculateBounds();
+        }
+
+        /// <summary>
+        /// summary: 生成缓存Key（gx,gz -> long）。
+        /// param: gx 格点X
+        /// param: gz 格点Z
+        /// return: Key
+        /// </summary>
+        private static long MakeKey(int gx, int gz)
+        {
+            return ((long)gx << 32) ^ (uint)gz;
+        }
+
+        /// <summary>
+        /// summary: 写入高度缓存并按容量上限淘汰旧数据。
+        /// param: key 缓存Key
+        /// param: value 高度（NaN表示无效）
+        /// return: 无
+        /// </summary>
+        private void PutHeightCache(long key, float value)
+        {
+            if (_heightCache.ContainsKey(key))
+                return;
+
+            _heightCache[key] = value;
+            _heightCacheOrder.Enqueue(key);
+
+            if (heightCacheCapacity <= 0)
+                return;
+
+            while (_heightCache.Count > heightCacheCapacity && _heightCacheOrder.Count > 0)
+            {
+                long oldKey = _heightCacheOrder.Dequeue();
+                _heightCache.Remove(oldKey);
+            }
+        }
+
+        /// <summary>
+        /// summary: 修正范围参数为奇数，并Clamp到1..201。
+        /// param: sizeCells 输入输出范围（宽高）
+        /// return: 无
+        /// </summary>
+        private static void SanitizeOverlaySizeInPlace(ref Vector2Int sizeCells)
+        {
+            int w = Mathf.Clamp(sizeCells.x, MinOverlaySizeCells, MaxOverlaySizeCells);
+            int h = Mathf.Clamp(sizeCells.y, MinOverlaySizeCells, MaxOverlaySizeCells);
+
+            // 强制奇数：若为偶数则向下取最近奇数（至少为1）
+            if ((w & 1) == 0) w = Mathf.Max(1, w - 1);
+            if ((h & 1) == 0) h = Mathf.Max(1, h - 1);
+
+            sizeCells = new Vector2Int(w, h);
         }
 
         /// <summary>

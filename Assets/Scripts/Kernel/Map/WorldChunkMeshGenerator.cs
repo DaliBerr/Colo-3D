@@ -73,8 +73,8 @@ namespace Kernel.World
         private MapControls mapControls; 
         private void Awake()
         {
-            mapControls = new MapControls();
-            mapControls.Enable();
+            mapControls = InputActionManager.Instance.Map;
+            // mapControls.Enable();
         }
 
         private void Update()

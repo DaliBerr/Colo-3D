@@ -8,10 +8,6 @@ using Lonize.Logging;
 using Lonize.UI;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using System.Threading.Tasks;
-namespace Kernel
-{
-
 
 namespace Kernel
 {
@@ -145,10 +141,5 @@ namespace Kernel
             }
         }
     }
-}
-
-
-
-
 }
 

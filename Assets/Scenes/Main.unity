@@ -171,12 +171,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   rayDistance: 5000
-  halfExtentCells: 120
+  overlaySizeCells: {x: 99, y: 99}
   yOffset: 0.03
-  minorLineColor: {r: 0.09029645, g: 1, b: 0.11932156, a: 0.35}
+  rebuildMinInterval: 0.05
+  enableHeightCache: 1
+  heightCacheCapacity: 200000
+  minorLineColorPlace: {r: 0.2, g: 1, b: 0.2, a: 0.35}
+  minorLineColorRemove: {r: 1, g: 0.25, b: 0.25, a: 0.35}
   majorLineColor: {r: 1, g: 0.9, b: 0.3, a: 0.85}
   highlightHoveredCell: 1
   highlightChunkBorders: 1
+  useMapBounds: 0
+  mapMinCell: {x: 0, y: 0}
+  mapSizeCells: {x: 9999, y: 9999}
   lineMaterial: {fileID: 0}
 --- !u!23 &14351752
 MeshRenderer:
@@ -277,7 +284,7 @@ GameObject:
   m_Component:
   - component: {fileID: 299286843}
   m_Layer: 6
-  m_Name: Building
+  m_Name: BuildingRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -303,6 +310,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6c96780d983ea3f4cb4b56d6bc27a7e5, type: 3}
   m_PrefabInstance: {fileID: 1534601750}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &485835977
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 485835978}
+  - component: {fileID: 485835979}
+  m_Layer: 0
+  m_Name: Input
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &485835978
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485835977}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1333241700}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &485835979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485835977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1de3be26b287c342857d04864d0d46b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputActionManager
 --- !u!1 &524379736
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,8 +527,9 @@ Transform:
   - {fileID: 882748519}
   - {fileID: 480830039}
   - {fileID: 1620309611}
-  - {fileID: 299286843}
   - {fileID: 14351750}
+  - {fileID: 299286843}
+  - {fileID: 2087737426}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &741350672
@@ -507,8 +559,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.World.WorldGrid
   cellSize: 1
   worldOrigin: {x: 0, y: 0, z: 0}
-  chunkWidthCells: 100
-  chunkHeightCells: 100
+  chunkWidthCells: 50
+  chunkHeightCells: 50
   enableRaycastFallback: 1
   groundMask:
     serializedVersion: 2
@@ -575,8 +627,8 @@ MonoBehaviour:
   obstacleCheckYOffset: 0.5
   navGrid: {fileID: 0}
   buildingIds: []
-  ghostColor: {r: 0.2553032, g: 1, b: 0.041778862, a: 0.4}
-  cannotPlaceColor: {r: 1, g: 0.3, b: 0.3, a: 0.4}
+  ghostOkColor: {r: 0.1313281, g: 0.99999994, b: 0.07412385, a: 0.4}
+  ghostBlockedColor: {r: 1, g: 0.3, b: 0.3, a: 0.4}
   maxFootprintHeightDelta: 1.2
   useAverageHeight: 1
   placementYOffset: 0
@@ -586,7 +638,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   buildingOverlapHeight: 3
-  buildingOverlapShrink: 0.02
+  buildingOverlapShrink: -1
 --- !u!4 &882748519 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7f9c7c2d7ceffc8428bd359281ccd495, type: 3}
@@ -813,6 +865,7 @@ Transform:
   - {fileID: 1122115237}
   - {fileID: 1175801236}
   - {fileID: 2054629257}
+  - {fileID: 485835978}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1409671884
@@ -1146,8 +1199,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30c59a1e25c291e4f8aa3febe13fedf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.WorldChunkMeshGenerator
-  worldCols: 5
-  worldRows: 5
+  worldCols: 7
+  worldRows: 7
   chunkWidth: 100
   chunkHeight: 100
   cellSize: 1
@@ -1418,6 +1471,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.Audio.AudioManager
   _prewarmSfxSourceCount: 4
+--- !u!1 &2087737425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2087737426}
+  m_Layer: 0
+  m_Name: WorldGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2087737426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2087737425}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 741350671}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2116366315
 GameObject:
   m_ObjectHideFlags: 0

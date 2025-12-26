@@ -21,8 +21,7 @@ namespace Colo.Animation
             {
                 _camera = Camera.main;
             }
-            _inputActions = new AnimationControls();
-            _inputActions.Instantiate.Enable();
+            _inputActions = InputActionManager.Instance.Animation;
 
         }
         public void Update()

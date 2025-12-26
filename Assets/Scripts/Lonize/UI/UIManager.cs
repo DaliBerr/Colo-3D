@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Lonize.Logging;
+using Kernel.UI;
 
 
 namespace Lonize.UI
@@ -60,13 +61,13 @@ namespace Lonize.UI
         }
 
         /// <summary>
-        /// 以互斥方式执行一个 UI 导航协程：过渡期间直接丢弃新请求，防止栈并发错乱。
+        /// 以互斥方式执行一个 UI 导航协程：过渡期间等待，防止栈并发错乱。
         /// </summary>
         /// <param name="routine">要执行的导航协程</param>
         /// <return>可 yield 的协程枚举器</return>
-        private IEnumerator RunNavigationLocked(IEnumerator routine)
+        private IEnumerator RunNavigationLockedWait(IEnumerator routine)
         {
-            if (_isNavigating) yield break;
+            while (_isNavigating) yield return null;
 
             _isNavigating = true;
             try
@@ -78,10 +79,94 @@ namespace Lonize.UI
                 _isNavigating = false;
             }
         }
+        //由UIManager执行的Pop进程
+        public void RequestReturnToMainMenu()
+        {
+            ClearAllScreensAndModals();
+            StartCoroutine(UIManager.Instance.PushScreenAndWait<MainMenuScreen>());
+        }
+        public void RequestStartGame()
+        {
+            ClearAllScreensAndModals();
+            StartCoroutine(UIManager.Instance.PushScreenAndWait<MainUI>());
+        }
+
+        /// <summary>
+        /// 强制清空所有 Modal 与 Screen 栈（立即销毁/释放实例），用于切场景/回主菜单等“必须干净”的场景。
+        /// </summary>
+        /// <param name="cancelTransitions">是否取消当前所有 UI 过渡协程；为 true 可避免卡死与请求被吞。</param>
+        /// <returns>无</returns>
+        public void ClearAllScreensAndModals(bool cancelTransitions = true)
+        {
+            if (cancelTransitions)
+            {
+                // 取消所有正在运行的 Push/Pop/Show/Hide 协程，避免栈被并发修改或卡在 timeScale=0 的等待里
+                StopAllCoroutines();
+                _isNavigating = false;
+            }
+
+            StartCoroutine(ClearAllScreensAndModalsCo());
+        }
+                /// <summary>
+        /// 清空栈的协程实现：优先清 Modal，再清 Screen，避免遮罩残留或 UI 顺序问题。
+        /// </summary>
+        /// <param name="none">无</param>
+        /// <returns>协程枚举器</returns>
+        private IEnumerator ClearAllScreensAndModalsCo()
+        {
+            // 这里不使用 RunNavigationLocked：它会在忙时 yield break 直接吞请求
+            _isNavigating = true;
+            try
+            {
+                // 先清 Modal
+                while (modalStack.Count > 0)
+                {
+                    var m = modalStack.Pop();
+                    DestroyScreenImmediate(m);
+                }
+
+                // 再清 Screen
+                while (screenStack.Count > 0)
+                {
+                    var s = screenStack.Pop();
+                    DestroyScreenImmediate(s);
+                }
+
+                // 让 Unity 有一帧处理 Destroy / ReleaseInstance
+                yield return null;
+            }
+            finally
+            {
+                _isNavigating = false;
+            }
+        }
+
+        /// <summary>
+        /// 立即销毁/释放一个 UIScreen：若为 Addressables 实例则 ReleaseInstance，否则 Destroy。
+        /// </summary>
+        /// <param name="s">要销毁的 UIScreen</param>
+        /// <returns>无</returns>
+        private void DestroyScreenImmediate(UIScreen s)
+        {
+            if (s == null) return;
+
+            // 先失活，避免一帧闪烁（可选，但通常更稳）
+            if (s.gameObject != null) s.gameObject.SetActive(false);
+
+            if (addrInstances.TryGetValue(s.gameObject, out var handle))
+            {
+                addrInstances.Remove(s.gameObject);
+                UnityEngine.AddressableAssets.Addressables.ReleaseInstance(handle);
+            }
+            else
+            {
+                Destroy(s.gameObject);
+            }
+        }
         // --------- 公共 API ---------
         public void PushScreen<T>() where T : UIScreen
         {
-            StartCoroutine(RunNavigationLocked(PushScreenCo<T>()));
+            StartCoroutine(RunNavigationLockedWait(PushScreenCo<T>()));
         }
 
         // summary: 顺序压栈指定类型的UIScreen，并等待动画完成。
@@ -90,42 +175,46 @@ namespace Lonize.UI
         public IEnumerator PushScreenAndWait<T>() where T : UIScreen
         {
 
-            yield return RunNavigationLocked(PushScreenCo<T>());
+            yield return RunNavigationLockedWait(PushScreenCo<T>());
         }
 
         public IEnumerator PrePushScreenAndWait<T>() where T : UIScreen
         {
-            yield return RunNavigationLocked(PrePushScreenCo<T>());
+            yield return RunNavigationLockedWait(PrePushScreenCo<T>());
         }
-
+        public IEnumerator PopScreenNoShowAndWait()
+        {
+            if (screenStack.Count == 0) yield break;
+            yield return RunNavigationLockedWait(PopScreenCoNoShow());
+        }
         public IEnumerator PopScreenAndWait()
         {
             if (screenStack.Count == 0) yield break;
-            yield return RunNavigationLocked(PopScreenCo());
+            yield return RunNavigationLockedWait(PopScreenCo());
         }
         public IEnumerator PopModalAndWait()
         {
             if (modalStack.Count == 0) yield break;
-            yield return RunNavigationLocked(DestroyAfterHide(modalStack.Pop()));
+            yield return RunNavigationLockedWait(DestroyAfterHide(modalStack.Pop()));
         }
         public IEnumerator ShowModalAndWait<T>() where T : UIScreen
         {
-            yield return RunNavigationLocked(ShowModalCo<T>());
+            yield return RunNavigationLockedWait(ShowModalCo<T>());
         }
         public void PopScreen()
         {
             // Debug.Log("Popping screen.");
             if (screenStack.Count == 0) return;
-            StartCoroutine(RunNavigationLocked(PopScreenCo()));
+            StartCoroutine(RunNavigationLockedWait(PopScreenCo()));
         }
         public void ShowModal<T>() where T : UIScreen
         {
-            StartCoroutine(RunNavigationLocked(ShowModalCo<T>()));
+            StartCoroutine(RunNavigationLockedWait(ShowModalCo<T>()));
         }
         public void CloseTopModal()
         {
             if (modalStack.Count == 0) return;
-            StartCoroutine(RunNavigationLocked(DestroyAfterHide(modalStack.Pop())));
+            StartCoroutine(RunNavigationLockedWait(DestroyAfterHide(modalStack.Pop())));
         }
 
         public void CloseTop()
@@ -196,13 +285,19 @@ namespace Lonize.UI
 
         IEnumerator PopScreenCo()
         {
+            GameDebug.Log("stack count:"+screenStack.Count);
             var top = screenStack.Pop();
             yield return DestroyAfterHide(top);
 
             if (screenStack.Count > 0)
                 yield return screenStack.Peek().Show(defaultShow);
         }
-
+        IEnumerator PopScreenCoNoShow()
+        {
+            GameDebug.Log("stack count:"+screenStack.Count);
+            var top = screenStack.Pop();
+            yield return DestroyAfterHide(top);
+        }
         IEnumerator ShowModalCo<T>() where T : UIScreen
         {
             T modal = null;

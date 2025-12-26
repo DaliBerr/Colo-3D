@@ -13,7 +13,7 @@ namespace Kernel.Building
     /// <summary>
     /// summary: 3D 建筑放置控制器（基于 WorldGrid + OccupancyMap）。
     /// </summary>
-    public class BuildingPlacementController : MonoBehaviour
+    public class ddd : MonoBehaviour
     {
         [Header("基本引用")]
         public Camera mainCamera;
@@ -37,8 +37,8 @@ namespace Kernel.Building
         public string[] buildingIds;
 
         [Header("虚影参数")]
-        public Color ghostOkColor = new Color(1f, 1f, 1f, 0.4f);
-        public Color ghostBlockedColor = new Color(1f, 0.3f, 0.3f, 0.4f);
+        public Color ghostColor = new Color(1f, 1f, 1f, 0.4f);
+        public Color cannotPlaceColor = new Color(1f, 0.3f, 0.3f, 0.4f);
 
         [Header("放置规则")]
         [Min(0f)] public float maxFootprintHeightDelta = 1.2f; // footprint 最大高差（单位：米）
@@ -52,33 +52,26 @@ namespace Kernel.Building
         public bool useBuildingOverlapCheck = true;
         public LayerMask buildingOverlapMask; // 设为 Building
         [Min(0.01f)] public float buildingOverlapHeight = 3f;
-        [Min(-1f)] public float buildingOverlapShrink = 0.02f;
-
+        [Min(0f)] public float buildingOverlapShrink = 0.02f;
         private BuildingControls buildingControls;
         private CameraControls cameraControls;
 
         private BuildingDef _currentDef;
         private GameObject _ghostInstance;
-        private BuildingView _ghostView;
         private bool _isPlacing;
         private int _rotationSteps;
 
-        private List<Vector3Int> _tmpFootprint;
+        private  List<Vector3Int> _tmpFootprint;
+        private  MaterialPropertyBlock _mpb ;
 
-        /// <summary>
-        /// summary: Unity 生命周期入口，初始化输入与依赖引用。
-        /// param: 无
-        /// return: 无
-        /// </summary>
         private void Awake()
         {
             buildingControls = InputActionManager.Instance.Building;
             cameraControls = InputActionManager.Instance.Camera;
             // buildingControls.Enable();
             // cameraControls.Enable();
-
+            _mpb = new MaterialPropertyBlock();
             _tmpFootprint = new List<Vector3Int>();
-
             if (worldGrid == null) worldGrid = WorldGrid.Instance;
             if (occupancyMap == null) occupancyMap = OccupancyMap.Instance;
             if (navGrid == null) navGrid = NavGrid.Instance;
@@ -87,11 +80,6 @@ namespace Kernel.Building
                 groundMask = worldGrid.groundMask;
         }
 
-        /// <summary>
-        /// summary: Unity 每帧入口：若处于放置模式则更新 ghost 与输入。
-        /// param: 无
-        /// return: 无
-        /// </summary>
         private void Update()
         {
             if (_isPlacing)
@@ -132,7 +120,6 @@ namespace Kernel.Building
             {
                 Destroy(_ghostInstance);
                 _ghostInstance = null;
-                _ghostView = null;
             }
 
             _rotationSteps = 0;
@@ -164,42 +151,14 @@ namespace Kernel.Building
             foreach (var col in _ghostInstance.GetComponentsInChildren<Collider>(true))
                 col.enabled = false;
 
-            // 初始化 ghost 预览显示（统一接入 BuildingView）
-            SetupGhostViewForPlacement();
+            // 初始颜色
+            SetGhostColor(ghostColor);
 
             // ghost 不需要逻辑
             var host = _ghostInstance.GetComponent<BuildingRuntimeHost>();
             if (host != null) host.enabled = false;
 
             _isPlacing = true;
-        }
-
-        /// <summary>
-        /// summary: 初始化放置用的 ghost BuildingView（设置为 Ghost 模式，并覆盖红/绿颜色）。
-        /// param: 无
-        /// return: 无
-        /// </summary>
-        private void SetupGhostViewForPlacement()
-        {
-            _ghostView = null;
-
-            if (_ghostInstance == null)
-                return;
-
-            // prefab 自带则直接复用；否则运行时补一个
-            _ghostView = _ghostInstance.GetComponentInChildren<BuildingView>(true);
-            if (_ghostView == null)
-                _ghostView = _ghostInstance.AddComponent<BuildingView>();
-
-            // 放置预览不应显示选中
-            _ghostView.SetSelected(false);
-
-            // 覆盖放置预览的 ghost 颜色（保持与 PlacementController 的配置一致）
-            _ghostView.OverrideGhostColors(ghostOkColor, ghostBlockedColor);
-
-            // 进入 ghost 模式：默认先按“可放置”显示
-            _ghostView.SetBaseMode(BuildingViewBaseMode.Ghost);
-            _ghostView.SetGhostBlocked(false);
         }
 
         /// <summary>
@@ -229,10 +188,7 @@ namespace Kernel.Building
             Quaternion rot = Quaternion.Euler(0f, _rotationSteps * 90f, 0f);
 
             _ghostInstance.transform.SetPositionAndRotation(pos, rot);
-
-            // 统一走 BuildingView：blocked=true 表示不可放置（红）
-            if (_ghostView != null)
-                _ghostView.SetGhostBlocked(!canPlace);
+            SetGhostColor(canPlace ? ghostColor : cannotPlaceColor);
 
             // 左键放置
             if (buildingControls.Placement.Confirm.IsPressed())
@@ -255,10 +211,10 @@ namespace Kernel.Building
         /// </summary>
         private void HandleRotateInput()
         {
-            if (buildingControls.Rotation.Left.WasPressedThisFrame())
+            if (buildingControls.Rotation.Left.IsPressed())
                 _rotationSteps = (_rotationSteps + 3) % 4;
 
-            if (buildingControls.Rotation.Right.WasPressedThisFrame())
+            if (buildingControls.Rotation.Right.IsPressed())
                 _rotationSteps = (_rotationSteps + 1) % 4;
         }
 
@@ -324,70 +280,49 @@ namespace Kernel.Building
                     return false;
 
                 if (!worldGrid.CheckCellTags(c, _currentDef.PlacementRequiredTags, _currentDef.PlacementForbiddenTags))
-                    return false; 
+                    return false;
 
                 if (occ.IsCellBlocked(c))
                     return false;
-                _ = worldGrid.TryGetGroundAtCell(c, out float h, out _, out _);
-                // float h = worldGrid.height(c);
+
+                if (!worldGrid.TryGetGroundAtCell(c, out float h, out _, out _))
+                    return false;
+
                 minH = Mathf.Min(minH, h);
                 maxH = Mathf.Max(maxH, h);
                 sumH += h;
+
+                if (usePhysicsObstacleCheck && HasObstacleAtCell(c, h))
+                    return false;
             }
 
+            // 平坦度
             if (maxH - minH > maxFootprintHeightDelta)
                 return false;
 
             avgHeight = sumH / _tmpFootprint.Count;
-
-            // 可选：物理障碍检测（例如树/岩石等）
-            if (usePhysicsObstacleCheck)
-            {
-                if (HasPhysicsObstacle(anchorCell, avgHeight, _rotationSteps))
-                    return false;
-            }
-
-            // 可选：检测与其他建筑 Collider 发生重叠
-            if (useBuildingOverlapCheck)
-            {
-                if (HasBuildingOverlap(anchorCell, avgHeight, _rotationSteps))
-                    return false;
-            }
-
+            if (useBuildingOverlapCheck && HasBuildingOverlap(anchorCell, avgHeight, _rotationSteps))
+                return false;
             return true;
         }
 
         /// <summary>
-        /// summary: 检测 footprint 区域是否存在物理障碍物（OverlapBox）。
-        /// param: anchorCell 锚点格
-        /// param: avgHeight footprint 平均高度
-        /// param: rotationSteps 旋转步数
-        /// return: true=有障碍（不可放置），false=无
+        /// summary: 可选的物理障碍检测（用于非网格对象，如场景道具）。
+        /// param: cell 格子坐标
+        /// param: groundHeight 该格地面高度
+        /// return: 是否存在障碍
         /// </summary>
-        private bool HasPhysicsObstacle(Vector3Int anchorCell, float avgHeight, int rotationSteps)
+        private bool HasObstacleAtCell(Vector3Int cell, float groundHeight)
         {
-            if (worldGrid == null || _currentDef == null) return false;
+            if (worldGrid == null) return false;
 
-            int rot = ((rotationSteps % 4) + 4) % 4;
-            int realW = (rot % 2 == 1) ? _currentDef.Height : _currentDef.Width;
-            int realH = (rot % 2 == 1) ? _currentDef.Width : _currentDef.Height;
+            Vector3 center = worldGrid.CellToWorldCenterXZ(cell);
+            center.y = groundHeight + obstacleCheckYOffset;
 
             float cs = worldGrid.cellSize;
+            Vector3 halfExtents = new Vector3(cs * 0.45f, obstacleCheckHeight * 0.5f, cs * 0.45f);
 
-            Vector3Int start = anchorCell - new Vector3Int(realW / 2, realH / 2, 0);
-
-            Vector3 startWorld = worldGrid.CellToWorldCenterXZ(start);
-            Vector3 center = startWorld + new Vector3((realW - 1) * cs * 0.5f, 0f, (realH - 1) * cs * 0.5f);
-            center.y = avgHeight + obstacleCheckYOffset + obstacleCheckHeight * 0.5f;
-
-            Vector3 halfExtents = new Vector3(realW * cs * 0.5f,
-                                            obstacleCheckHeight * 0.5f,
-                                            realH * cs * 0.5f);
-
-            Quaternion rotQ = Quaternion.Euler(0f, rot * 90f, 0f);
-
-            var hits = Physics.OverlapBox(center, halfExtents, rotQ, obstacleLayerMask, QueryTriggerInteraction.Ignore);
-            return hits != null && hits.Length > 0;
+            return Physics.CheckBox(center, halfExtents, Quaternion.identity, obstacleLayerMask, QueryTriggerInteraction.Ignore);
         }
 
         /// <summary>
@@ -439,17 +374,43 @@ namespace Kernel.Building
             else
                 OccupancyMap.Instance?.UpdateAreaBlocked(anchorCell, _currentDef.Width, _currentDef.Height, _rotationSteps, true);
 
-            // 添加建筑的 LayerMask
+            //添加建筑的LayerMask
             go.layer = LayerMask.NameToLayer("Building");
             foreach (Transform child in go.transform)
             {
                 child.gameObject.layer = LayerMask.NameToLayer("Building");
             }
-
             // 放置一次后退出放置（你也可以改成连续放置模式）
             CancelPlacement();
         }
 
+        /// <summary>
+        /// summary: 修改 ghost 颜色（兼容 Renderer 与 SpriteRenderer）。
+        /// param: c 颜色
+        /// return: 无
+        /// </summary>
+        private void SetGhostColor(Color c)
+        {
+            if (_ghostInstance == null) return;
+
+            foreach (var sr in _ghostInstance.GetComponentsInChildren<SpriteRenderer>(true))
+                sr.color = c;
+
+            foreach (var r in _ghostInstance.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r == null || r.sharedMaterial == null) continue;
+
+                r.GetPropertyBlock(_mpb);
+
+                if (r.sharedMaterial.HasProperty("_BaseColor"))
+                    _mpb.SetColor("_BaseColor", c);
+
+                if (r.sharedMaterial.HasProperty("_Color"))
+                    _mpb.SetColor("_Color", c);
+
+                r.SetPropertyBlock(_mpb);
+            }
+        }
         /// <summary>
         /// summary: 检测当前建筑在该 anchorCell/rot 下的整体体积是否与已存在建筑 Collider 重叠。
         /// param: anchorCell 锚点格
@@ -484,7 +445,6 @@ namespace Kernel.Building
             var hits = Physics.OverlapBox(center, halfExtents, rotQ, buildingOverlapMask, QueryTriggerInteraction.Collide);
             return hits != null && hits.Length > 0;
         }
-
         /// <summary>
         /// summary: 取消放置并清理 ghost。
         /// param: 无
@@ -497,7 +457,6 @@ namespace Kernel.Building
                 Destroy(_ghostInstance);
 
             _ghostInstance = null;
-            _ghostView = null;
             _currentDef = null;
             _isPlacing = false;
         }
