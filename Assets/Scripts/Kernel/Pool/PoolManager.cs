@@ -90,9 +90,14 @@ namespace Kernel.Pool
         /// <param name="obj">需要回收的建筑 GameObject。</param>
         public void ReturnToPool(GameObject obj)
         {
+            // GameDebug.Log("[Pool]  Returning object to pool." + obj.name);
             if (obj == null) return;
 
             var member = obj.GetComponent<BuildingPoolMember>();
+            if (member == null)
+            {
+                member = obj.GetComponentInChildren<BuildingPoolMember>();
+            }
             if (member == null || string.IsNullOrEmpty(member.Address))
             {
                 GameDebug.LogWarning("[Pool] 回收对象时未找到 BuildingPoolMember 或 Address 为空，将直接销毁。");

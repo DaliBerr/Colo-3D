@@ -4,6 +4,7 @@ using Lonize.Logging;
 using Lonize.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using static Lonize.Events.EventList;
 
 namespace Kernel.UI
 {
@@ -41,7 +42,7 @@ namespace Kernel.UI
         protected override void OnInit()
         {
             InitBaseButton();
-            InitButtomButton();
+            InitBottomButton();
             CloseBtn.onClick.AddListener(() =>{
                 UIManager.Instance.PopScreen();
             });
@@ -54,12 +55,12 @@ namespace Kernel.UI
         }
         private void OnEnable()
         {
-            Events.eventBus.Subscribe<SettingChanged>(OnSettingsChanged);
+            Lonize.Events.Event.eventBus.Subscribe<SettingChanged>(OnSettingsChanged);
             // TitleText.text = Localization.LocalizationManager.Instance.GetLocalizedText("Options");
         }
         private void OnDisable()
         {
-            Events.eventBus.Unsubscribe<SettingChanged>(OnSettingsChanged);
+            Lonize.Events.Event.eventBus.Unsubscribe<SettingChanged>(OnSettingsChanged);
         }
         private void OnSettingsChanged(SettingChanged evt)
         {
@@ -122,7 +123,7 @@ namespace Kernel.UI
                 GameplayPanel.SetActive(true);
             });
         }
-        private void InitButtomButton()
+        private void InitBottomButton()
         {
             CancelBtn.onClick.AddListener(() =>
             {

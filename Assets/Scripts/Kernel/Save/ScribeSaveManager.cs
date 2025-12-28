@@ -8,6 +8,8 @@ using Lonize.Scribe;
 using Lonize.Logging;
 using Kernel.GameState;
 using Kernel.Building;
+using static Kernel.World.WorldChunkMeshGenerator;
+using Kernel.World;
 
 /// <summary>
 /// 放到场景里一个物体上；Awake 自动注册多态条目并加载；对外暴露 Save()/Load() 与 Items。
@@ -21,7 +23,7 @@ namespace Kernel
         public static ScribeSaveManager Instance { get; private set; }
 
         [Header("Save Settings")]
-        [SerializeField] private string fileName = "save.json";
+        private string fileName = "save.save";
         [SerializeField] private int version = 1;
         [SerializeField] private bool autoSaveOnQuit = true;
 
@@ -40,7 +42,7 @@ namespace Kernel
             FilePath = Path.Combine(Application.persistentDataPath, fileName);
             // LoadOrCreate();
             Data = new PolySaveData();
-            GameDebug.Log($"[ScribeSaveManager] Ready. Path = {FilePath}");
+            // GameDebug.Log($"[ScribeSaveManager] Ready. Path = {FilePath}");
             
         }
         private void Start()
@@ -57,6 +59,7 @@ namespace Kernel
 
             PolymorphRegistry.Register<StatusSaveData>("StatusNames");
             PolymorphRegistry.Register<SaveAllBuildings>("AllBuildings");
+            PolymorphRegistry.Register<SaveMapInfo>("WorldChunkInfo");
 
 
             CodecRegistry.Register(new BoolCodec());
@@ -77,8 +80,16 @@ namespace Kernel
             // ...
         }
 
-        public void Save()
+        public void Save(string fileName)
         {
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                FilePath = Path.Combine(Application.persistentDataPath, fileName);
+            }
+            // Log.Info("[ScribeSaveManager] Save called. Path: "+ FilePath);
+            // GameDebug.Log("[ScribeSaveManager] Save called. Path: "+ FilePath);
+        
+
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
             var tmp = FilePath + ".tmp";
             try
@@ -105,8 +116,13 @@ namespace Kernel
             }
         }
 
-        public bool Load()
+        public bool Load(string fileName)
         {
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                FilePath = Path.Combine(Application.persistentDataPath, fileName);
+            }
+        
             var pathToUse = FilePath;
             Log.Info("[ScribeSaveManager] Load called. Path: "+ pathToUse);
             GameDebug.Log("[ScribeSaveManager] Load called. Path: "+ pathToUse);
@@ -154,18 +170,18 @@ namespace Kernel
 
         private void LoadOrCreate()
         {
-            var ok = Load();
-            if (!ok) { Data = new PolySaveData(); Save(); }
+            var ok = Load(fileName);
+            if (!ok) { Data = new PolySaveData(); Save(fileName); }
         }
 
         private void OnApplicationQuit()
         {
-            if (autoSaveOnQuit) Save();
+            if (autoSaveOnQuit) Save(fileName);
         }
 
         // —— 便捷静态入口 ——
-        public static void SaveNow() => Instance?.Save();
-        public static bool LoadNow() => Instance != null && Instance.Load();
+        public static void SaveNow(string fileName) => Instance?.Save(fileName);
+        public static bool LoadNow(string fileName) => Instance != null && Instance.Load(fileName);
 
         // —— 简易操作：增删查 ——（可选）
         public void AddItem(ISaveItem item) => Data.Items.Add(item);

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Lonize.Events;
 using System.Collections.Generic;
 using System.Collections;
+using static Lonize.Events.EventList;
 
 namespace Kernel{
 public class OptionsManager : MonoBehaviour
@@ -113,7 +114,7 @@ public class OptionsManager : MonoBehaviour
     public void CancelChanges()
     {
         LoadOptions();
-        Events.eventBus.Publish(new CancelSettingChange(new List<string>()));
+            Lonize.Events.Event.eventBus.Publish(new CancelSettingChange(new List<string>()));
     }
 
     public void ResetToDefaults()

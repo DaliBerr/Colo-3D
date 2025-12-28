@@ -4,8 +4,10 @@ using System.Collections;
 using System.Threading.Tasks;
 using Kernel.Item;
 using Kernel.UI;
+using Lonize.Events;
 using Lonize.Logging;
 using Lonize.UI;
+// using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -24,6 +26,7 @@ namespace Kernel
             if (useDontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             // await InitItems();
             await InitAll();
+            Lonize.Events.Event.eventBus.Publish(new EventList.MainSceneInitialized(true));
             // UIManager.Instance.PushScreen<UI.MainUI>();
         }
 

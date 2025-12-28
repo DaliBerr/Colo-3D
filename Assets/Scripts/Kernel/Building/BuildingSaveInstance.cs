@@ -1,6 +1,8 @@
 
 using System.Collections.Generic;
+using Lonize.Logging;
 using Lonize.Scribe;
+using UnityEngine;
 
 namespace Kernel.Building
 {
@@ -21,19 +23,20 @@ namespace Kernel.Building
         public string[] StatKeys;
         public float[] StatValues;
     }
-        /// <summary>
+    /// <summary>
     /// 全部建筑的存档数据（作为一个 ISaveItem 被 Scribe 管理）。
     /// </summary>
-    public class SaveAllBuildings : ISaveItem
+    public class SaveAllBuildings :  ISaveItem
     {
+        
+
         /// <summary>
         /// summary: 存档类型唯一标识符
         /// return: 用于 Scribe 识别本类型的字符串
         /// </summary>
         public string TypeId => "AllBuildings";
 
-        public List<SaveBuildingInstance> Buildings = new();
-
+        public List<SaveBuildingInstance> Buildings = new List<SaveBuildingInstance>();
         /// <summary>
         /// summary: 告诉 Scribe 如何读写全部建筑列表
         /// param: 无
@@ -52,7 +55,15 @@ namespace Kernel.Building
             // 读档后还原场景中的建筑
             if(Scribe.mode == ScribeMode.Loading)
             {
-                BuildingSaveRuntime.RestoreBuildingsFromSave(Buildings);
+                GameDebug.Log($"[SaveAllBuildings] Buildings count loaded: {(Buildings != null ? Buildings.Count : 0)}");
+                // BuildingSaveRuntime.RestoreBuildingsFromSave(Buildings);
+                // SaveBuilding I = Object.FindFirstObjectByType<SaveBuilding>();
+                // if (I != null)
+                // {
+                SaveBuilding.Buildings = Buildings;
+                // }
+                //TODO: 延后到地图生成后再还原建筑
+                
             }
         }
     }

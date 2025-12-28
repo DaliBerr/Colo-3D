@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Kernel.World;
+using Lonize.Logging;
 
 namespace Kernel.Building
 {
@@ -40,7 +41,9 @@ namespace Kernel.Building
         /// </summary>
         public bool TryGetPlacement(out Vector3Int anchorCell, out byte rotSteps)
         {
+            
             anchorCell = new Vector3Int(_cellX, _cellZ, 0);
+            GameDebug.Log($"[BuildingRuntimeHost] TryGetPlacement: anchorCell=({anchorCell.x}, {anchorCell.y}), rotSteps={_rotSteps}");
             rotSteps = (byte)(_rotSteps & 3);
             return _hasPlacement;
         }

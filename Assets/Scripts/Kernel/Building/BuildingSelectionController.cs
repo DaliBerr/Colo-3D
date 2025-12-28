@@ -6,6 +6,7 @@ using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using static Lonize.Events.EventList;
 
 namespace Kernel.Building
 {
@@ -169,7 +170,7 @@ namespace Kernel.Building
                     // 如果删完了，维持历史语义：发一个 runtime=null 的“无选中”事件
                     if (_selectedHosts.Count == 0)
                     {
-                        Events.eventBus.Publish(new BuildingSelected
+                        Lonize.Events.Event.eventBus.Publish(new BuildingSelected
                         {
                             buildingRuntime = null,
                             isSelected = false
@@ -251,7 +252,7 @@ namespace Kernel.Building
 
             if (publishEvent)
             {
-                Events.eventBus.Publish(new BuildingSelected
+                Lonize.Events.Event.eventBus.Publish(new BuildingSelected
                 {
                     buildingRuntime = host.Runtime,
                     isSelected = true
@@ -273,7 +274,7 @@ namespace Kernel.Building
             if (publishEvent && _selectedHosts.TryGetValue(id, out var host) && host != null && host.Runtime != null)
             {
                 // 注意：这是“单个建筑被取消选中”的事件（用于 Shift 多选非常关键）
-                Events.eventBus.Publish(new BuildingSelected
+                Lonize.Events.Event.eventBus.Publish(new BuildingSelected
                 {
                     buildingRuntime = host.Runtime,
                     isSelected = false
@@ -303,7 +304,7 @@ namespace Kernel.Building
             _selectedViews.Clear();
             _selectedHosts.Clear();
 
-            Events.eventBus.Publish(new BuildingSelected
+            Lonize.Events.Event.eventBus.Publish(new BuildingSelected
             {
                 buildingRuntime = null,
                 isSelected = false

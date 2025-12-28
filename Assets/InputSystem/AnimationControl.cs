@@ -111,6 +111,15 @@ namespace Lonize
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Smoke"",
+                    ""type"": ""Button"",
+                    ""id"": ""3d24891d-cf98-4385-984a-13508429f309"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -133,6 +142,17 @@ namespace Lonize
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ET2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4b88330c-9d51-470a-a032-dc6f65aa2a28"",
+                    ""path"": ""<Keyboard>/n"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Smoke"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -173,6 +193,7 @@ namespace Lonize
             m_Animation = asset.FindActionMap("Animation", throwIfNotFound: true);
             m_Animation_ET1 = m_Animation.FindAction("ET1", throwIfNotFound: true);
             m_Animation_ET2 = m_Animation.FindAction("ET2", throwIfNotFound: true);
+            m_Animation_Smoke = m_Animation.FindAction("Smoke", throwIfNotFound: true);
             // Instantiate
             m_Instantiate = asset.FindActionMap("Instantiate", throwIfNotFound: true);
             m_Instantiate_Cube = m_Instantiate.FindAction("Cube", throwIfNotFound: true);
@@ -259,6 +280,7 @@ namespace Lonize
         private List<IAnimationActions> m_AnimationActionsCallbackInterfaces = new List<IAnimationActions>();
         private readonly InputAction m_Animation_ET1;
         private readonly InputAction m_Animation_ET2;
+        private readonly InputAction m_Animation_Smoke;
         /// <summary>
         /// Provides access to input actions defined in input action map "Animation".
         /// </summary>
@@ -278,6 +300,10 @@ namespace Lonize
             /// Provides access to the underlying input action "Animation/ET2".
             /// </summary>
             public InputAction @ET2 => m_Wrapper.m_Animation_ET2;
+            /// <summary>
+            /// Provides access to the underlying input action "Animation/Smoke".
+            /// </summary>
+            public InputAction @Smoke => m_Wrapper.m_Animation_Smoke;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -310,6 +336,9 @@ namespace Lonize
                 @ET2.started += instance.OnET2;
                 @ET2.performed += instance.OnET2;
                 @ET2.canceled += instance.OnET2;
+                @Smoke.started += instance.OnSmoke;
+                @Smoke.performed += instance.OnSmoke;
+                @Smoke.canceled += instance.OnSmoke;
             }
 
             /// <summary>
@@ -327,6 +356,9 @@ namespace Lonize
                 @ET2.started -= instance.OnET2;
                 @ET2.performed -= instance.OnET2;
                 @ET2.canceled -= instance.OnET2;
+                @Smoke.started -= instance.OnSmoke;
+                @Smoke.performed -= instance.OnSmoke;
+                @Smoke.canceled -= instance.OnSmoke;
             }
 
             /// <summary>
@@ -477,6 +509,13 @@ namespace Lonize
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnET2(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Smoke" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnSmoke(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Instantiate" which allows adding and removing callbacks.

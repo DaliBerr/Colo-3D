@@ -1,5 +1,7 @@
 using Lonize;
+using Lonize.Events;
 using Lonize.Logging;
+using Lonize.Scribe;
 using UnityEngine;
 
 namespace Kernel.World
@@ -9,6 +11,10 @@ namespace Kernel.World
     /// </summary>
     public class WorldChunkMeshGenerator : MonoBehaviour
     {
+        public static WorldChunkMeshGenerator Instance { get; private set; }
+        // private string DebugTag
+        // => $"[WorldChunkMeshGenerator name={name} id={GetInstanceID()} scene={gameObject.scene.name}]";
+
         [Header("World Layout（世界网格尺寸）")]
         [Min(1)] public int worldCols = 3;
         [Min(1)] public int worldRows = 3;
@@ -28,7 +34,7 @@ namespace Kernel.World
         public Material rockMat;
 
         [Header("Seed")]
-        public int worldSeed = 123456;
+        [SerializeField] public int worldSeed = 123456;
         public bool randomizeSeedOnPlay = false;
 
         [Header("Biome Presets（可选：仍然按 chunk 选群系）")]
@@ -70,11 +76,128 @@ namespace Kernel.World
         public float biomeWarpScale = 0.6f;
         public float biomeWarpAmp = 0.15f;
 
-        private MapControls mapControls; 
+        private static MapControls mapControls;
+
+        private bool _mainSceneInitialized;
+        private static bool _pendingRegenerate;
+
+        private static MapInfo _pendingMapInfo;
+        private void OnEnable()
+        {
+            // 订阅一次主场景初始化事件
+            Lonize.Events.Event.eventBus.Subscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
+        }
+        private void OnDisable()
+        {
+            // 记得取消订阅，避免泄漏/重复回调
+            Lonize.Events.Event.eventBus.Unsubscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
+        }
+        private void LogState(string stage)
+        {
+            GameDebug.Log($"[WorldChunkGenerator] {stage} | mainInit={_mainSceneInitialized} pending={_pendingRegenerate}");
+        }
+        /// <summary>
+        /// summary: 接收主场景初始化事件，并在需要时触发挂起的世界重建。
+        /// param: e 主场景初始化事件（通常携带是否初始化完成的布尔值）。
+        /// return: 无
+        /// </summary>
+        private void OnMainSceneInitialized(EventList.MainSceneInitialized e)
+        {
+            // if (e == null) return;
+
+            _mainSceneInitialized = e.isInitialized; // 这里按你事件字段名调整：可能叫 IsInitialized / Value / Success 等
+            // GameDebug.Log($"[WorldChunkGenerator] 收到主场景初始化事件，状态：{_mainSceneInitialized}");
+            if (!_mainSceneInitialized)
+            {
+                // GameDebug.Log($"[WorldChunkGenerator] 主场景未初始化，跳过挂起的世界重建。");
+                return;
+            }
+            if (_pendingRegenerate)
+            {
+                // GameDebug.Log($"[WorldChunkGenerator] 主场景已初始化，开始执行挂起的世界重建...");
+                _pendingRegenerate = false;
+
+                // 如果你担心 mapInfo 为空，这里也可以加判断
+                GenerateWorld();
+            }
+            // GameDebug.Log($"[WorldChunkGenerator] 处理主场景初始化事件完成。");
+        }
+
+    public void RequestRegenerateAfterMainSceneInit(MapInfo mapInfo)
+    {
+        // GameDebug.Log($"[WorldChunkGenerator] 挂起世界重建，等待主场景初始化完成...");
+        _pendingMapInfo = mapInfo;
+        // if (_mainSceneInitialized)
+        // {
+        //     GenerateWorld();
+        //     return;
+        // }
+
+        _pendingRegenerate = true;
+    }
+        
+
+        // public class SaveMapInfo : ISaveItem
+        // {
+        //     public int worldseed;
+        //     public int worldcols;
+        //     public int worldrows;
+        //     public int chunkwidth;
+        //     public int chunkheight;
+        //     public float cellsize;
+            // public Vector2Int chunkspacing;
+        // public string TypeId => "WorldChunkInfo";
+
+        // public void ExposeData()
+        // {
+        //     SaveMapInfo mapInfo = new SaveMapInfo();
+        //     mapInfo.worldseed = worldSeed;
+        //     mapInfo.worldcols = worldCols;
+        //     mapInfo.worldrows = worldRows;
+        //     mapInfo.chunkwidth = chunkWidth;
+        //     mapInfo.chunkheight = chunkHeight;
+        //     mapInfo.cellsize = cellSize;
+        //     Scribe_Values.Look("worldseed",ref worldSeed,114514);
+        //     Scribe_Values.Look("worldcols", ref worldCols, 3);  
+        //     Scribe_Values.Look("worldrows", ref worldRows, 3);
+        //     Scribe_Values.Look("chunkwidth", ref chunkWidth, 100);
+        //     Scribe_Values.Look("chunkheight", ref chunkHeight, 100);
+        //     Scribe_Values.Look("cellsize", ref cellSize, 1f);
+
+
+        // }
+        public bool isNeedRegenerate(MapInfo mapInfo)
+        {
+            if(mapInfo.worldseed != worldSeed||
+            mapInfo.worldcols != worldCols||
+            mapInfo.worldrows != worldRows||
+            mapInfo.chunkwidth != chunkWidth||
+            mapInfo.chunkheight != chunkHeight||
+            mapInfo.cellsize != cellSize)
+            {
+                return true;
+            }
+            else if (FindAnyObjectByType<ChunkMeshGenerator>() == null)
+            {
+                return true;
+            }
+            
+            else
+            {
+                return false;
+            }
+        }
+
+
         private void Awake()
         {
             mapControls = InputActionManager.Instance.Map;
-            // mapControls.Enable();
+            Instance = this;
+            if(Instance != this)
+            {
+                Destroy(gameObject);
+            }
+            DontDestroyOnLoad(gameObject);
         }
 
         private void Update()
@@ -91,6 +214,7 @@ namespace Kernel.World
         [ContextMenu("Generate World (Seamless Chunk Mesh)")]
         public bool GenerateWorld()
         {
+            GameDebug.Log("[WorldChunkMeshGenerator] 开始生成世界...");
             if (!landMat || !rockMat)
             {
                 GameDebug.LogError("[WorldChunkMeshGenerator] 请拖入 landMat / rockMat");
@@ -166,7 +290,7 @@ namespace Kernel.World
                     ApplyBiomeOverrides(gen, isMountain ? mountain : plain);
                 }
 
-                gen.GenerateChunk(publishEvent: true);
+                gen.GenerateChunk();
             }
             // var chunks = GetComponentsInChildren<GameObject>();
             // foreach (var c in chunks)
@@ -176,6 +300,8 @@ namespace Kernel.World
             sw.Stop();
             GameDebug.Log($"[WorldChunkMeshGenerator] 世界生成完成：{worldCols}×{worldRows}，耗时 {sw.ElapsedMilliseconds} ms");
             Log.Info($"[WorldChunkMeshGenerator] 世界生成完成：{worldCols}×{worldRows}，耗时 {sw.ElapsedMilliseconds} ms");
+            
+            Lonize.Events.Event.eventBus.Publish(new EventList.MapReady(true));
             return true;
         }
         /// <summary>
@@ -326,5 +452,64 @@ namespace Kernel.World
             x ^= x >> 14;
             return (x & 0x00FFFFFFu) / 16777215f;
         }
+    }
+    public class MapInfo
+    {
+        public int worldseed;
+        public int worldcols;
+        public int worldrows;
+        public int chunkwidth;
+        public int chunkheight;
+        public float cellsize;
+
+    }
+    public class SaveMapInfo:ISaveItem
+    {
+        public static MapInfo mapInfo = new MapInfo();
+
+        public string TypeId => "WorldChunkInfo";
+
+        public void ExposeData()
+        {
+            if(Scribe.mode == ScribeMode.Saving)
+            {
+                mapInfo.worldseed = WorldChunkMeshGenerator.Instance.worldSeed;
+                mapInfo.worldcols = WorldChunkMeshGenerator.Instance.worldCols;
+                mapInfo.worldrows = WorldChunkMeshGenerator.Instance.worldRows;
+                mapInfo.chunkwidth = WorldChunkMeshGenerator.Instance.chunkWidth;
+                mapInfo.chunkheight = WorldChunkMeshGenerator.Instance.chunkHeight;
+                mapInfo.cellsize = WorldChunkMeshGenerator.Instance.cellSize;
+            }
+            Scribe_Values.Look("worldseed",ref mapInfo.worldseed,114514);
+            Scribe_Values.Look("worldcols", ref mapInfo.worldcols, 3);  
+            Scribe_Values.Look("worldrows", ref mapInfo.worldrows, 3);
+            Scribe_Values.Look("chunkwidth", ref mapInfo.chunkwidth, 100);
+            Scribe_Values.Look("chunkheight", ref mapInfo.chunkheight, 100);
+            Scribe_Values.Look("cellsize", ref mapInfo.cellsize, 1f);
+
+            if(Scribe.mode == ScribeMode.Loading)
+            {
+                if (WorldChunkMeshGenerator.Instance.isNeedRegenerate(mapInfo))
+                {
+                    WorldChunkMeshGenerator.Instance.RequestRegenerateAfterMainSceneInit(mapInfo);
+                }
+                else
+                {
+                    GameDebug.Log("[WorldChunkMeshGenerator] 存档参数与当前世界一致，无需重建世界。");
+                    Lonize.Events.Event.eventBus.Publish(new EventList.MapReady(true));
+                }
+            
+                GameDebug.Log($"[SaveMapInfo] Loaded Map Info: seed={mapInfo.worldseed}, cols={mapInfo.worldcols}, rows={mapInfo.worldrows}, chunkW={mapInfo.chunkwidth}, chunkH={mapInfo.chunkheight}, cellSize={mapInfo.cellsize}");
+                WorldChunkMeshGenerator.Instance.worldSeed = mapInfo.worldseed;
+                WorldChunkMeshGenerator.Instance.worldCols = mapInfo.worldcols;
+                WorldChunkMeshGenerator.Instance.worldRows = mapInfo.worldrows;
+                WorldChunkMeshGenerator.Instance.chunkWidth = mapInfo.chunkwidth;
+                WorldChunkMeshGenerator.Instance.chunkHeight = mapInfo.chunkheight;
+                WorldChunkMeshGenerator.Instance.cellSize = mapInfo.cellsize;
+
+            }
+        }
+
+
     }
 }

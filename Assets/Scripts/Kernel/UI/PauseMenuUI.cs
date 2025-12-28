@@ -1,5 +1,6 @@
 
 using System.Collections;
+using System.Threading.Tasks;
 using Kernel.GameState;
 using Lonize.Logging;
 using Lonize.UI;
@@ -41,16 +42,16 @@ namespace Kernel.UI
                 // UIManager.Instance.PushScreen<OptionsModal>();
             });
 
-            saveButton.onClick.AddListener(() =>
+            saveButton.onClick.AddListener(async () =>
             {
-                TrySaveGame();
+                await TrySaveGame();
                 // GameDebug.Log("Save Button Clicked!");
                 // Colo.GameSaveController.Instance.SaveGame();
             });
 
-            loadButton.onClick.AddListener(() =>
+            loadButton.onClick.AddListener(async () =>
             {
-                TryLoadGame();
+                await TryLoadGame();
                 // GameDebug.Log("Load Button Clicked!");
                 // Colo.GameSaveController.Instance.LoadGame();
             });
@@ -91,21 +92,37 @@ namespace Kernel.UI
                 GameDebug.LogError($"Error while trying to open options: {e.Message}");
             }
         }
-        private void TrySaveGame()
+        private async Task TrySaveGame()
         {
             try{
                 //TODO : 弹出保存选择对话框
-                Colo.GameSaveController.Instance.SaveGame();
+                // Colo.GameSaveController.Instance.SaveGame();
+                UIManager.Instance.PushScreen<LoadMenuUI>();
+                // await UIManager.Instance.PushScreenAndWait<LoadMenuUI>();
+                // StatusController.AddStatus(StatusList.InPauseMenuStatus);
+                while(FindAnyObjectByType<LoadMenuUI>()==null){
+                    await Task.Yield();
+                }
+                LoadMenuUI loadMenu = FindAnyObjectByType<LoadMenuUI>();
+                loadMenu.SetMode(LoadMenuUI.LoadMenuMode.Save);
             }
             catch(System.Exception e){
                 GameDebug.LogError($"Error while trying to save game: {e.Message}");
             }
         }
-        private void TryLoadGame()
+
+        private async Task TryLoadGame()
         {
             try{
-                Colo.GameSaveController.Instance.LoadGame();
-                StatusController.AddStatus(StatusList.InPauseMenuStatus);
+                UIManager.Instance.PushScreen<LoadMenuUI>();
+                // StartCoroutine(UIManager.Instance.PushScreenAndWait<LoadMenuUI>());
+                // Colo.GameSaveController.Instance.LoadGame();
+                // StatusController.AddStatus(StatusList.InPauseMenuStatus);
+                while(FindAnyObjectByType<LoadMenuUI>()==null){
+                    await Task.Yield();
+                }
+                LoadMenuUI loadMenu = FindAnyObjectByType<LoadMenuUI>();
+                loadMenu.SetMode(LoadMenuUI.LoadMenuMode.Load);
             }
             catch(System.Exception e){
                 GameDebug.LogError($"Error while trying to load game: {e.Message}");

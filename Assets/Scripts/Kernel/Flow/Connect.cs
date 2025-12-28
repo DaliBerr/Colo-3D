@@ -2,6 +2,7 @@
 
 using Lonize.Events;
 using Lonize.Flow;
+using static Lonize.Events.EventList;
 
 namespace Kernel.Flow
 {

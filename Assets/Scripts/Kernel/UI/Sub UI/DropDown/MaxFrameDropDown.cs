@@ -4,6 +4,7 @@ using Kernel;
 using Lonize.Events;
 using TMPro;
 using UnityEngine;
+using static Lonize.Events.EventList;
 
 public class MaxFrameDropDown : DropdownHolder
 {
@@ -30,8 +31,16 @@ public class MaxFrameDropDown : DropdownHolder
         SetOptions(Options, defaultIndex);
         onValueChanged(index =>
         {
-            OptionsManager.Instance.Settings.MaxFrame = prev;
-            Events.eventBus.Publish(new SettingChanged(true));
+            
+            OptionsManager.Instance.Settings.MaxFrame = GetOptionFloat(Options[index]);
+            Lonize.Events.Event.eventBus.Publish(new SettingChanged(true));
         });
+    }
+
+    private int GetOptionFloat(string fps)
+    {
+        if (fps == "Unlimited")
+            return 0;
+        return int.Parse(fps.Replace(" FPS", ""));
     }
 }

@@ -219,14 +219,18 @@ namespace Kernel.Building
 
             if (!TryGetAnchorFromCursor(out var anchorCell, out var hitPoint))
                 return;
+                
+            float previewAvgHeight = hitPoint.y;
+            if (useAverageHeight)
+                TryComputePreviewAverageHeight(anchorCell, hitPoint.y, out previewAvgHeight);
 
-            bool canPlace = CheckCanPlace(anchorCell, out float avgHeight);
+            // ✅ 再做规则判定
+            bool canPlace = CheckCanPlace(anchorCell, out _);
 
-            // 更新 ghost pose
+            // 更新 ghost pose（用 previewAvgHeight，保证不被提前 false 影响）
             Vector3 pos = worldGrid != null ? worldGrid.CellToWorldCenterXZ(anchorCell) : new Vector3(anchorCell.x, 0f, anchorCell.y);
-            pos.y = (useAverageHeight ? avgHeight : hitPoint.y) + placementYOffset;
-
-            Quaternion rot = Quaternion.Euler(0f, _rotationSteps * 90f, 0f);
+            pos.y = (useAverageHeight ? previewAvgHeight : hitPoint.y) + placementYOffset;
+                        Quaternion rot = Quaternion.Euler(0f, _rotationSteps * 90f, 0f);
 
             _ghostInstance.transform.SetPositionAndRotation(pos, rot);
 
@@ -324,17 +328,23 @@ namespace Kernel.Building
                     return false;
 
                 if (!worldGrid.CheckCellTags(c, _currentDef.PlacementRequiredTags, _currentDef.PlacementForbiddenTags))
-                    return false; 
+                    return false;
 
                 if (occ.IsCellBlocked(c))
                     return false;
-                _ = worldGrid.TryGetGroundAtCell(c, out float h, out _, out _);
-                // float h = worldGrid.height(c);
+
+                if (!worldGrid.TryGetGroundAtCell(c, out float h, out _, out _))
+                    return false;
+
                 minH = Mathf.Min(minH, h);
                 maxH = Mathf.Max(maxH, h);
                 sumH += h;
             }
 
+            // ✅ 关键：先把 avgHeight 算出来（即使失败也能用于 ghost Y）
+            avgHeight = sumH / _tmpFootprint.Count;
+
+            // ✅ 再做高度差判定（失败则返回 false，但 avgHeight 已经有值了）
             if (maxH - minH > maxFootprintHeightDelta)
                 return false;
 
@@ -356,7 +366,53 @@ namespace Kernel.Building
 
             return true;
         }
+        /// <summary>
+        /// summary: 计算放置预览用的平均高度（只做地形采样，不做可放置规则判定）；采样失败则回退到 hitY。
+        /// param: anchorCell 锚点格
+        /// param: hitY 光标射线命中点的 y（作为回退值）
+        /// param: avgHeight 输出：预览高度
+        /// return: 是否成功从 footprint 采样到至少一个有效高度
+        /// </summary>
+        private bool TryComputePreviewAverageHeight(Vector3Int anchorCell, float hitY, out float avgHeight)
+        {
+            avgHeight = hitY;
 
+            if (_currentDef == null || worldGrid == null)
+                return false;
+
+            var occ = occupancyMap != null ? occupancyMap : OccupancyMap.Instance;
+            if (occ == null)
+                return false;
+
+            _tmpFootprint.Clear();
+            _tmpFootprint.AddRange(occ.GetFootprintCells(anchorCell, _currentDef.Width, _currentDef.Height, _rotationSteps));
+            if (_tmpFootprint.Count == 0)
+                return false;
+
+            float sum = 0f;
+            int count = 0;
+
+            for (int i = 0; i < _tmpFootprint.Count; i++)
+            {
+                var c = _tmpFootprint[i];
+
+                // 预览高度：无论能不能放，都尽量采到地形高度
+                if (!worldGrid.IsCellValid(c))
+                    continue;
+
+                if (!worldGrid.TryGetGroundAtCell(c, out float h, out _, out _))
+                    continue;
+
+                sum += h;
+                count++;
+            }
+
+            if (count <= 0)
+                return false;
+
+            avgHeight = sum / count;
+            return true;
+        }
         /// <summary>
         /// summary: 检测 footprint 区域是否存在物理障碍物（OverlapBox）。
         /// param: anchorCell 锚点格
@@ -422,15 +478,20 @@ namespace Kernel.Building
 
             go.transform.SetPositionAndRotation(worldPos, rot);
 
-            var runtimeHost = go.GetComponent<BuildingRuntimeHost>();
+            var runtimeHost = go.GetComponentInChildren<BuildingRuntimeHost>();
             if (runtimeHost != null)
             {
+                GameDebug.Log($"[BuildingPlacement] 放置建筑实例：{_currentDef.Id} at {anchorCell}");
                 // 写入 placement（供拆除/存档使用）
                 runtimeHost.SetPlacement(anchorCell, (byte)_rotationSteps);
 
                 // 保留你原先的 DefId 写法
                 if (runtimeHost.Runtime != null && runtimeHost.Runtime.Def != null)
                     runtimeHost.Runtime.Def.Id = _currentDef.Id;
+            }
+            else
+            {
+                GameDebug.LogWarning("[BuildingPlacement] 放置的建筑缺少 BuildingRuntimeHost 组件。");
             }
 
             // 更新 Occupancy（阻挡）
@@ -447,7 +508,7 @@ namespace Kernel.Building
             }
 
             // 放置一次后退出放置（你也可以改成连续放置模式）
-            CancelPlacement();
+            // CancelPlacement();
         }
 
         /// <summary>

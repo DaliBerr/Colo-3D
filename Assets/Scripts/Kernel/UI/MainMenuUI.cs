@@ -27,6 +27,9 @@ namespace Kernel.UI
             startBtn.onClick.AddListener(
                 () => StartCoroutine(TryStartGame())
             );
+            loadBtn.onClick.AddListener(
+                () => TryOpenLoadMenu()
+            );
             // loadBtn.onClick.AddListener(() => UIManager.Instance.PushScreen<LoadGameModal>());
             optionsBtn.onClick.AddListener(
                 () => TryOpenOptions()
@@ -63,7 +66,11 @@ namespace Kernel.UI
             }
         }
 
-
+        private void TryOpenLoadMenu()
+        {
+            UIManager.Instance.PushScreen<LoadMenuUI>();
+            // StatusController.AddStatus(StatusList.InMenuStatus);
+        }
         private void TryOpenOptions()
         {
             UIManager.Instance.PushScreen<OptionsModal>();

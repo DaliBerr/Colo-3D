@@ -10,6 +10,10 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Lonize.Logging;
 using Kernel.UI;
+using Lonize.Events;
+using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
+using Kernel.GameState;
 
 
 namespace Lonize.UI
@@ -87,8 +91,17 @@ namespace Lonize.UI
         }
         public void RequestStartGame()
         {
+            //TODO:添加加载界面
             ClearAllScreensAndModals();
             StartCoroutine(UIManager.Instance.PushScreenAndWait<MainUI>());
+        }
+        public async Task RequestLoadGame(string saveName)
+        {
+            await  SceneManager.LoadSceneAsync("Main");
+            // 开发模式：直接切到主场景
+            StatusController.AddStatus(StatusList.PlayingStatus);
+            RequestStartGame();
+            Events.Event.eventBus.Publish(new EventList.LoadGameRequest(saveName));
         }
 
         /// <summary>
@@ -285,7 +298,7 @@ namespace Lonize.UI
 
         IEnumerator PopScreenCo()
         {
-            GameDebug.Log("stack count:"+screenStack.Count);
+            // GameDebug.Log("stack count:"+screenStack.Count);
             var top = screenStack.Pop();
             yield return DestroyAfterHide(top);
 
@@ -294,7 +307,7 @@ namespace Lonize.UI
         }
         IEnumerator PopScreenCoNoShow()
         {
-            GameDebug.Log("stack count:"+screenStack.Count);
+            // GameDebug.Log("stack count:"+screenStack.Count);
             var top = screenStack.Pop();
             yield return DestroyAfterHide(top);
         }

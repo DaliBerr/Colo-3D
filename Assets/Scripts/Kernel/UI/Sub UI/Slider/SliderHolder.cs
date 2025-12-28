@@ -5,6 +5,7 @@ using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using static Lonize.Events.EventList;
 
 public abstract class SliderHolder : MonoBehaviour
 {
@@ -108,7 +109,7 @@ public abstract class SliderHolder : MonoBehaviour
         UnityAction<float> ua = v =>
         {
             callback(v);
-            Events.eventBus?.Publish(new SettingChanged(true));
+            Lonize.Events.Event.eventBus?.Publish(new SettingChanged(true));
         };
 
         _listenerMap.Add(callback, ua);

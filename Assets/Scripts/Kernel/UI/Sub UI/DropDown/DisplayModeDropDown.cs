@@ -4,6 +4,7 @@ using Kernel;
 using Lonize.Events;
 using TMPro;
 using UnityEngine;
+using static Lonize.Events.EventList;
 
 public class DisplayModeDropDown : DropdownHolder
 {
@@ -30,7 +31,7 @@ public class DisplayModeDropDown : DropdownHolder
         onValueChanged(index =>
         {
             OptionsManager.Instance.Settings.FullScreen = Options[index];
-            Events.eventBus.Publish(new SettingChanged(true));
+            Lonize.Events.Event.eventBus.Publish(new SettingChanged(true));
         });
         //TODO:添加确认弹窗,并计时回退
     }

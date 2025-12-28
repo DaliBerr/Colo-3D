@@ -3,6 +3,7 @@ using Lonize;
 using Lonize.Events;
 using Lonize.Logging;
 using UnityEngine;
+using static Lonize.Events.EventList;
 
 namespace Kernel.Building
 {
@@ -103,7 +104,7 @@ namespace Kernel.Building
                 return;
             }
 
-            Events.eventBus.Publish(new BuildingSelected
+            Lonize.Events.Event.eventBus.Publish(new BuildingSelected
             {
                 buildingRuntime = _host.Runtime,
                 isSelected = true,

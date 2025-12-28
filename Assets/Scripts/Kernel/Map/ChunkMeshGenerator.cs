@@ -6,6 +6,7 @@ using Lonize.Events;
 using Lonize.Logging;
 using Lonize.Math;
 using UnityEngine;
+using static Lonize.Events.EventList;
 
 namespace Kernel.World
 {
@@ -299,7 +300,7 @@ namespace Kernel.World
         /// </summary>
         /// <param name="publishEvent">是否发布 MapReady 事件。</param>
         /// <returns>是否成功生成。</returns>
-        public bool GenerateChunk(bool publishEvent = true)
+        public bool GenerateChunk()
         {
             if (!CheckRefs()) return false;
             if (!EnsureMeshComponents()) return false;
@@ -323,8 +324,8 @@ namespace Kernel.World
                 Log.Info($"[ChunkMeshGenerator] 生成完成：{width}×{height}，耗时 {sw.ElapsedMilliseconds} ms");
             }
 
-            if (publishEvent)
-                Events.eventBus.Publish(new MapReady(true, transform.position));
+            // if (publishEvent)
+            //     Lonize.Events.Event.eventBus.Publish(new MapReady(true, transform.position));
 
             
 

@@ -18,7 +18,7 @@ namespace Kernel.Building
         /// param: list 用于输出存档数据的列表引用
         /// return: 无
         /// </summary>
-        public static void CollectBuildingsForSave(ref List<SaveBuildingInstance> list)
+        public static void    CollectBuildingsForSave(ref List<SaveBuildingInstance> list)
         {
             var controller = Object.FindFirstObjectByType<BuildingPlacementController>();
             if (controller == null)

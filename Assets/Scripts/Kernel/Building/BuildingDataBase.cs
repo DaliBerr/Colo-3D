@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
+using static Lonize.Events.EventList;
 
 namespace Kernel.Building
 {
@@ -188,7 +189,7 @@ namespace Kernel.Building
 
             // BuildingEvents.RaiseDatabaseLoaded(Defs.Keys.ToList());
             // Events.eventBus.Publish(new BuildingLoadingProgress(Defs.Keys.Count, Defs.Count));
-            Events.eventBus.Publish(new BuildingLoaded(Defs.Keys.Count));
+            Lonize.Events.Event.eventBus.Publish(new BuildingLoaded(Defs.Keys.Count));
         }
 
         public static bool TryGet(string id, out BuildingDef def) => Defs.TryGetValue(id, out def);

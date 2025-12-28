@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\UIScaleDropDown.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\SerializedFieldConverter.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemDef.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\SaveItemEntry.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\WorldMapGenerator.cs" />
     <Compile Include="Assets\Scripts\Kernel\Save\GlobalSeeting\GlobalSettingsData.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\LoadingProgress.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Assets\Scripts\Kernel\Camera\ICameraControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\MusicVolumeSlider.cs" />
     <Compile Include="Assets\Scripts\Kernel\Status\StatusController.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\SaveAllBuilding.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Toggle\ToggleHodler.cs" />
     <Compile Include="Assets\Scripts\Kernel\Flow\FlowEndComponent.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\localizationPack.cs" />
@@ -140,6 +142,7 @@
     <Compile Include="Assets\Scripts\Kernel\Nav\NavGrid.cs" />
     <Compile Include="Assets\Scripts\Kernel\AddressableRef.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIWidget.cs" />
+    <Compile Include="Assets\Scripts\Colo\Animation\Smoke.cs" />
     <Compile Include="Assets\Scripts\Kernel\StartUp.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\ScribeCrossRefs.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\WorldChunkMeshGenerator.cs" />
@@ -154,6 +157,7 @@
     <Compile Include="Assets\Scripts\Kernel\Item\Sample.cs" />
     <Compile Include="Assets\Scripts\Lonize\Tick\TickDriver.cs" />
     <Compile Include="Assets\InputSystem\BuildingControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\LoadMenuUI.cs" />
     <Compile Include="Assets\Scripts\Colo\Animation\CubeRotate.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\MainUI.cs" />
     <Compile Include="Assets\Scripts\Lonize\Math.cs" />
@@ -184,6 +188,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
+    <None Include="Assets\AddressableAssetsData\link.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />

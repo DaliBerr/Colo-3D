@@ -1,6 +1,7 @@
 using Kernel;
 using Lonize.Events;
 using UnityEngine.UI;
+using static Lonize.Events.EventList;
 
 public class MusicVolumeSlider : SliderHolder
 {
@@ -20,7 +21,7 @@ public class MusicVolumeSlider : SliderHolder
         {
             preVal = value;
             OptionsManager.Instance.Settings.MusicVolume = preVal;
-            Events.eventBus.Publish(new SettingChanged(true));
+            Event.eventBus.Publish(new SettingChanged(true));
         });
     }
 }

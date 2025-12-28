@@ -6,18 +6,27 @@ using UnityEngine;
 
 namespace Lonize.Events
 {
-    public static class Events
+    public static class Event
     {
         public static readonly EventBus eventBus = new();
     }
+    public static class EventList{
     public readonly struct MapReady
     {
         public readonly bool value;
-        public readonly Vector3 mapCenterPosition;
-        public MapReady(bool value, Vector3 mapCenterPosition)
+        // public readonly Vector3 mapCenterPosition;
+        public MapReady(bool value )
         {
             this.value = value;
-            this.mapCenterPosition = mapCenterPosition;
+            // this.mapCenterPosition = mapCenterPosition;
+        }
+    }
+    public readonly struct MainSceneInitialized
+    {
+        public readonly bool isInitialized;
+        public MainSceneInitialized(bool isInitialized)
+        {
+            this.isInitialized = isInitialized;
         }
     }
     public readonly struct SpeedChange
@@ -93,5 +102,24 @@ namespace Lonize.Events
         {
             this.undoSetting = undoSetting;
         }
+    }
+
+    public struct SaveGameRequest
+    {
+        public string saveName;
+        public SaveGameRequest(string saveName)
+        {
+            this.saveName = saveName;
+        }
+    }
+
+    public struct LoadGameRequest
+    {
+        public string loadName;
+        public LoadGameRequest(string loadName)
+        {
+            this.loadName = loadName;
+        }
+    }
     }
 }

@@ -2,6 +2,7 @@ using Kernel.Building;
 using UnityEngine;
 using Lonize.Flow;
 using Colo.Def.Building;
+using Lonize.Tick;
 
 namespace Colo.Building
 {
@@ -9,7 +10,7 @@ namespace Colo.Building
     /// 发电机运行时脚本，实现 IFlowEndpointAdapter，用于与 FlowSystem 交互。
     /// 不负责创建 FlowEndpoint，由 FlowEndpointComponent 管理端口注册。
     /// </summary>
-    public class PowerGeneratorRuntime : MonoBehaviour, IFlowEndpointAdapter
+    public class PowerGeneratorRuntime : MonoBehaviour, IFlowEndpointAdapter,ITickable
     {
         [Header("引用（可选）")]
         [Tooltip("如果使用 BuildingDef 配置发电机参数，可以在这里绑定对应的 BuildingRuntimeHost。")]
@@ -221,6 +222,11 @@ namespace Colo.Building
             }
 
             // TODO：根据 actualRate / maxOutput 调节动画、声音等效果
+        }
+
+        public void Tick(int ticks)
+        {
+            //TODO: 可以在这里实现周期性逻辑
         }
     }
 }

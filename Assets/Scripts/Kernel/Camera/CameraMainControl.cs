@@ -5,6 +5,7 @@ using TMPro;
 using Lonize.Events;
 using Lonize.Logging;
 using Kernel.GameState;
+using static Lonize.Events.EventList;
 namespace Kernel
 {
     public class CameraMainControl : CameraControl
@@ -19,7 +20,7 @@ namespace Kernel
         }
         void OnEnable()
         {
-            Events.eventBus.Subscribe<SpeedChange>(OnSpeedChanged);
+            Lonize.Events.Event.eventBus.Subscribe<SpeedChange>(OnSpeedChanged);
         }
         private void OnSpeedChanged(SpeedChange evt)
         {
@@ -41,7 +42,7 @@ namespace Kernel
         }
         private bool isGamePlaying()
         {
-            return StatusController.HasStatus(StatusList.PlayingStatus) || StatusController.HasStatus(StatusList.PausedStatus);
+            return StatusController.HasStatus(StatusList.PlayingStatus);
         }
         /// <summary>
         /// 鼠标（或触摸）是否可以驱动主摄像机移动。
