@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Kernel.World;
 using Lonize.Logging;
+using static Kernel.Storage.BuildingRuntimeStatsCodeC;
+using Kernel.Storage;
 
 namespace Kernel.Building
 {
@@ -19,6 +21,9 @@ namespace Kernel.Building
         [SerializeField] private byte _rotSteps;
         [SerializeField] private bool _hasPlacement;
 
+
+
+ 
         /// <summary>
         /// summary: 写入放置数据（由放置系统在落地时调用）。
         /// param: anchorCell 锚点格（x=cellX, y=cellZ）
@@ -85,14 +90,37 @@ namespace Kernel.Building
                 RotSteps = rotSteps,
                 HP = Runtime.HP
             };
+            
+            int baseCount = (Runtime.RuntimeStats != null) ? Runtime.RuntimeStats.Count : 0;
+            string[] invIds = System.Array.Empty<string>();
+            int[] invCounts = System.Array.Empty<int>();
+            int invCount = 0;
 
-            if (Runtime.RuntimeStats != null && Runtime.RuntimeStats.Count > 0)
+            if (StorageSystem.Instance != null &&
+                StorageSystem.Instance.TryGet(Runtime.BuildingID, out var container) &&
+                container != null)
             {
-                int count = Runtime.RuntimeStats.Count;
-                data.StatKeys = new string[count];
-                data.StatValues = new float[count];
+                container.Export(out invIds, out invCounts);
+                invCount = invIds != null ? invIds.Length : 0;
+            }
 
-                int i = 0;
+            int total = baseCount + invCount;
+
+            if (total <= 0)
+            {
+                data.StatKeys = System.Array.Empty<string>();
+                data.StatValues = System.Array.Empty<float>();
+                return data;
+            }
+
+            data.StatKeys = new string[total];
+            data.StatValues = new float[total];
+
+            int i = 0;
+
+            // 3) 写入基础 stats
+            if (Runtime.RuntimeStats != null)
+            {
                 foreach (var kv in Runtime.RuntimeStats)
                 {
                     data.StatKeys[i] = kv.Key;
@@ -100,10 +128,24 @@ namespace Kernel.Building
                     i++;
                 }
             }
-            else
+
+            // 4) append 库存 stats（Key=__inv__:{itemId}, Value=count）
+            for (int j = 0; j < invCount; j++)
             {
-                data.StatKeys = System.Array.Empty<string>();
-                data.StatValues = System.Array.Empty<float>();
+                var id = invIds[j];
+                int c = (invCounts != null && j < invCounts.Length) ? invCounts[j] : 0;
+                if (string.IsNullOrEmpty(id) || c <= 0) continue;
+
+                data.StatKeys[i] = StorageRuntimeStatsCodec.ItemKeyPrefix + id;
+                data.StatValues[i] = c;
+                i++;
+            }
+
+            // 5) 如果中途跳过了非法项，收缩数组（可选；不收缩也行）
+            if (i != total)
+            {
+                System.Array.Resize(ref data.StatKeys, i);
+                System.Array.Resize(ref data.StatValues, i);
             }
 
             return data;
@@ -136,6 +178,12 @@ namespace Kernel.Building
                     if (!string.IsNullOrEmpty(key))
                         Runtime.RuntimeStats[key] = val;
                 }
+            }
+
+            if (StorageRuntimeStatsCodec.TryDecodeInventory(Runtime.RuntimeStats, out var itemIds, out var counts))
+            {
+                if (StorageSystem.Instance != null)
+                    StorageSystem.Instance.ApplyOrDeferImport(Runtime.BuildingID, itemIds, counts);
             }
 
             // 同时写入 placement（让拆除/再存档一致）

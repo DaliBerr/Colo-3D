@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Kernel.Storage;
 using Lonize.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,7 +36,18 @@ namespace Kernel.Building
         void OnBind(BuildingRuntime runtime);
         // 需要时可扩展 Tick/OnPowerChanged/OnInventoryChanged 等接口
     }
-
+    /// <summary>
+    /// summary: 行为生命周期扩展（用于资源注销等）。
+    /// </summary>
+    public interface IBuildingBehaviourLifecycle
+    {
+        /// <summary>
+        /// summary: 解绑回调（宿主销毁/拆除时调用）。
+        /// param: runtime 建筑运行时
+        /// return: 无
+        /// </summary>
+        void OnUnbind(BuildingRuntime runtime);
+    }
     // ——示例行为——
 
     // 发电机：持续输出功率
@@ -56,17 +68,47 @@ namespace Kernel.Building
         public void OnBind(BuildingRuntime r) { }
     }
 
-    // 储物：容量 & 可选标签过滤
-    public class StorageBehaviour : IBuildingBehaviour
+    public class StorageBehaviour : IBuildingBehaviour, IBuildingBehaviourLifecycle
     {
         public int Capacity;
+        public int Priority;
         public List<string> AllowTags = new();
-        public void OnBind(BuildingRuntime r) { }
 
-        public StorageBehaviour(int capacity, List<string> allowTags)
+        public long RuntimeId { get; private set; }
+        public StorageContainer Container { get; private set; }
+
+        public StorageBehaviour(int capacity, List<string> allowTags, int priority = 0)
         {
-            Capacity = capacity;
+            Capacity = Mathf.Max(0, capacity);
+            Priority = priority;
             if (allowTags != null) AllowTags = allowTags;
+        }
+
+        /// <summary>
+        /// summary: 绑定时创建并注册容器。
+        /// param: r 建筑运行时
+        /// return: 无
+        /// </summary>
+        public void OnBind(BuildingRuntime r)
+        {
+            if (r == null) return;
+
+            RuntimeId = r.BuildingID;
+            Container = StorageSystem.Instance.Register(RuntimeId, r.CellPosition, Capacity, AllowTags, Priority);
+        }
+
+        /// <summary>
+        /// summary: 解绑时注销容器。
+        /// param: r 建筑运行时
+        /// return: 无
+        /// </summary>
+        public void OnUnbind(BuildingRuntime r)
+        {
+            if (RuntimeId > 0)
+                StorageSystem.Instance.Unregister(RuntimeId);
+
+            Container = null;
+            RuntimeId = 0;
         }
     }
 
@@ -106,8 +148,9 @@ namespace Kernel.Building
                 case "storage":
                 {
                     int cap = data.Params?["capacity"]?.Value<int>() ?? 0;
+                    int pr = data.Params?["priority"]?.Value<int>() ?? 0;
                     var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
-                    return new StorageBehaviour(cap, tags);
+                    return new StorageBehaviour(cap, tags, pr);
                 }
                 case "producer":
                 {
@@ -122,4 +165,6 @@ namespace Kernel.Building
             }
         }
     }
+
+
 }

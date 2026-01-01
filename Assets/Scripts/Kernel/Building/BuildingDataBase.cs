@@ -40,6 +40,14 @@ namespace Kernel.Building
             // 发电机
             { "PowerGenerator", typeof(Colo.Def.Building.PowerGeneratorDef) },
 
+            {"Storage", typeof(Colo.Def.Building.StorageDef) },
+
+            // { "Conveyor", typeof(Colo.Def.Building.ConveyorDef) },
+
+            // { "Assembler", typeof(Colo.Def.Building.AssemblerDef) },
+
+            // { "Miner", typeof(Colo.Def.Building.MinerDef) },
+
             // 以后可以在这里继续添加其他子类
             // { "ComputeServer", typeof(Colo.Def.Building.ComputeServerDef) },
         };

@@ -157,6 +157,82 @@ namespace Lonize
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Building"",
+            ""id"": ""099b0c41-1d25-486e-a719-ed58e0b7f49d"",
+            ""actions"": [
+                {
+                    ""name"": ""AddItem"",
+                    ""type"": ""Button"",
+                    ""id"": ""43f19ff5-af87-45fc-923c-465744e75db4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RemoveItem"",
+                    ""type"": ""Button"",
+                    ""id"": ""404af4ef-47ed-4192-a9a7-54e638c7f0b3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""899b20e2-e42a-4a7b-9635-e7c8331b9d10"",
+                    ""path"": ""<Keyboard>/y"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AddItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e143447a-ea9b-49f6-b611-7bdf1e4b2ae1"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RemoveItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Console"",
+            ""id"": ""78e4f67f-4ab8-4ea0-9f67-a180ff173c21"",
+            ""actions"": [
+                {
+                    ""name"": ""Open"",
+                    ""type"": ""Button"",
+                    ""id"": ""7d3f364c-654d-465c-b855-ab9672d57194"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""aca9627b-1641-4c82-9411-2dfce84bc300"",
+                    ""path"": ""<Keyboard>/backquote"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Open"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -166,11 +242,20 @@ namespace Lonize
             m_Map_RegenerateMiniMap = m_Map.FindAction("RegenerateMiniMap", throwIfNotFound: true);
             m_Map_RegenerateWorldMap = m_Map.FindAction("RegenerateWorldMap", throwIfNotFound: true);
             m_Map_ClearWorldMap = m_Map.FindAction("ClearWorldMap", throwIfNotFound: true);
+            // Building
+            m_Building = asset.FindActionMap("Building", throwIfNotFound: true);
+            m_Building_AddItem = m_Building.FindAction("AddItem", throwIfNotFound: true);
+            m_Building_RemoveItem = m_Building.FindAction("RemoveItem", throwIfNotFound: true);
+            // Console
+            m_Console = asset.FindActionMap("Console", throwIfNotFound: true);
+            m_Console_Open = m_Console.FindAction("Open", throwIfNotFound: true);
         }
 
         ~@DevControls()
         {
             UnityEngine.Debug.Assert(!m_Map.enabled, "This will cause a leak and performance issues, DevControls.Map.Disable() has not been called.");
+            UnityEngine.Debug.Assert(!m_Building.enabled, "This will cause a leak and performance issues, DevControls.Building.Disable() has not been called.");
+            UnityEngine.Debug.Assert(!m_Console.enabled, "This will cause a leak and performance issues, DevControls.Console.Disable() has not been called.");
         }
 
         /// <summary>
@@ -360,6 +445,209 @@ namespace Lonize
         /// Provides a new <see cref="MapActions" /> instance referencing this action map.
         /// </summary>
         public MapActions @Map => new MapActions(this);
+
+        // Building
+        private readonly InputActionMap m_Building;
+        private List<IBuildingActions> m_BuildingActionsCallbackInterfaces = new List<IBuildingActions>();
+        private readonly InputAction m_Building_AddItem;
+        private readonly InputAction m_Building_RemoveItem;
+        /// <summary>
+        /// Provides access to input actions defined in input action map "Building".
+        /// </summary>
+        public struct BuildingActions
+        {
+            private @DevControls m_Wrapper;
+
+            /// <summary>
+            /// Construct a new instance of the input action map wrapper class.
+            /// </summary>
+            public BuildingActions(@DevControls wrapper) { m_Wrapper = wrapper; }
+            /// <summary>
+            /// Provides access to the underlying input action "Building/AddItem".
+            /// </summary>
+            public InputAction @AddItem => m_Wrapper.m_Building_AddItem;
+            /// <summary>
+            /// Provides access to the underlying input action "Building/RemoveItem".
+            /// </summary>
+            public InputAction @RemoveItem => m_Wrapper.m_Building_RemoveItem;
+            /// <summary>
+            /// Provides access to the underlying input action map instance.
+            /// </summary>
+            public InputActionMap Get() { return m_Wrapper.m_Building; }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+            public void Enable() { Get().Enable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+            public void Disable() { Get().Disable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+            public bool enabled => Get().enabled;
+            /// <summary>
+            /// Implicitly converts an <see ref="BuildingActions" /> to an <see ref="InputActionMap" /> instance.
+            /// </summary>
+            public static implicit operator InputActionMap(BuildingActions set) { return set.Get(); }
+            /// <summary>
+            /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <param name="instance">Callback instance.</param>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+            /// </remarks>
+            /// <seealso cref="BuildingActions" />
+            public void AddCallbacks(IBuildingActions instance)
+            {
+                if (instance == null || m_Wrapper.m_BuildingActionsCallbackInterfaces.Contains(instance)) return;
+                m_Wrapper.m_BuildingActionsCallbackInterfaces.Add(instance);
+                @AddItem.started += instance.OnAddItem;
+                @AddItem.performed += instance.OnAddItem;
+                @AddItem.canceled += instance.OnAddItem;
+                @RemoveItem.started += instance.OnRemoveItem;
+                @RemoveItem.performed += instance.OnRemoveItem;
+                @RemoveItem.canceled += instance.OnRemoveItem;
+            }
+
+            /// <summary>
+            /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <remarks>
+            /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+            /// </remarks>
+            /// <seealso cref="BuildingActions" />
+            private void UnregisterCallbacks(IBuildingActions instance)
+            {
+                @AddItem.started -= instance.OnAddItem;
+                @AddItem.performed -= instance.OnAddItem;
+                @AddItem.canceled -= instance.OnAddItem;
+                @RemoveItem.started -= instance.OnRemoveItem;
+                @RemoveItem.performed -= instance.OnRemoveItem;
+                @RemoveItem.canceled -= instance.OnRemoveItem;
+            }
+
+            /// <summary>
+            /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="BuildingActions.UnregisterCallbacks(IBuildingActions)" />.
+            /// </summary>
+            /// <seealso cref="BuildingActions.UnregisterCallbacks(IBuildingActions)" />
+            public void RemoveCallbacks(IBuildingActions instance)
+            {
+                if (m_Wrapper.m_BuildingActionsCallbackInterfaces.Remove(instance))
+                    UnregisterCallbacks(instance);
+            }
+
+            /// <summary>
+            /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+            /// </summary>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+            /// </remarks>
+            /// <seealso cref="BuildingActions.AddCallbacks(IBuildingActions)" />
+            /// <seealso cref="BuildingActions.RemoveCallbacks(IBuildingActions)" />
+            /// <seealso cref="BuildingActions.UnregisterCallbacks(IBuildingActions)" />
+            public void SetCallbacks(IBuildingActions instance)
+            {
+                foreach (var item in m_Wrapper.m_BuildingActionsCallbackInterfaces)
+                    UnregisterCallbacks(item);
+                m_Wrapper.m_BuildingActionsCallbackInterfaces.Clear();
+                AddCallbacks(instance);
+            }
+        }
+        /// <summary>
+        /// Provides a new <see cref="BuildingActions" /> instance referencing this action map.
+        /// </summary>
+        public BuildingActions @Building => new BuildingActions(this);
+
+        // Console
+        private readonly InputActionMap m_Console;
+        private List<IConsoleActions> m_ConsoleActionsCallbackInterfaces = new List<IConsoleActions>();
+        private readonly InputAction m_Console_Open;
+        /// <summary>
+        /// Provides access to input actions defined in input action map "Console".
+        /// </summary>
+        public struct ConsoleActions
+        {
+            private @DevControls m_Wrapper;
+
+            /// <summary>
+            /// Construct a new instance of the input action map wrapper class.
+            /// </summary>
+            public ConsoleActions(@DevControls wrapper) { m_Wrapper = wrapper; }
+            /// <summary>
+            /// Provides access to the underlying input action "Console/Open".
+            /// </summary>
+            public InputAction @Open => m_Wrapper.m_Console_Open;
+            /// <summary>
+            /// Provides access to the underlying input action map instance.
+            /// </summary>
+            public InputActionMap Get() { return m_Wrapper.m_Console; }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+            public void Enable() { Get().Enable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+            public void Disable() { Get().Disable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+            public bool enabled => Get().enabled;
+            /// <summary>
+            /// Implicitly converts an <see ref="ConsoleActions" /> to an <see ref="InputActionMap" /> instance.
+            /// </summary>
+            public static implicit operator InputActionMap(ConsoleActions set) { return set.Get(); }
+            /// <summary>
+            /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <param name="instance">Callback instance.</param>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+            /// </remarks>
+            /// <seealso cref="ConsoleActions" />
+            public void AddCallbacks(IConsoleActions instance)
+            {
+                if (instance == null || m_Wrapper.m_ConsoleActionsCallbackInterfaces.Contains(instance)) return;
+                m_Wrapper.m_ConsoleActionsCallbackInterfaces.Add(instance);
+                @Open.started += instance.OnOpen;
+                @Open.performed += instance.OnOpen;
+                @Open.canceled += instance.OnOpen;
+            }
+
+            /// <summary>
+            /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <remarks>
+            /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+            /// </remarks>
+            /// <seealso cref="ConsoleActions" />
+            private void UnregisterCallbacks(IConsoleActions instance)
+            {
+                @Open.started -= instance.OnOpen;
+                @Open.performed -= instance.OnOpen;
+                @Open.canceled -= instance.OnOpen;
+            }
+
+            /// <summary>
+            /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="ConsoleActions.UnregisterCallbacks(IConsoleActions)" />.
+            /// </summary>
+            /// <seealso cref="ConsoleActions.UnregisterCallbacks(IConsoleActions)" />
+            public void RemoveCallbacks(IConsoleActions instance)
+            {
+                if (m_Wrapper.m_ConsoleActionsCallbackInterfaces.Remove(instance))
+                    UnregisterCallbacks(instance);
+            }
+
+            /// <summary>
+            /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+            /// </summary>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+            /// </remarks>
+            /// <seealso cref="ConsoleActions.AddCallbacks(IConsoleActions)" />
+            /// <seealso cref="ConsoleActions.RemoveCallbacks(IConsoleActions)" />
+            /// <seealso cref="ConsoleActions.UnregisterCallbacks(IConsoleActions)" />
+            public void SetCallbacks(IConsoleActions instance)
+            {
+                foreach (var item in m_Wrapper.m_ConsoleActionsCallbackInterfaces)
+                    UnregisterCallbacks(item);
+                m_Wrapper.m_ConsoleActionsCallbackInterfaces.Clear();
+                AddCallbacks(instance);
+            }
+        }
+        /// <summary>
+        /// Provides a new <see cref="ConsoleActions" /> instance referencing this action map.
+        /// </summary>
+        public ConsoleActions @Console => new ConsoleActions(this);
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Map" which allows adding and removing callbacks.
         /// </summary>
@@ -388,6 +676,43 @@ namespace Lonize
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnClearWorldMap(InputAction.CallbackContext context);
+        }
+        /// <summary>
+        /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Building" which allows adding and removing callbacks.
+        /// </summary>
+        /// <seealso cref="BuildingActions.AddCallbacks(IBuildingActions)" />
+        /// <seealso cref="BuildingActions.RemoveCallbacks(IBuildingActions)" />
+        public interface IBuildingActions
+        {
+            /// <summary>
+            /// Method invoked when associated input action "AddItem" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnAddItem(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "RemoveItem" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnRemoveItem(InputAction.CallbackContext context);
+        }
+        /// <summary>
+        /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Console" which allows adding and removing callbacks.
+        /// </summary>
+        /// <seealso cref="ConsoleActions.AddCallbacks(IConsoleActions)" />
+        /// <seealso cref="ConsoleActions.RemoveCallbacks(IConsoleActions)" />
+        public interface IConsoleActions
+        {
+            /// <summary>
+            /// Method invoked when associated input action "Open" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnOpen(InputAction.CallbackContext context);
         }
     }
 }

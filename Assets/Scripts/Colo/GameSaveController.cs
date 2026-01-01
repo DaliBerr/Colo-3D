@@ -62,7 +62,7 @@ namespace Colo
             // 添加状态数据保存项
             //TODO: 修
             saveMgr.AddItem(new Kernel.Building.SaveAllBuildings());
-            saveMgr.AddItem(new Kernel.GameState.StatusSaveData());
+            saveMgr.AddItem(new Kernel.GameState.SaveStatus());
             saveMgr.AddItem(new SaveMapInfo());
             
             saveMgr.AddItem(Kernel.Building.BuildingIDManager._saveItem);

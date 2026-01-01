@@ -1,0 +1,26 @@
+{
+  "id": "storehouse",
+  "name": "仓库",
+  "description": "用于存放物资和物品的建筑。",
+  "icon": "icons/building_storehouse",
+  "defType": "Storage",
+  "prefab": "Prefabs/Building/Building_Storehouse",
+  "width": 3,
+  "height": 3,
+  "allowRotate": true,
+  "maxHP": 150,
+  "defaultSupplyPriority": 0,
+  "buildTime": 3.5,
+  "cost": { "iron_plate": 20, "wire": 10 },
+  "stats": { "noise": 0.2 },
+  "tags": ["storage","building"],
+  "components": [
+    {
+      "type": "storage",
+      "params": {
+        "capacity": 30,
+        "allowTags": ["raw", "food", "material"]
+      }
+    }
+  ]
+}

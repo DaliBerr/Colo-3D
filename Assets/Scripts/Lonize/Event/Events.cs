@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Kernel.Building;
 using Kernel.Item;
 using Lonize.Tick;
+using Lonize.UI;
 using UnityEngine;
 
 namespace Lonize.Events
@@ -120,6 +121,16 @@ namespace Lonize.Events
         {
             this.loadName = loadName;
         }
+    }
+
+    public struct CloseModalRequest
+    {
+        public UIScreen modalUI;
+        public CloseModalRequest(UIScreen modalUI)
+        {
+            this.modalUI = modalUI;
+        }
+
     }
     }
 }

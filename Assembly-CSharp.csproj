@@ -64,11 +64,13 @@
     <Compile Include="Assets\Scripts\Kernel\Item\ItemComponentData.cs" />
     <Compile Include="Assets\Scripts\Lonize\Log\LogSink.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemDataBase.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\StorageDevTest.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\UIScaleDropDown.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\SerializedFieldConverter.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemDef.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\SaveItemEntry.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\WorldMapGenerator.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\StorageManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Save\GlobalSeeting\GlobalSettingsData.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\LoadingProgress.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemValidation.cs" />
@@ -78,6 +80,7 @@
     <Compile Include="Assets\Scripts\Kernel\Audio\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Lonize\Event\Events.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\PopupModal.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\StorageContainer.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\UIInputRouter.cs" />
     <Compile Include="Assets\InputSystem\AnimationControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Pool\PoolMember.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="Assets\Scripts\Kernel\Camera\MiniMapInputHandle.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingSaveInstance.cs" />
     <Compile Include="Assets\Scripts\Kernel\Save\SaveItem.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Map\WorldGrid.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingDef.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\NodeFrame.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingRuntimeHost.cs" />
@@ -92,6 +96,7 @@
     <Compile Include="Assets\Scripts\Lonize\UI\UIScale.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIManager.cs" />
     <Compile Include="Assets\SceneChoice.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\LogConsoleUI.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CameraMiniMapControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingPlacementController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Pool\PoolManager.cs" />
@@ -108,6 +113,7 @@
     <Compile Include="Assets\Scripts\Colo\GameSaveController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Nav\PathfindingManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\QuitConfirmPopupModal.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\SaveStorageInventory.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\DisplayModeDropDown.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\ChunkMeshGenerator.cs" />
     <Compile Include="Assets\InputSystem\UIControl.cs" />
@@ -118,6 +124,7 @@
     <Compile Include="Assets\InputSystem\CameraControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingValidation.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingView.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\BuildingSaveRuntimeCodeC.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\ICameraControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\MusicVolumeSlider.cs" />
     <Compile Include="Assets\Scripts\Kernel\Status\StatusController.cs" />
@@ -137,6 +144,7 @@
     <Compile Include="Assets\Scripts\Lonize\Tick\Tick.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\MiniMap.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\MainMenuUI.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\Inventory.cs" />
     <Compile Include="Assets\Scripts\Kernel\Audio\AudioDataBase.cs" />
     <Compile Include="Assets\InputSystem\Dev Control.cs" />
     <Compile Include="Assets\Scripts\Kernel\Nav\NavGrid.cs" />
@@ -157,10 +165,12 @@
     <Compile Include="Assets\Scripts\Kernel\Item\Sample.cs" />
     <Compile Include="Assets\Scripts\Lonize\Tick\TickDriver.cs" />
     <Compile Include="Assets\InputSystem\BuildingControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\LogEntry.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\LoadMenuUI.cs" />
     <Compile Include="Assets\Scripts\Colo\Animation\CubeRotate.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\MainUI.cs" />
     <Compile Include="Assets\Scripts\Lonize\Math.cs" />
+    <Compile Include="Assets\Scripts\Colo\Def\Building\Storage.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\SliderHolder.cs" />
     <Compile Include="Assets\Scripts\Kernel\Save\GlobalSeeting\OptionManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CameraMainControl.cs" />
@@ -171,7 +181,6 @@
     <Compile Include="Assets\Scripts\Kernel\Item\ItemFactory.cs" />
     <Compile Include="Assets\Scripts\Kernel\Input\InputActionManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Input\Pref.cs" />
-    <Compile Include="Assets\Scripts\Kernel\Building\WorldGrid.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\Scribe.cs" />
     <Compile Include="Assets\Scripts\Kernel\Status\StatusSaveData.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingSelectionController.cs" />
@@ -188,7 +197,6 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
-    <None Include="Assets\AddressableAssetsData\link.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />

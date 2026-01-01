@@ -21,6 +21,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c1080f291c7a0e4ea26500c210d5dfb
+    m_Address: Prefabs/UI/Log UI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 51dcfdd85e847f54594bed153c79545e
     m_Address: Prefabs/UI/OptionPopup
     m_ReadOnly: 0
@@ -36,7 +42,8 @@ MonoBehaviour:
   - m_GUID: 5b74cd8a064a805499b9589379ee6d8a
     m_Address: Prefabs/UI/LoadMenuUI
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 60668e54d2b849446aea47f27fda31be
     m_Address: Prefabs/UI/MainMenuUI

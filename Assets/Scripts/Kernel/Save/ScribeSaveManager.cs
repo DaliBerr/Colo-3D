@@ -10,6 +10,7 @@ using Kernel.GameState;
 using Kernel.Building;
 using static Kernel.World.WorldChunkMeshGenerator;
 using Kernel.World;
+using Kernel.Storage;
 
 /// <summary>
 /// 放到场景里一个物体上；Awake 自动注册多态条目并加载；对外暴露 Save()/Load() 与 Items。
@@ -57,10 +58,10 @@ namespace Kernel
             PolymorphRegistry.Register<SaveFloat>("Float");
             
 
-            PolymorphRegistry.Register<StatusSaveData>("StatusNames");
+            PolymorphRegistry.Register<SaveStatus>("StatusNames");
             PolymorphRegistry.Register<SaveAllBuildings>("AllBuildings");
             PolymorphRegistry.Register<SaveMapInfo>("WorldChunkInfo");
-
+            // PolymorphRegistry.Register<SaveStorageInventory>("StorageInventory");
 
             CodecRegistry.Register(new BoolCodec());
             CodecRegistry.Register(new IntCodec());

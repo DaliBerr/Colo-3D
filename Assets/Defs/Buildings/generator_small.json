@@ -16,7 +16,7 @@
   "buildTime": 3.5,
   "cost": { "iron_plate": 20, "wire": 10 },
   "stats": { "noise": 0.2 },
-  "tags": ["power","machine"],
+  "tags": ["power","machine","building"],
   "components": [
     { "type": "power_producer", "params": { "power": 30.0 } }
   ]

@@ -15,7 +15,13 @@ MonoBehaviour:
   m_GroupName: BuildingDef
   m_GUID: c2dc0bf403da4094f93e6b72d4d79ec9
   m_SerializeEntries:
-  - m_GUID: 1952540fb717e064e8f787ddc0b34bef
+  - m_GUID: 3b3e68c641b2f294e8067598773fded9
+    m_Address: Defs/Buildings/storehouse
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BuildingDef
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d17467d94ee5e2d409fb366c0476232a
     m_Address: Defs/Buildings/generator_small
     m_ReadOnly: 0
     m_SerializedLabels:

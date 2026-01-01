@@ -69,6 +69,82 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Building",
+            "id": "099b0c41-1d25-486e-a719-ed58e0b7f49d",
+            "actions": [
+                {
+                    "name": "AddItem",
+                    "type": "Button",
+                    "id": "43f19ff5-af87-45fc-923c-465744e75db4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RemoveItem",
+                    "type": "Button",
+                    "id": "404af4ef-47ed-4192-a9a7-54e638c7f0b3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "899b20e2-e42a-4a7b-9635-e7c8331b9d10",
+                    "path": "<Keyboard>/y",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AddItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e143447a-ea9b-49f6-b611-7bdf1e4b2ae1",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RemoveItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Console",
+            "id": "78e4f67f-4ab8-4ea0-9f67-a180ff173c21",
+            "actions": [
+                {
+                    "name": "Open",
+                    "type": "Button",
+                    "id": "7d3f364c-654d-465c-b855-ab9672d57194",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "aca9627b-1641-4c82-9411-2dfce84bc300",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

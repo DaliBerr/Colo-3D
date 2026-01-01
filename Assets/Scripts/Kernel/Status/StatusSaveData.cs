@@ -6,7 +6,7 @@ namespace Kernel.GameState
     /// <summary>
     /// 用于将 StatusController 的持久化状态接入 Scribe 存档系统的适配器。
     /// </summary>
-    public class StatusSaveData : ISaveItem
+    public class SaveStatus : ISaveItem
     {
         public string TypeId => "StatusNames";
 

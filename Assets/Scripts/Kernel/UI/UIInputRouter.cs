@@ -57,14 +57,21 @@ namespace Kernel.UI
 
             if (StatusController.HasStatus(StatusList.PlayingStatus))
             {
-                StatusController.AddStatus(StatusList.InPauseMenuStatus);
+                // StatusController.AddStatus(StatusList.InPauseMenuStatus);
+                if (UIManager.Instance.GetTopModal())
+                {
+                    var a = UIManager.Instance.GetTopModal();
+                    Lonize.Events.Event.eventBus.Publish(new Lonize.Events.EventList.CloseModalRequest(a));
+                    yield return UIManager.Instance.PopModalAndWait();
+                    yield break;
+                }
                 yield return UIManager.Instance.PushScreenAndWait<PauseMenuUI>();
                 yield break;
             }
 
             if (StatusController.HasStatus(StatusList.InPauseMenuStatus))
             {
-                StatusController.AddStatus(StatusList.PlayingStatus);
+                // StatusController.AddStatus(StatusList.PlayingStatus);
                 yield return UIManager.Instance.PopScreenAndWait();
                 yield break;
             }
