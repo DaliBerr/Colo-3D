@@ -22,6 +22,24 @@ namespace Kernel.Building
         // 运行时统计（字典拆成两组数组以方便序列化）
         public string[] StatKeys;
         public float[] StatValues;
+
+        // 工厂内部子建筑存档
+        public List<SaveFactoryBuildingInstance> InteriorBuildings;
+    }
+
+    public class SaveFactoryBuildingInstance
+    {
+        public string DefId;
+        public long RuntimeId;
+
+        public int CellX;
+        public int CellY;
+        public byte RotSteps;
+
+        public int HP;
+
+        public string[] StatKeys;
+        public float[] StatValues;
     }
     /// <summary>
     /// 全部建筑的存档数据（作为一个 ISaveItem 被 Scribe 管理）。

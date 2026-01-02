@@ -29,6 +29,19 @@ namespace Kernel.Building
         public byte RotationSteps; // 0-3，表示0/90/180/
         public int HP;
         public Dictionary<string, float> RuntimeStats = new();
+        public BuildingCategory Category = BuildingCategory.Single;
+        public FactoryInteriorRuntime FactoryInterior;
+
+        /// <summary>
+        /// summary: 确保工厂内部数据已初始化。
+        /// param: 无
+        /// return: 工厂内部数据实例
+        /// </summary>
+        public FactoryInteriorRuntime EnsureFactoryInterior()
+        {
+            FactoryInterior ??= new FactoryInteriorRuntime();
+            return FactoryInterior;
+        }
     }
 
     public interface IBuildingBehaviour

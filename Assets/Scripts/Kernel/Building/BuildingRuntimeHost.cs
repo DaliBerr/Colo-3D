@@ -148,6 +148,9 @@ namespace Kernel.Building
                 System.Array.Resize(ref data.StatValues, i);
             }
 
+            if (Runtime.FactoryInterior != null)
+                data.InteriorBuildings = Runtime.FactoryInterior.CreateSaveData();
+
             return data;
         }
 
@@ -185,6 +188,12 @@ namespace Kernel.Building
                 if (StorageSystem.Instance != null)
                     StorageSystem.Instance.ApplyOrDeferImport(Runtime.BuildingID, itemIds, counts);
             }
+
+            if (Runtime.Def.Category == BuildingCategory.Factory)
+                Runtime.EnsureFactoryInterior();
+
+            if (data.InteriorBuildings != null && data.InteriorBuildings.Count > 0 && Runtime.FactoryInterior != null)
+                Runtime.FactoryInterior.ApplySaveData(data.InteriorBuildings);
 
             // 同时写入 placement（让拆除/再存档一致）
             SetPlacement(new Vector3Int(data.CellX, data.CellY, 0), data.RotSteps);

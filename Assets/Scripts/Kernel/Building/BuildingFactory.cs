@@ -26,6 +26,20 @@ namespace Kernel.Building
                 return null;
             }
 
+            if (def.Category == BuildingCategory.Internal)
+            {
+                Log.Error($"[Building] 内部建筑不允许生成模型：{id}");
+                GameDebug.LogError($"[Building] 内部建筑不允许生成模型：{id}");
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(def.PrefabAddress))
+            {
+                Log.Error($"[Building] 缺少 PrefabAddress：{id}");
+                GameDebug.LogError($"[Building] 缺少 PrefabAddress：{id}");
+                return null;
+            }
+
             var prefab = await AddressableRef.LoadAsync<GameObject>(def.PrefabAddress);
             var go = prefab ? Object.Instantiate(prefab, pos, rot)
                             : new GameObject($"Building_{id}");
@@ -33,7 +47,17 @@ namespace Kernel.Building
             var host = go.GetComponent<BuildingRuntimeHost>();
             if (!host) host = go.AddComponent<BuildingRuntimeHost>();
 
-            host.Runtime = new BuildingRuntime { Def = def, HP = def.MaxHP , BuildingID =  BuildingIDManager.GenerateBuildingID()};
+            host.Runtime = new BuildingRuntime
+            {
+                Def = def,
+                HP = def.MaxHP,
+                BuildingID = BuildingIDManager.GenerateBuildingID(),
+                Category = def.Category
+            };
+
+            if (def.Category == BuildingCategory.Factory)
+                host.Runtime.EnsureFactoryInterior();
+
             host.Behaviours.Clear();
 
             foreach (var c in def.Components)
@@ -52,6 +76,38 @@ namespace Kernel.Building
                 colliderInit.Initialize();
             }
             return go;
+        }
+
+        /// <summary>
+        /// summary: 仅创建内部小型建筑运行时数据（不生成模型）。
+        /// param: id 建筑定义ID
+        /// param: cell 内部网格坐标
+        /// param: rotSteps 旋转步数
+        /// return: 运行时实例
+        /// </summary>
+        public static BuildingRuntime CreateInternalRuntime(string id, Vector2Int cell, byte rotSteps)
+        {
+            if (!BuildingDatabase.TryGet(id, out var def))
+            {
+                Log.Error($"[Building] 未找到ID：{id}");
+                GameDebug.LogError($"[Building] 未找到ID：{id}");
+                return null;
+            }
+
+            if (def.Category != BuildingCategory.Internal)
+            {
+                GameDebug.LogWarning($"[Building] Def 不是内部建筑类型：{id}");
+            }
+
+            return new BuildingRuntime
+            {
+                Def = def,
+                BuildingID = BuildingIDManager.GenerateBuildingID(),
+                CellPosition = cell,
+                RotationSteps = (byte)(rotSteps & 3),
+                HP = def.MaxHP,
+                Category = def.Category
+            };
         }
 
         public static async Task<Sprite> LoadIconAsync(BuildingDef def) =>
