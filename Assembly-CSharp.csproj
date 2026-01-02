@@ -113,7 +113,6 @@
     <Compile Include="Assets\Scripts\Colo\GameSaveController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Nav\PathfindingManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\QuitConfirmPopupModal.cs" />
-    <Compile Include="Assets\Scripts\Kernel\Storage\SaveStorageInventory.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\DisplayModeDropDown.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\ChunkMeshGenerator.cs" />
     <Compile Include="Assets\InputSystem\UIControl.cs" />

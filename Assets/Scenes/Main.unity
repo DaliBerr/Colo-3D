@@ -1199,18 +1199,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30c59a1e25c291e4f8aa3febe13fedf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.WorldChunkMeshGenerator
-  worldCols: 15
-  worldRows: 15
-  chunkWidth: 50
-  chunkHeight: 50
+  worldCols: 100
+  worldRows: 100
+  chunkWidth: 8
+  chunkHeight: 8
   cellSize: 1
   chunkSpacing: {x: 0, y: 0}
   landMat: {fileID: 2100000, guid: ee04d0176f0964f4999a1366c3da2a35, type: 2}
   rockMat: {fileID: 2100000, guid: a4c9fafd974fb064d8d2271a8c9a5269, type: 2}
-  worldSeed: 666666
-  randomizeSeedOnPlay: 0
+  worldSeed: 356322
+  randomizeSeedOnPlay: 1
   useChunkBiomeOverrides: 1
-  biomeBlendWidth: 0.15
+  biomeBlendWidth: 0.105
   plain:
     enableWarp: 1
     heightAmplitude: 15
@@ -1247,8 +1247,8 @@ MonoBehaviour:
     warpScale: 180
     warpOctaves: 3
     warpAmplitude: 12
-  biomeNoiseScale: 0.2
-  mountainThreshold: 0.678
+  biomeNoiseScale: 0.15
+  mountainThreshold: 0.655
   biomeWarpScale: 0.06
   biomeWarpAmp: 0.16
 --- !u!1 &1845466732

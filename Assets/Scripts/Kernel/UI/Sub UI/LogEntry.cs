@@ -13,15 +13,16 @@ namespace Kernel.UI
 
         [Header("Visual")]
         public Image SelectedBackground;   // 选中高亮（可选）
-        public Image LevelStripe;         // 等级色条（可选）
+        public Image LevelStripe;          // 等级色条（可选）
 
         private int _index;
         private Action<int> _onClick;
 
         /// <summary>
-        /// summary: 绑定条目数据与点击回调，并应用等级样式
+        /// summary: 绑定条目数据与点击回调，并应用等级样式与重复次数显示
         /// param: index 在“可见列表”中的索引
         /// param: e 日志事件
+        /// param: repeatCount 连续重复次数（1~99）
         /// param: previewMaxChars 摘要最大字符数
         /// param: previewColor 摘要文字颜色
         /// param: stripeColor 色条颜色
@@ -31,6 +32,7 @@ namespace Kernel.UI
         public void Bind(
             int index,
             in LogEvent e,
+            int repeatCount,
             int previewMaxChars,
             Color previewColor,
             Color stripeColor,
@@ -41,7 +43,7 @@ namespace Kernel.UI
 
             if (PreviewText != null)
             {
-                PreviewText.text = BuildPreview(e.Message, previewMaxChars);
+                PreviewText.text = BuildPreview(e.Message, repeatCount, previewMaxChars);
                 PreviewText.color = previewColor;
             }
 
@@ -92,22 +94,27 @@ namespace Kernel.UI
         }
 
         /// <summary>
-        /// summary: 构建摘要（首行 + 截断）
+        /// summary: 构建摘要（首行 + 截断 + 重复次数前缀）
         /// param: msg 原始消息
-        /// param: maxChars 最大字符数
+        /// param: repeatCount 连续重复次数（1~99）
+        /// param: maxChars 最大字符数（仅针对消息本体）
         /// return: 摘要字符串
         /// </summary>
-        private static string BuildPreview(string msg, int maxChars)
+        private static string BuildPreview(string msg, int repeatCount, int maxChars)
         {
-            if (string.IsNullOrEmpty(msg)) return string.Empty;
+            if (string.IsNullOrEmpty(msg)) msg = string.Empty;
 
             int nl = msg.IndexOf('\n');
             string oneLine = nl >= 0 ? msg.Substring(0, nl) : msg;
 
             oneLine = oneLine.Replace('\r', ' ');
-            if (oneLine.Length <= maxChars) return oneLine;
+            if (oneLine.Length > maxChars)
+                oneLine = oneLine.Substring(0, maxChars) + "…";
 
-            return oneLine.Substring(0, maxChars) + "…";
+            int count = repeatCount <= 1 ? 1 : Math.Min(repeatCount, 99);
+            if (count <= 1) return oneLine;
+
+            return $"[{count}] {oneLine}";
         }
     }
 }

@@ -43,6 +43,9 @@ namespace Kernel.UI
         [Range(0.001f, 0.2f)]
         public float NearBottomThreshold = 0.02f;
 
+        [Header("Repeat Collapse")]
+        public bool CollapseConsecutiveDuplicates = true;
+
         [Header("Level Colors (Text/Stripe)")]
         public Color TraceColor = new Color(0.65f, 0.65f, 0.65f, 1f);
         public Color DebugColor = new Color(0.55f, 0.75f, 1f, 1f);
@@ -54,7 +57,8 @@ namespace Kernel.UI
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
 
         private readonly ConcurrentQueue<LogEvent> _pending = new();
-        private readonly List<LogEvent> _events = new();
+
+        private readonly List<EventRecord> _events = new();
         private readonly List<int> _visibleEventIndices = new();
 
         private readonly List<LogEntryItemView> _activeViews = new();
@@ -64,6 +68,20 @@ namespace Kernel.UI
         private bool _paused;
         private LogLevel _minLevel = LogLevel.Info;
         private int _selectedVisibleIndex = -1;
+
+        private enum AppendOutcome
+        {
+            None,
+            AddedNew,
+            IncrementedLast,
+            Trimmed
+        }
+
+        private struct EventRecord
+        {
+            public LogEvent Event;
+            public int Repeat;
+        }
 
         /// <summary>
         /// summary: 初始化入口（绑定按钮、加载历史、注册 UI Sink）
@@ -76,7 +94,7 @@ namespace Kernel.UI
             InitDropdown();
 
             LoadRecent();
-            RefreshList(fullRefresh: true, autoScrollHint: false);
+            RefreshList(autoScrollHint: false);
 
             _uiSink = new UILogSink(_pending);
             Log.AddSink(_uiSink);
@@ -91,20 +109,40 @@ namespace Kernel.UI
         {
             if (_paused) return;
 
-            // 关键：刷新前先判断用户是否接近底部
             bool wasNearBottom = IsListNearBottom();
 
-            bool got = false;
+            bool anyAdded = false;
+            bool anyTrimmed = false;
+            bool onlyIncrementedLast = true;
+
             while (_pending.TryDequeue(out var e))
             {
-                got = true;
-                AppendEvent(e);
+                var outcome = AppendOrIncrement(e);
+
+                if (outcome == AppendOutcome.AddedNew) anyAdded = true;
+                if (outcome == AppendOutcome.Trimmed) anyTrimmed = true;
+
+                if (outcome != AppendOutcome.IncrementedLast)
+                    onlyIncrementedLast = false;
             }
 
-            if (got)
+            if (!anyAdded && !anyTrimmed && !onlyIncrementedLast)
+                return;
+
+            bool shouldAutoScroll = AutoScrollWhenNearBottom && wasNearBottom;
+
+            if (anyAdded || anyTrimmed)
             {
-                bool shouldAutoScroll = AutoScrollWhenNearBottom && wasNearBottom;
-                RefreshList(fullRefresh: true, autoScrollHint: shouldAutoScroll);
+                // 新增条目或裁剪，直接全刷新最稳
+                RefreshList(autoScrollHint: shouldAutoScroll);
+            }
+            else if (onlyIncrementedLast)
+            {
+                // 只有最后一条重复次数变化：尝试只更新最后一项，避免全量重建
+                if (!TryUpdateLastRepeatVisual(shouldAutoScroll))
+                {
+                    RefreshList(autoScrollHint: shouldAutoScroll);
+                }
             }
         }
 
@@ -125,45 +163,82 @@ namespace Kernel.UI
         }
 
         /// <summary>
-        /// summary: 追加日志到缓存并做最大条数裁剪
+        /// summary: 追加日志或合并到最后一条（连续重复计数，最大 99）
         /// param: e 日志事件
-        /// return: 无
+        /// return: 追加结果
         /// </summary>
-        private void AppendEvent(in LogEvent e)
+        private AppendOutcome AppendOrIncrement(in LogEvent e)
         {
-            _events.Add(e);
+            if (CollapseConsecutiveDuplicates && _events.Count > 0)
+            {
+                int lastIndex = _events.Count - 1;
+                var last = _events[lastIndex];
+
+                if (IsSameKey(last.Event, e))
+                {
+                    if (last.Repeat < 99) last.Repeat++;
+                    _events[lastIndex] = last;
+                    return AppendOutcome.IncrementedLast;
+                }
+            }
+
+            _events.Add(new EventRecord { Event = e, Repeat = 1 });
 
             if (MaxLines > 0 && _events.Count > MaxLines)
             {
                 int removeCount = _events.Count - MaxLines;
                 _events.RemoveRange(0, removeCount);
 
-                // 裁剪后选中可能失效，直接清掉
                 _selectedVisibleIndex = -1;
                 if (DetailText != null) DetailText.text = string.Empty;
+
+                return AppendOutcome.Trimmed;
             }
+
+            return AppendOutcome.AddedNew;
         }
 
         /// <summary>
-        /// summary: 加载最近日志快照
+        /// summary: 判定两条日志是否视为“同一条”（用于连续合并）
+        /// param: a 前一条
+        /// param: b 新一条
+        /// return: 是否相同
+        /// </summary>
+        private bool IsSameKey(in LogEvent a, in LogEvent b)
+        {
+            // 只比较“内容/来源”字段，排除时间/线程等会变化的字段
+            if (a.Level != b.Level) return false;
+            if (!string.Equals(a.Category, b.Category, StringComparison.Ordinal)) return false;
+            if (!string.Equals(a.Message, b.Message, StringComparison.Ordinal)) return false;
+            if (!string.Equals(a.File, b.File, StringComparison.Ordinal)) return false;
+            if (a.Line != b.Line) return false;
+            if (!string.Equals(a.Member, b.Member, StringComparison.Ordinal)) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 加载最近日志快照（按时间从旧到新放入，避免顺序混乱）
         /// param: 无
         /// return: 无
         /// </summary>
         private void LoadRecent()
         {
             _events.Clear();
+
             var recent = Log.SnapshotRecent(Mathf.Max(1, LoadRecentCount));
-            for (int i = 0; i < recent.Length; i++)
-                _events.Add(recent[i]);
+            // SnapshotRecent 通常是“新 -> 旧”，这里反向插入，让列表“旧 -> 新”
+            for (int i = recent.Length - 1; i >= 0; i--)
+            {
+                AppendOrIncrement(recent[i]); // 顺便把连续重复压缩掉
+            }
         }
 
         /// <summary>
         /// summary: 刷新列表（重建可见索引 + 复用/回收条目，可选自动滚动）
-        /// param: fullRefresh 是否全量刷新
         /// param: autoScrollHint 是否提示滚动到底部
         /// return: 无
         /// </summary>
-        private void RefreshList(bool fullRefresh, bool autoScrollHint)
+        private void RefreshList(bool autoScrollHint)
         {
             BuildVisibleIndices();
             RebuildViews();
@@ -171,6 +246,44 @@ namespace Kernel.UI
 
             if (autoScrollHint)
                 ScrollListToBottom();
+        }
+
+        /// <summary>
+        /// summary: 仅更新最后一条的重复次数显示（成功则不需要全刷新）
+        /// param: autoScrollHint 是否滚动到底部
+        /// return: 是否成功更新
+        /// </summary>
+        private bool TryUpdateLastRepeatVisual(bool autoScrollHint)
+        {
+            if (_events.Count <= 0) return false;
+
+            int lastEventIndex = _events.Count - 1;
+            var rec = _events[lastEventIndex];
+
+            // 最后一条如果被过滤掉，就没法只更新可见项
+            if (rec.Event.Level < _minLevel) return false;
+
+            // 可见索引必须已存在并且最后一项正好指向 lastEventIndex
+            if (_visibleEventIndices.Count <= 0) return false;
+
+            int lastVisibleIndex = _visibleEventIndices.Count - 1;
+            if (_visibleEventIndices[lastVisibleIndex] != lastEventIndex) return false;
+            if (lastVisibleIndex < 0 || lastVisibleIndex >= _activeViews.Count) return false;
+
+            var view = _activeViews[lastVisibleIndex];
+            if (view == null) return false;
+
+            Color c = ResolveLevelColor(rec.Event.Level);
+            view.Bind(lastVisibleIndex, rec.Event, rec.Repeat, PreviewMaxChars, c, c, OnClickEntry);
+            view.SetSelected(lastVisibleIndex == _selectedVisibleIndex);
+
+            if (_selectedVisibleIndex == lastVisibleIndex)
+                UpdateDetail(lastVisibleIndex);
+
+            if (autoScrollHint)
+                ScrollListToBottom();
+
+            return true;
         }
 
         /// <summary>
@@ -184,17 +297,14 @@ namespace Kernel.UI
 
             var content = ListScroll.content;
             var viewport = ListScroll.viewport;
-
             if (content == null) return true;
 
             float contentH = content.rect.height;
             float viewH = viewport != null ? viewport.rect.height : ((RectTransform)ListScroll.transform).rect.height;
 
-            // 内容不够长，无法滚动时视作在底部
             if (contentH <= viewH + 0.5f)
                 return true;
 
-            // Unity: verticalNormalizedPosition 0=底部, 1=顶部
             return ListScroll.verticalNormalizedPosition <= NearBottomThreshold;
         }
 
@@ -220,7 +330,7 @@ namespace Kernel.UI
             _visibleEventIndices.Clear();
             for (int i = 0; i < _events.Count; i++)
             {
-                if (_events[i].Level < _minLevel) continue;
+                if (_events[i].Event.Level < _minLevel) continue;
                 _visibleEventIndices.Add(i);
             }
         }
@@ -245,10 +355,10 @@ namespace Kernel.UI
                 view.transform.SetParent(ListContent, false);
 
                 int eventIndex = _visibleEventIndices[v];
-                var e = _events[eventIndex];
+                var rec = _events[eventIndex];
 
-                Color c = ResolveLevelColor(e.Level);
-                view.Bind(v, e, PreviewMaxChars, c, c, OnClickEntry);
+                Color c = ResolveLevelColor(rec.Event.Level);
+                view.Bind(v, rec.Event, rec.Repeat, PreviewMaxChars, c, c, OnClickEntry);
                 view.SetSelected(v == _selectedVisibleIndex);
 
                 _activeViews.Add(view);
@@ -291,7 +401,7 @@ namespace Kernel.UI
         }
 
         /// <summary>
-        /// summary: 更新详情面板（并按等级给详情整体上色）
+        /// summary: 更新详情面板（并按等级给详情整体上色；重复次数>1时显示次数）
         /// param: visibleIndex 可见列表索引
         /// return: 无
         /// </summary>
@@ -301,10 +411,10 @@ namespace Kernel.UI
             if (visibleIndex < 0 || visibleIndex >= _visibleEventIndices.Count) return;
 
             int eventIndex = _visibleEventIndices[visibleIndex];
-            var e = _events[eventIndex];
+            var rec = _events[eventIndex];
 
-            DetailText.text = FormatDetail(e);
-            DetailText.color = ResolveLevelColor(e.Level);
+            DetailText.text = FormatDetail(rec);
+            DetailText.color = ResolveLevelColor(rec.Event.Level);
 
             if (DetailScroll != null)
             {
@@ -333,13 +443,18 @@ namespace Kernel.UI
         }
 
         /// <summary>
-        /// summary: 格式化详情文本（通用格式 + exception）
-        /// param: e 日志事件
+        /// summary: 格式化详情文本（通用格式 + exception + 重复次数）
+        /// param: rec 日志记录（含重复次数）
         /// return: 详情字符串
         /// </summary>
-        private string FormatDetail(in LogEvent e)
+        private string FormatDetail(in EventRecord rec)
         {
-            var sb = new StringBuilder(512);
+            var e = rec.Event;
+            var sb = new StringBuilder(640);
+
+            if (rec.Repeat > 1)
+                sb.AppendLine($"重复次数：{Math.Min(rec.Repeat, 99)}");
+
             string t = e.UtcTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
             sb.Append('[').Append(t).Append("] [").Append(e.Level).Append(']');
 
@@ -424,11 +539,11 @@ namespace Kernel.UI
         /// </summary>
         private void OnClickClose()
         {
-            StartCoroutine(UIManager.Instance.PopModalAndWait());
+            StartCoroutine(UIManager.Instance.PopScreenAndWait());
         }
 
         /// <summary>
-        /// summary: 清空缓存并刷新（不触发自动滚动逻辑）
+        /// summary: 清空缓存并刷新
         /// param: 无
         /// return: 无
         /// </summary>
@@ -437,7 +552,7 @@ namespace Kernel.UI
             _events.Clear();
             _selectedVisibleIndex = -1;
             if (DetailText != null) DetailText.text = string.Empty;
-            RefreshList(fullRefresh: true, autoScrollHint: false);
+            RefreshList(autoScrollHint: false);
         }
 
         /// <summary>
@@ -470,7 +585,7 @@ namespace Kernel.UI
         {
             idx = Mathf.Clamp(idx, 0, 5);
             _minLevel = (LogLevel)idx;
-            RefreshList(fullRefresh: true, autoScrollHint: false);
+            RefreshList(autoScrollHint: false);
         }
 
         /// <summary>

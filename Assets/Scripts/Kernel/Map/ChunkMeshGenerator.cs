@@ -329,7 +329,7 @@ namespace Kernel.World
 
             
 
-            gameObject.layer = 7;
+            gameObject.layer = LayerMask.NameToLayer("Ground");
             return mesh != null;
         }
 
