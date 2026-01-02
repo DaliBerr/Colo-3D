@@ -105,6 +105,44 @@ namespace Lonize.Scribe
                                 instance.StatKeys[j] = br.ReadString();
                                 instance.StatValues[j] = br.ReadSingle();
                             }
+                            if (br.BaseStream.Position < br.BaseStream.Length)
+                            {
+                                int interiorCount = br.ReadInt32();
+                                if (interiorCount > 0)
+                                {
+                                    instance.InteriorBuildings = new List<SaveFactoryBuildingInstance>(interiorCount);
+                                    for (int k = 0; k < interiorCount; k++)
+                                    {
+                                        bool hasInterior = br.ReadBoolean();
+                                        if (!hasInterior)
+                                        {
+                                            instance.InteriorBuildings.Add(null);
+                                            continue;
+                                        }
+
+                                        var interior = new SaveFactoryBuildingInstance
+                                        {
+                                            DefId = br.ReadString(),
+                                            RuntimeId = br.ReadInt64(),
+                                            CellX = br.ReadInt32(),
+                                            CellY = br.ReadInt32(),
+                                            RotSteps = br.ReadByte(),
+                                            HP = br.ReadInt32()
+                                        };
+
+                                        int interiorStatCount = br.ReadInt32();
+                                        interior.StatKeys = new string[interiorStatCount];
+                                        interior.StatValues = new float[interiorStatCount];
+                                        for (int m = 0; m < interiorStatCount; m++)
+                                        {
+                                            interior.StatKeys[m] = br.ReadString();
+                                            interior.StatValues[m] = br.ReadSingle();
+                                        }
+
+                                        instance.InteriorBuildings.Add(interior);
+                                    }
+                                }
+                            }
                             list.Add(instance);
                         }
                         else

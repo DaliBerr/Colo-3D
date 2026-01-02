@@ -146,9 +146,23 @@ namespace Kernel.Building
                 return;
             }
 
+            if (_currentDef.Category == BuildingCategory.Internal)
+            {
+                GameDebug.LogWarning($"[BuildingPlacement] 内部建筑不可直接放置: {buildingId}");
+                CancelPlacement();
+                return;
+            }
+
             GameDebug.Log($"[BuildingPlacement] 开始放置建筑：{_currentDef.Id} ({_currentDef.Name})");
 
             // 加载 prefab（用于 ghost 预览）
+            if (string.IsNullOrWhiteSpace(_currentDef.PrefabAddress))
+            {
+                GameDebug.LogError($"[BuildingPlacement] BuildingDef 缺少 PrefabAddress: {_currentDef.Id}");
+                CancelPlacement();
+                return;
+            }
+
             var prefab = await AddressableRef.LoadAsync<GameObject>(_currentDef.PrefabAddress);
             if (prefab == null)
             {

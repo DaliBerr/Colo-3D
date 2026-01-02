@@ -1,9 +1,17 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
     
 namespace Kernel.Building
 {
+    public enum BuildingCategory
+    {
+        Single = 0,
+        Factory = 1,
+        Internal = 2
+    }
+
     [Serializable]
     public class BuildingDef
     {
@@ -24,8 +32,18 @@ namespace Kernel.Building
         [JsonProperty("icon")]
         public string IconAddress;
 
-        [JsonProperty("prefab", Required = Required.DisallowNull)]
+        [JsonProperty("prefab")]
         public string PrefabAddress;
+
+        [JsonProperty("buildingCategory")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public BuildingCategory Category = BuildingCategory.Single;
+
+        [JsonProperty("interiorWidth")]
+        public int InteriorWidth = 0;
+
+        [JsonProperty("interiorHeight")]
+        public int InteriorHeight = 0;
 
         // 占格（格子宽高，旋转是否允许）
         [JsonProperty("width")]
