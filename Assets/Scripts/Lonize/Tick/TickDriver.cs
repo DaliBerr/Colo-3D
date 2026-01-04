@@ -7,6 +7,8 @@ namespace Lonize.Tick
     /// </summary>
     public sealed class TickDriver : MonoBehaviour
     {
+        public static TickDriver Instance { get; private set; } 
+
         [Tooltip("驱动用的 TickManager，可在外部注入；为空则内部创建一个。")]
         public TickManager tickManager;
 
@@ -21,6 +23,15 @@ namespace Lonize.Tick
 
         private void Awake()
         {
+            // --- 新增：单例初始化 ---
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            // --------------------
+
             if (tickManager == null) tickManager = new TickManager();
         }
 
@@ -37,6 +48,10 @@ namespace Lonize.Tick
             }
 
             tickManager?.Update(dt);
+        }
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
         }
     }
 }

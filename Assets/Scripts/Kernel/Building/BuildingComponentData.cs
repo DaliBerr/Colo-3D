@@ -130,7 +130,7 @@ namespace Kernel.Building
         public void Tick(int ticks)
         {
             _tickAccumulator += ticks;
-            GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Accumulated Ticks: {_tickAccumulator}");
+            // GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Accumulated Ticks: {_tickAccumulator}");
             // 如果积累的时间超过了间隔，就触发
             while (_tickAccumulator >= _interval)
             {

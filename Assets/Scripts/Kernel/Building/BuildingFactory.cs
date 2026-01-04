@@ -120,7 +120,7 @@ namespace Kernel.Building
         // 2) 正式分配 localID（只保证在该 parentBuildingId 下唯一）
         int localId = BuildingIDManager.GenerateLocalBuildingID(parentBuildingId);
 
-        return new FactoryChildRuntime
+        var ChildRuntime = new FactoryChildRuntime
         {
             Def = def,
             BuildingParentID = parentBuildingId,
@@ -128,9 +128,47 @@ namespace Kernel.Building
             CellPosition = cell,
             Category = def.Category
         };
+        InitializeInternalBehaviours(ChildRuntime);
+        return ChildRuntime;
     }
 
+    public static void InitializeInternalBehaviours(FactoryChildRuntime child)
+    {
+        GameDebug.Log($"[FactoryInterior] 初始化内部建筑行为组件：ParentID={child.BuildingParentID}, LocalID={child.BuildingLocalID}, DefID={child.Def.Id}");
+        if (child.Def == null) return;
 
+        // 1. 构造一个代理 Runtime，让 Behaviour 以为自己在操作一个标准建筑
+        // 关键：共享 RuntimeStats 引用，这样 Behaviour 修改属性时，数据会存下来
+        child.ProxyRuntime = new BuildingRuntime
+        {
+            Def = child.Def,
+            BuildingID = child.BuildingLocalID, // 或者组合ID，看你需求
+            // 注意：这里为了日志清晰，你可能想存一个特殊的 ID，或者就把 localID 给它
+            // 如果 TestCounter 需要全局唯一ID，可能需要特殊处理
+            Category = child.Category,
+            CellPosition = child.CellPosition,
+            RuntimeStats = child.RuntimeStats 
+        };
+
+        child.Behaviours = new List<IBuildingBehaviour>();
+        GameDebug.Log($"[FactoryInterior] 为内部建筑 {child.Def.Id} 创建行为组件，共有 {child.Def.Components.Count} 个组件配置。");
+        // 2. 遍历 Def 中的组件配置，实例化 Behaviour
+        foreach (var compData in child.Def.Components)
+        {
+            var behaviour = BuildingBehaviourFactory.Create(compData);
+            if (behaviour != null)
+            {
+                // 绑定到代理 Runtime 上
+                behaviour.OnBind(child.ProxyRuntime);
+                child.Behaviours.Add(behaviour);
+            }
+            else
+            {
+                GameDebug.LogWarning($"无法为内部建筑 {child.Def.Id} 创建行为组件，类型：{compData.GetType().Name}");
+            }
+        }
+    }
+    
     /// <summary>
     /// summary: 获取父节点当前已有的内部子物品列表（用于加载后/首次创建时扫描 localID）。
     /// param: parentBuildingId 父节点全局ID
