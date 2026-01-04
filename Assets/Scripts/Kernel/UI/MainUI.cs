@@ -18,6 +18,7 @@ namespace Kernel.UI
     {
         public Button Btn1, Btn2;
         public Button Btn3;
+        public Button Btn4;
 
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
 
@@ -32,6 +33,7 @@ namespace Kernel.UI
             Btn1.onClick.AddListener(() => TrybuildingPlacementMode("generator_small"));
             Btn2.onClick.AddListener(() => TryBuildingRemoveMode());
             Btn3.onClick.AddListener(() => TrybuildingPlacementMode("storehouse"));
+            Btn4.onClick.AddListener(() => TryOpenFactoryUI());
 
             
         }
@@ -44,6 +46,7 @@ namespace Kernel.UI
             Btn1.onClick.RemoveAllListeners();
             Btn2.onClick.RemoveAllListeners();
             Btn3.onClick.RemoveAllListeners();
+            Btn4.onClick.RemoveAllListeners();
         }
 
         private bool isOpenLogConsole = false;
@@ -113,6 +116,11 @@ namespace Kernel.UI
             BuildingPlacementController buildingPlacementController = FindAnyObjectByType<BuildingPlacementController>();
             await buildingPlacementController.StartPlacementById(buildingId);
 
+        }
+        
+        private void TryOpenFactoryUI()
+        {
+            StartCoroutine(UIManager.Instance.ShowModalAndWait<FactoryUI>());
         }
     }
 }

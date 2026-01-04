@@ -27,10 +27,9 @@ namespace Kernel.Building
         public long BuildingID;
         public Vector2Int CellPosition; // 基于网格的坐标
         public byte RotationSteps; // 0-3，表示0/90/180/
-        public int HP;
         public Dictionary<string, float> RuntimeStats = new();
         public BuildingCategory Category = BuildingCategory.Single;
-        public FactoryInteriorRuntime FactoryInterior;
+        public FactoryInteriorRuntime FactoryInterior = new();
 
         /// <summary>
         /// summary: 确保工厂内部数据已初始化。
@@ -39,7 +38,10 @@ namespace Kernel.Building
         /// </summary>
         public FactoryInteriorRuntime EnsureFactoryInterior()
         {
-            FactoryInterior ??= new FactoryInteriorRuntime();
+            if (FactoryInterior == null)
+            {
+                FactoryInterior = new FactoryInteriorRuntime();
+            }
             return FactoryInterior;
         }
     }
@@ -171,6 +173,16 @@ namespace Kernel.Building
                     var ins = data.Params?["inputs"]?.ToObject<Dictionary<string,int>>() ?? new();
                     var outs = data.Params?["outputs"]?.ToObject<Dictionary<string,int>>() ?? new();
                     return new ProducerBehaviour(t, ins, outs);
+                }
+                case "factory":
+                {
+                    // TODO:
+                    return null;
+                }
+                case "factory_interior":
+                {
+                    // TODO:
+                    return null;
                 }
                 default:
                     GameDebug.LogWarning($"[Building] 未知组件类型: {data.Type}");

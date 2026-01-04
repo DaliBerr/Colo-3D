@@ -132,5 +132,15 @@ namespace Lonize.Events
         }
 
     }
+
+    public struct SelectedFactory
+    {
+        public long buildingId;
+        public SelectedFactory(long buildingId)
+        {
+        this.buildingId = buildingId;
+        }
+    }
+
     }
 }

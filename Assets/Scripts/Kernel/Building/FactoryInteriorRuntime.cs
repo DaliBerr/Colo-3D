@@ -8,9 +8,13 @@ namespace Kernel.Building
     [Serializable]
     public class FactoryChildRuntime
     {
-        public BuildingRuntime Runtime;
+        // public BuildingRuntime Runtime;
+        public BuildingDef Def;
+        public long BuildingParentID;
+        public int BuildingLocalID;
         public Vector2Int CellPosition;
-        public byte RotationSteps;
+        public Dictionary<string, float> RuntimeStats = new();
+        public BuildingCategory Category = BuildingCategory.Internal;
     }
 
     [Serializable]
@@ -35,23 +39,31 @@ namespace Kernel.Building
         /// param: rotSteps 旋转步数
         /// return: 是否添加成功
         /// </summary>
-        public bool AddChild(BuildingRuntime runtime, Vector2Int cell, byte rotSteps)
-        {
-            if (runtime == null || runtime.Def == null)
-                return false;
+        // public bool AddChild(BuildingRuntime runtime, Vector2Int cell, byte rotSteps)
+        // {
+        //     if (runtime == null || runtime.Def == null)
+        //         return false;
 
-            runtime.CellPosition = cell;
-            runtime.RotationSteps = (byte)(rotSteps & 3);
+        //     // 将运行时信息写回 runtime（保持 runtime 自身的状态），
+        //     // 但 FactoryChildRuntime 不再存储 RotationSteps，因此不记录旋转。
+        //     runtime.CellPosition = cell;
+        //     runtime.RotationSteps = (byte)(rotSteps & 3);
 
-            Children.Add(new FactoryChildRuntime
-            {
-                Runtime = runtime,
-                CellPosition = cell,
-                RotationSteps = runtime.RotationSteps
-            });
+        //     var child = new FactoryChildRuntime
+        //     {
+        //         Def = runtime.Def,
+        //         BuildingParentID = runtime.BuildingID,
+        //         // BuildingLocalID = runtime.BuildingLocalID,
+        //         CellPosition = cell,
+        //         Category = runtime.Category,
+        //         RuntimeStats = runtime.RuntimeStats != null
+        //             ? new Dictionary<string, float>(runtime.RuntimeStats)
+        //             : new Dictionary<string, float>()
+        //     };
 
-            return true;
-        }
+        //     Children.Add(child);
+        //     return true;
+        // }
 
         /// <summary>
         /// summary: 生成工厂内部子建筑的存档数据。
@@ -66,20 +78,19 @@ namespace Kernel.Building
             var list = new List<SaveFactoryBuildingInstance>(Children.Count);
             foreach (var child in Children)
             {
-                if (child?.Runtime?.Def == null)
+                if (child == null || child.Def == null)
                     continue;
 
                 var data = new SaveFactoryBuildingInstance
                 {
-                    DefId = child.Runtime.Def.Id,
-                    RuntimeId = child.Runtime.BuildingID,
+                    DefId = child.Def.Id,
+                    ParentId = child.BuildingParentID,
+                    localId = child.BuildingLocalID,
                     CellX = child.CellPosition.x,
                     CellY = child.CellPosition.y,
-                    RotSteps = (byte)(child.RotationSteps & 3),
-                    HP = child.Runtime.HP
                 };
 
-                ExportRuntimeStats(child.Runtime.RuntimeStats, out data.StatKeys, out data.StatValues);
+                ExportRuntimeStats(child.RuntimeStats, out data.StatKeys, out data.StatValues);
                 list.Add(data);
             }
 
@@ -109,24 +120,18 @@ namespace Kernel.Building
                     continue;
                 }
 
-                var runtime = new BuildingRuntime
+                var child = new FactoryChildRuntime
                 {
                     Def = def,
-                    BuildingID = data.RuntimeId,
-                    HP = data.HP,
+                    BuildingParentID = data.ParentId,
+                    BuildingLocalID = data.localId,
                     Category = def.Category,
-                    CellPosition = new Vector2Int(data.CellX, data.CellY),
-                    RotationSteps = (byte)(data.RotSteps & 3)
+                    CellPosition = new Vector2Int(data.CellX, data.CellY)
                 };
 
-                ImportRuntimeStats(runtime.RuntimeStats, data.StatKeys, data.StatValues);
+                ImportRuntimeStats(child.RuntimeStats, data.StatKeys, data.StatValues);
 
-                Children.Add(new FactoryChildRuntime
-                {
-                    Runtime = runtime,
-                    CellPosition = runtime.CellPosition,
-                    RotationSteps = runtime.RotationSteps
-                });
+                Children.Add(child);
             }
         }
 
@@ -137,30 +142,29 @@ namespace Kernel.Building
         /// param: rotSteps 旋转步数
         /// return: 生成的运行时实例
         /// </summary>
-        public BuildingRuntime CreateInternalRuntime(string defId, Vector2Int cell, byte rotSteps)
-        {
-            if (!BuildingDatabase.TryGet(defId, out var def))
-            {
-                GameDebug.LogWarning($"[FactoryInterior] 未找到子建筑 Def: {defId}");
-                return null;
-            }
+        // public BuildingRuntime CreateInternalRuntime(string defId, Vector2Int cell, byte rotSteps)
+        // {
+        //     if (!BuildingDatabase.TryGet(defId, out var def))
+        //     {
+        //         GameDebug.LogWarning($"[FactoryInterior] 未找到子建筑 Def: {defId}");
+        //         return null;
+        //     }
 
-            if (def.Category != BuildingCategory.Internal)
-                GameDebug.LogWarning($"[FactoryInterior] 子建筑 Def 类型不是 Internal: {defId}");
+        //     if (def.Category != BuildingCategory.Internal)
+        //         GameDebug.LogWarning($"[FactoryInterior] 子建筑 Def 类型不是 Internal: {defId}");
 
-            var runtime = new BuildingRuntime
-            {
-                Def = def,
-                BuildingID = BuildingIDManager.GenerateBuildingID(),
-                HP = def.MaxHP,
-                Category = def.Category,
-                CellPosition = cell,
-                RotationSteps = (byte)(rotSteps & 3)
-            };
+        //     var runtime = new BuildingRuntime
+        //     {
+        //         Def = def,
+        //         BuildingID = BuildingIDManager.GenerateBuildingID(),
+        //         Category = def.Category,
+        //         CellPosition = cell,
+        //         RotationSteps = (byte)(rotSteps & 3)
+        //     };
 
-            AddChild(runtime, cell, rotSteps);
-            return runtime;
-        }
+        //     AddChild(runtime, cell, rotSteps);
+        //     return runtime;
+        // }
 
         /// <summary>
         /// summary: 将运行时统计字典导出为数组。

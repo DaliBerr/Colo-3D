@@ -18,7 +18,6 @@ namespace Kernel.Building
                 sb.AppendLine("缺少 prefab");
             }
             if (def.Width <= 0 || def.Height <= 0) { ok = false; sb.AppendLine("width/height 必须 >= 1"); }
-            if (def.MaxHP <= 0) { ok = false; sb.AppendLine("maxHP 必须 > 0"); }
             if (def.Category == BuildingCategory.Factory && (def.InteriorWidth <= 0 || def.InteriorHeight <= 0))
             {
                 ok = false;

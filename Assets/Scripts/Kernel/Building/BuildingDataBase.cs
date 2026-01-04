@@ -41,6 +41,8 @@ namespace Kernel.Building
             { "PowerGenerator", typeof(Colo.Def.Building.PowerGeneratorDef) },
 
             {"Storage", typeof(Colo.Def.Building.StorageDef) },
+            
+            { "Factory", typeof(Colo.Def.Building.FactoryDef) },
 
             // { "Conveyor", typeof(Colo.Def.Building.ConveyorDef) },
 

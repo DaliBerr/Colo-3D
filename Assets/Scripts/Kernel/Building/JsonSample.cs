@@ -12,7 +12,7 @@ namespace Kernel.Building
                 Log.Info(def.Name);       // 从 JSON 来的 name
                 Log.Info(def.Width.ToString());      // from json
                 Log.Info(def.Height.ToString());     // from json
-                Log.Info(def.Cost["iron_plate"].ToString()); // from json
+                // Log.Info(def.Cost["iron_plate"].ToString()); // from json
             }
         }
     }

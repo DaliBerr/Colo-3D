@@ -95,7 +95,7 @@ namespace Lonize.Scribe
                                 CellX = br.ReadInt32(),
                                 CellY = br.ReadInt32(),
                                 RotSteps = br.ReadByte(),
-                                HP = br.ReadInt32()
+                                // HP = br.ReadInt32()
                             };
                             int statCount = br.ReadInt32();
                             instance.StatKeys = new string[statCount];
@@ -123,11 +123,12 @@ namespace Lonize.Scribe
                                         var interior = new SaveFactoryBuildingInstance
                                         {
                                             DefId = br.ReadString(),
-                                            RuntimeId = br.ReadInt64(),
+                                            ParentId = br.ReadInt64(),
+                                            localId = br.ReadInt32(),
                                             CellX = br.ReadInt32(),
                                             CellY = br.ReadInt32(),
-                                            RotSteps = br.ReadByte(),
-                                            HP = br.ReadInt32()
+                                            // RotSteps = br.ReadByte(),
+                                            // HP = br.ReadInt32()
                                         };
 
                                         int interiorStatCount = br.ReadInt32();

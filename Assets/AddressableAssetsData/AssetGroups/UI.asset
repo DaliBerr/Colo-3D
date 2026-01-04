@@ -45,6 +45,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f87cde03439c6444bbb18b8352558c8
+    m_Address: Prefabs/UI/Factory UI
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 60668e54d2b849446aea47f27fda31be
     m_Address: Prefabs/UI/MainMenuUI
     m_ReadOnly: 0

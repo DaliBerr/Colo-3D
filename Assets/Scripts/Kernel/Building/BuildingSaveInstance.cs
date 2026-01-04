@@ -17,7 +17,7 @@ namespace Kernel.Building
         public byte RotSteps;
 
         // 状态
-        public int HP;
+        // public int HP;
 
         // 运行时统计（字典拆成两组数组以方便序列化）
         public string[] StatKeys;
@@ -30,13 +30,12 @@ namespace Kernel.Building
     public class SaveFactoryBuildingInstance
     {
         public string DefId;
-        public long RuntimeId;
+        public long ParentId;
+        public int localId;
 
         public int CellX;
         public int CellY;
-        public byte RotSteps;
 
-        public int HP;
 
         public string[] StatKeys;
         public float[] StatValues;

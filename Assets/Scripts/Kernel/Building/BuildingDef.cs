@@ -56,15 +56,17 @@ namespace Kernel.Building
         public bool AllowRotate = true; // 以 0/90/180/270 度离散旋转
 
         // 基础数值
-        [JsonProperty("maxHP")]
-        public int MaxHP = 100;
+        // [JsonProperty("maxHP")]
+        // public int MaxHP = 100;
 
         [JsonProperty("buildTime")]
         public float BuildTime = 1.0f; // 秒
 
-        // 造价（与物品系统打通：itemId -> 数量）
-        [JsonProperty("cost")]
-        public Dictionary<string, int> Cost = new();
+        // // 造价（与物品系统打通：itemId -> 数量）
+        // [JsonProperty("cost")]
+        // public Dictionary<string, int> Cost = new();
+
+        //配方
 
         // 通用属性&标签
         [JsonProperty("stats")]
