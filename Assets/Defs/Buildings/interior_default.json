@@ -12,7 +12,7 @@
     {
       "type": "test_counter",
       "params": {
-        "interval": 20
+        "interval": 120
       }
     }
   ]

@@ -5,13 +5,14 @@ using Lonize.Logging;
 using static Kernel.Storage.BuildingRuntimeStatsCodeC;
 using Kernel.Storage;
 using Lonize;
+using Lonize.Tick;
 
 namespace Kernel.Building
 {
     /// <summary>
     /// summary: 建筑实例宿主，持有 Runtime 与行为列表，并负责生成/应用存档数据。
     /// </summary>
-    public class BuildingRuntimeHost : MonoBehaviour
+    public class BuildingRuntimeHost : MonoBehaviour,ITickable
     {
         [SerializeField]public BuildingRuntime Runtime;
         public List<IBuildingBehaviour> Behaviours = new();
@@ -26,9 +27,35 @@ namespace Kernel.Building
             return !string.IsNullOrEmpty(key) && key.StartsWith(StorageRuntimeStatsCodec.ItemKeyPrefix);
         }
 
+        public void Tick(int ticks)
+        {
+            // 1. 驱动自身的组件 (比如工厂本身的耗电)
+            foreach (var behaviour in Behaviours)
+            {
+                if (behaviour is ITickable tickable)
+                {
+                    tickable.Tick(ticks);
+                }
+            }
+
+            // 2. --- 新增：驱动内部世界的 Tick ---
+            if (Runtime != null && Runtime.FactoryInterior != null)
+            {
+                Runtime.FactoryInterior.Tick(ticks);
+            }
+            // ---------------------------------
+        }
 
         private DevControls _devControls;
-
+        private void OnEnable()
+        {
+            // 尝试注册。如果 TickDriver 还没准备好（比如场景刚开始加载），
+            // 可能需要放到 Start 里，但一般 Awake 会先于 OnEnable/Start 执行。
+            if (TickDriver.Instance != null && TickDriver.Instance.tickManager != null)
+            {
+                TickDriver.Instance.tickManager.Register(this);
+            }
+        }
         private void Start()
         {
             _devControls = InputActionManager.Instance.Dev;    
@@ -320,7 +347,15 @@ namespace Kernel.Building
                 Runtime.EnsureFactoryInterior();
 
             if (data.InteriorBuildings != null && data.InteriorBuildings.Count > 0 && Runtime.FactoryInterior != null)
+            {
                 Runtime.FactoryInterior.ApplySaveData(data.InteriorBuildings);
+                foreach (var child in Runtime.FactoryInterior.Children)
+                {
+                    if (child == null) continue;
+                    BuildingFactory.InitializeInternalBehaviours(child); 
+
+                }
+            }
 
             // 写入 placement（保证读档后再次保存一致）
             SetPlacement(new Vector3Int(data.CellX, data.CellY, 0), data.RotSteps);

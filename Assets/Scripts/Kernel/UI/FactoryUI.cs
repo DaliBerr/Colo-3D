@@ -42,6 +42,10 @@ namespace Kernel.UI
                 if (TryAddInteriorBuilding("factory_interior_default", selectedGridIndex))
                 {
                     TryShowInteriorBuilding(selectedGridIndex);
+                    BuildingFactory.InitializeInternalBehaviours(
+                        BuildingFactoryController.Instance.GetCurrentFactoryRuntime()
+                        .FactoryInterior.Children[selectedGridIndex]
+                    );
                     GameDebug.Log("Successfully added interior building.");
                 }
                 
