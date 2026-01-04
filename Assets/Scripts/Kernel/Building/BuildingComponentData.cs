@@ -1,9 +1,8 @@
-
-
 using System;
 using System.Collections.Generic;
 using Kernel.Storage;
 using Lonize.Logging;
+using Lonize.Tick;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -28,8 +27,8 @@ namespace Kernel.Building
         public Vector2Int CellPosition; // 基于网格的坐标
         public byte RotationSteps; // 0-3，表示0/90/180/
         public Dictionary<string, float> RuntimeStats = new();
-        public BuildingCategory Category = BuildingCategory.Single;
-        public FactoryInteriorRuntime FactoryInterior = new();
+        [SerializeField] public BuildingCategory Category = BuildingCategory.Single;
+        [SerializeField] public FactoryInteriorRuntime FactoryInterior = new();
 
         /// <summary>
         /// summary: 确保工厂内部数据已初始化。
@@ -46,10 +45,12 @@ namespace Kernel.Building
         }
     }
 
-    public interface IBuildingBehaviour
+    public interface IBuildingBehaviour : ITickable
     {
         void OnBind(BuildingRuntime runtime);
         // 需要时可扩展 Tick/OnPowerChanged/OnInventoryChanged 等接口
+
+        void OnUnbind(BuildingRuntime runtime);
     }
     /// <summary>
     /// summary: 行为生命周期扩展（用于资源注销等）。
@@ -61,7 +62,7 @@ namespace Kernel.Building
         /// param: runtime 建筑运行时
         /// return: 无
         /// </summary>
-        void OnUnbind(BuildingRuntime runtime);
+        
     }
     // ——示例行为——
 
@@ -72,6 +73,16 @@ namespace Kernel.Building
 
         public PowerProducerBehaviour(float power) { Power = power; }
         public void OnBind(BuildingRuntime r) { }
+
+        public void OnUnbind(BuildingRuntime runtime)
+        {
+            // 可选实现
+        }
+
+        public void Tick(int ticks)
+        {
+            // throw new NotImplementedException();
+        }
     }
 
     // 耗电设备：持续消耗功率
@@ -81,8 +92,54 @@ namespace Kernel.Building
 
         public PowerConsumerBehaviour(float power) { Power = power; }
         public void OnBind(BuildingRuntime r) { }
-    }
 
+
+        public void OnUnbind(BuildingRuntime runtime)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Tick(int ticks)
+        {
+            // throw new NotImplementedException();
+        }
+    }
+    public class TestCounterBehaviour : IBuildingBehaviour
+    {
+        private int _interval;      // 触发间隔（来自 JSON）
+        private int _tickAccumulator; // 当前积累的 tick
+        private int _counter;       // 计数器
+        private long _buildingId;   // 绑定的建筑 ID，方便看日志
+
+        public TestCounterBehaviour(int interval)
+        {
+            _interval = Mathf.Max(1, interval); // 保护一下，防止除以0
+        }
+
+        public void OnBind(BuildingRuntime runtime)
+        {
+            _buildingId = runtime.BuildingID;
+            _counter = 0;
+            _tickAccumulator = 0;
+            GameDebug.Log($"[TestCounter] 绑定成功！ID: {_buildingId}, 间隔: {_interval}");
+        }
+        public void OnUnbind(BuildingRuntime runtime)
+        {
+            GameDebug.Log($"[TestCounter] 解绑成功！ID: {_buildingId}, 总计数: {_counter}");
+        }
+        public void Tick(int ticks)
+        {
+            _tickAccumulator += ticks;
+            GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Accumulated Ticks: {_tickAccumulator}");
+            // 如果积累的时间超过了间隔，就触发
+            while (_tickAccumulator >= _interval)
+            {
+                _tickAccumulator -= _interval;
+                _counter++;
+                GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Tick: {_counter * _interval} | Count: {_counter}");
+            }
+        }
+    }
     public class StorageBehaviour : IBuildingBehaviour, IBuildingBehaviourLifecycle
     {
         public int Capacity;
@@ -125,6 +182,10 @@ namespace Kernel.Building
             Container = null;
             RuntimeId = 0;
         }
+        public void Tick(int ticks)
+        {
+            // throw new NotImplementedException();
+        }
     }
 
     // 简易生产机：配方（输入若干物品，耗时，产出若干物品），此处只示例数据形态
@@ -135,11 +196,20 @@ namespace Kernel.Building
         public Dictionary<string, int> Outputs = new();
         public void OnBind(BuildingRuntime r) { }
 
+        public void OnUnbind(BuildingRuntime runtime)
+        {
+            // throw new NotImplementedException();
+        }
+
         public ProducerBehaviour(float t, Dictionary<string, int> i, Dictionary<string, int> o)
         {
             CraftTime = t;
             Inputs = i ?? new();
             Outputs = o ?? new();
+        }
+        public void Tick(int ticks)
+        {
+            // throw new NotImplementedException();
         }
     }
 
@@ -178,6 +248,15 @@ namespace Kernel.Building
                 {
                     // TODO:
                     return null;
+                }
+                case "test_counter":
+                {
+                    GameDebug.Log("[Building] 创建 TestCounter 组件");
+                    // 从 JSON params 读取 "interval"，默认为 20
+                    int interval = data.Params?["interval"]?.Value<int>() ?? 20;
+                    // 记得我们之前说过要让 Host 能够 Tick，
+                    // 这里返回的对象需要在 Host 端被识别为 ITickable 并加入 TickManager 或者由 Host 驱动
+                    return new TestCounterBehaviour(interval);
                 }
                 case "factory_interior":
                 {

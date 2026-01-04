@@ -75,18 +75,9 @@
             "id": "099b0c41-1d25-486e-a719-ed58e0b7f49d",
             "actions": [
                 {
-                    "name": "AddItem",
+                    "name": "PrintInfo",
                     "type": "Button",
                     "id": "43f19ff5-af87-45fc-923c-465744e75db4",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "RemoveItem",
-                    "type": "Button",
-                    "id": "404af4ef-47ed-4192-a9a7-54e638c7f0b3",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -101,18 +92,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "AddItem",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e143447a-ea9b-49f6-b611-7bdf1e4b2ae1",
-                    "path": "<Keyboard>/t",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RemoveItem",
+                    "action": "PrintInfo",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

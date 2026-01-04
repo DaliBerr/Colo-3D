@@ -77,7 +77,13 @@ namespace Kernel.Building
             }
             return go;
         }
-
+    /// <summary>
+    /// summary: 创建工厂内部运行时实例（不挂载到场景，仅数据层面）。
+    /// </summary>
+    /// <param name="parentBuildingId">父建筑的全局唯一ID</param>
+    /// <param name="defID">内部建筑的定义ID</param>
+    /// <param name="cell">内部建筑在工厂内部的格子位置</param>
+    /// <returns>创建的工厂内部运行时实例</returns>
     public static FactoryChildRuntime CreateInternalRuntime(long parentBuildingId, string defID, Vector2Int cell)
     {
         if (!BuildingDatabase.TryGet(defID, out var def))
@@ -134,7 +140,8 @@ namespace Kernel.Building
     private static bool TryGetParentChildren(long parentBuildingId, out IReadOnlyList<FactoryChildRuntime> children)
     {
         children = null;
-        children = BuildingFactoryController.Instance.GetCurrentFactoryRuntime().FactoryInterior.Children;
+        BuildingManager.Instance.getBuildingById(parentBuildingId, out var building);
+        children = building?.FactoryInterior.Children;
         return children != null;
         
 

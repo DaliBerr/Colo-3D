@@ -79,6 +79,7 @@ namespace Lonize.Events
     {
         // public readonly string buildingId;
         public  BuildingRuntime buildingRuntime;
+        public long buildingId => buildingRuntime.BuildingID;
         public  bool isSelected;
         public BuildingSelected(BuildingRuntime buildingRuntime, bool isSelected)
         {

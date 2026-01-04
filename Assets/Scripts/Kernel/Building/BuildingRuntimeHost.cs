@@ -4,6 +4,7 @@ using Kernel.World;
 using Lonize.Logging;
 using static Kernel.Storage.BuildingRuntimeStatsCodeC;
 using Kernel.Storage;
+using Lonize;
 
 namespace Kernel.Building
 {
@@ -12,7 +13,7 @@ namespace Kernel.Building
     /// </summary>
     public class BuildingRuntimeHost : MonoBehaviour
     {
-        public BuildingRuntime Runtime;
+        [SerializeField]public BuildingRuntime Runtime;
         public List<IBuildingBehaviour> Behaviours = new();
 
         /// <summary>
@@ -25,6 +26,76 @@ namespace Kernel.Building
             return !string.IsNullOrEmpty(key) && key.StartsWith(StorageRuntimeStatsCodec.ItemKeyPrefix);
         }
 
+
+        private DevControls _devControls;
+
+        private void Start()
+        {
+            _devControls = InputActionManager.Instance.Dev;    
+        }
+
+        private void Update()
+        {
+
+            if( _devControls.Building.PrintInfo.WasPressedThisFrame())
+            {
+                if(Runtime != null)
+                {
+                    GameDebug.Log("--------------------------------------------------");
+                    GameDebug.Log($"🏠 Building ID: {Runtime.BuildingID}, Def ID: {Runtime.Def?.Id}, Category: {Runtime.Category}, CellPosition: {Runtime.CellPosition}, RotationSteps: {Runtime.RotationSteps}");
+                    GameDebug.Log("   Runtime Stats:");
+                    if(Runtime.RuntimeStats != null)
+                    {
+                        foreach(var kv in Runtime.RuntimeStats)
+                        {
+                            GameDebug.Log($"      {kv.Key} : {kv.Value}");
+                        }
+                    }
+                    else
+                    {
+                        GameDebug.Log("      (none)");
+                    }
+                    GameDebug.Log("   Behaviours:");
+                    foreach(var behaviour in Behaviours)
+                    {
+                        GameDebug.Log($"      {behaviour.GetType().Name}");
+                    }
+                    GameDebug.Log($"Category Specific Info: {Runtime.Category}");
+                    GameDebug.Log($"   Factory Interior Children Count: {Runtime.FactoryInterior?.Children?.Count}");
+                    if(Runtime.FactoryInterior?.Children != null)
+                    {
+                        foreach(var child in Runtime.FactoryInterior.Children)
+                        {
+                            GameDebug.Log($"      Child Def ID: {child.Def?.Id}, ParentID: {child.BuildingParentID}, LocalID: {child.BuildingLocalID}, CellPosition: {child.CellPosition}");
+                        
+                            GameDebug.Log($"      Child LocalID: {child.BuildingLocalID}");
+
+                            GameDebug.Log("      Child Runtime Stats:");
+                            if(child.RuntimeStats != null)
+                            {
+                                foreach(var kv in child.RuntimeStats)
+                                {
+                                    GameDebug.Log($"         {kv.Key} : {kv.Value}");
+                                }
+                            }
+                            else
+                            {
+                                GameDebug.Log("         (none)");
+                            }
+
+                            // GameDebug.Log("      Child Behaviours:");
+                            // foreach(var behaviour in child.Behaviours)
+                            // {
+                            //     GameDebug.Log($"         {behaviour.GetType().Name}");
+                            // }
+                            GameDebug.Log("      ----------------------------");
+                        }
+                    }
+
+                    GameDebug.Log("--------------------------------------------------");
+                }
+            }
+        }
         /// <summary>
         /// summary: 移除 RuntimeStats 中的库存编码键，避免读档后 RuntimeStats 污染导致二次保存重复写入。
         /// param: stats 运行时 Stat 字典

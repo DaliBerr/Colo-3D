@@ -163,18 +163,9 @@ namespace Lonize
             ""id"": ""099b0c41-1d25-486e-a719-ed58e0b7f49d"",
             ""actions"": [
                 {
-                    ""name"": ""AddItem"",
+                    ""name"": ""PrintInfo"",
                     ""type"": ""Button"",
                     ""id"": ""43f19ff5-af87-45fc-923c-465744e75db4"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""RemoveItem"",
-                    ""type"": ""Button"",
-                    ""id"": ""404af4ef-47ed-4192-a9a7-54e638c7f0b3"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -189,18 +180,7 @@ namespace Lonize
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""AddItem"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""e143447a-ea9b-49f6-b611-7bdf1e4b2ae1"",
-                    ""path"": ""<Keyboard>/t"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""RemoveItem"",
+                    ""action"": ""PrintInfo"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -244,8 +224,7 @@ namespace Lonize
             m_Map_ClearWorldMap = m_Map.FindAction("ClearWorldMap", throwIfNotFound: true);
             // Building
             m_Building = asset.FindActionMap("Building", throwIfNotFound: true);
-            m_Building_AddItem = m_Building.FindAction("AddItem", throwIfNotFound: true);
-            m_Building_RemoveItem = m_Building.FindAction("RemoveItem", throwIfNotFound: true);
+            m_Building_PrintInfo = m_Building.FindAction("PrintInfo", throwIfNotFound: true);
             // Console
             m_Console = asset.FindActionMap("Console", throwIfNotFound: true);
             m_Console_Open = m_Console.FindAction("Open", throwIfNotFound: true);
@@ -449,8 +428,7 @@ namespace Lonize
         // Building
         private readonly InputActionMap m_Building;
         private List<IBuildingActions> m_BuildingActionsCallbackInterfaces = new List<IBuildingActions>();
-        private readonly InputAction m_Building_AddItem;
-        private readonly InputAction m_Building_RemoveItem;
+        private readonly InputAction m_Building_PrintInfo;
         /// <summary>
         /// Provides access to input actions defined in input action map "Building".
         /// </summary>
@@ -463,13 +441,9 @@ namespace Lonize
             /// </summary>
             public BuildingActions(@DevControls wrapper) { m_Wrapper = wrapper; }
             /// <summary>
-            /// Provides access to the underlying input action "Building/AddItem".
+            /// Provides access to the underlying input action "Building/PrintInfo".
             /// </summary>
-            public InputAction @AddItem => m_Wrapper.m_Building_AddItem;
-            /// <summary>
-            /// Provides access to the underlying input action "Building/RemoveItem".
-            /// </summary>
-            public InputAction @RemoveItem => m_Wrapper.m_Building_RemoveItem;
+            public InputAction @PrintInfo => m_Wrapper.m_Building_PrintInfo;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -496,12 +470,9 @@ namespace Lonize
             {
                 if (instance == null || m_Wrapper.m_BuildingActionsCallbackInterfaces.Contains(instance)) return;
                 m_Wrapper.m_BuildingActionsCallbackInterfaces.Add(instance);
-                @AddItem.started += instance.OnAddItem;
-                @AddItem.performed += instance.OnAddItem;
-                @AddItem.canceled += instance.OnAddItem;
-                @RemoveItem.started += instance.OnRemoveItem;
-                @RemoveItem.performed += instance.OnRemoveItem;
-                @RemoveItem.canceled += instance.OnRemoveItem;
+                @PrintInfo.started += instance.OnPrintInfo;
+                @PrintInfo.performed += instance.OnPrintInfo;
+                @PrintInfo.canceled += instance.OnPrintInfo;
             }
 
             /// <summary>
@@ -513,12 +484,9 @@ namespace Lonize
             /// <seealso cref="BuildingActions" />
             private void UnregisterCallbacks(IBuildingActions instance)
             {
-                @AddItem.started -= instance.OnAddItem;
-                @AddItem.performed -= instance.OnAddItem;
-                @AddItem.canceled -= instance.OnAddItem;
-                @RemoveItem.started -= instance.OnRemoveItem;
-                @RemoveItem.performed -= instance.OnRemoveItem;
-                @RemoveItem.canceled -= instance.OnRemoveItem;
+                @PrintInfo.started -= instance.OnPrintInfo;
+                @PrintInfo.performed -= instance.OnPrintInfo;
+                @PrintInfo.canceled -= instance.OnPrintInfo;
             }
 
             /// <summary>
@@ -685,19 +653,12 @@ namespace Lonize
         public interface IBuildingActions
         {
             /// <summary>
-            /// Method invoked when associated input action "AddItem" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "PrintInfo" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnAddItem(InputAction.CallbackContext context);
-            /// <summary>
-            /// Method invoked when associated input action "RemoveItem" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnRemoveItem(InputAction.CallbackContext context);
+            void OnPrintInfo(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Console" which allows adding and removing callbacks.

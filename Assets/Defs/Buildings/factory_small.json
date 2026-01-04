@@ -1,0 +1,29 @@
+{
+  "id": "factory_small",
+  "name": "小型组装厂",
+  "description": "一座标准的小型工厂，内部拥有独立的空间用于精密加工。点击可进入内部视图。",
+  "icon": "icons/building_factory_small",
+  "prefab": "Prefabs/Buildings/Building_Factory_Small",
+  "buildingCategory": "Factory",
+  "width": 3,
+  "height": 3,
+  "interiorWidth": 12,
+  "interiorHeight": 12,
+  "allowRotate": true,
+  "buildTime": 5.0,
+  "stats": {
+    "maintenance_cost": 10.0
+  },
+  "tags": [
+    "factory",
+    "production"
+  ],
+  "components": [
+    {
+      "type": "power_consumer",
+      "params": {
+        "power": 50.0
+      }
+    }
+  ]
+}

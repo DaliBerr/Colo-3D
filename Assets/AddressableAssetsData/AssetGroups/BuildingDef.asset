@@ -21,6 +21,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - BuildingDef
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a02e80b7cb279494a995afece5e1151f
+    m_Address: Defs/Buildings/interior_default
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BuildingDef
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc192def3b72bb94f94d3f0950da1c10
+    m_Address: Defs/Buildings/Factory_small
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BuildingDef
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d17467d94ee5e2d409fb366c0476232a
     m_Address: Defs/Buildings/generator_small
     m_ReadOnly: 0

@@ -1,0 +1,19 @@
+{
+  "id": "factory_interior_default",
+  "name": "测试计数器",
+  "description": "一个用于调试的内部组件，每隔一定 Tick 会打印日志。",
+  "icon": "icons/default_icon",
+  "prefab": "",
+  "buildingCategory": "Internal",
+  "width": 1,
+  "height": 1,
+  "buildTime": 0,
+  "components": [
+    {
+      "type": "test_counter",
+      "params": {
+        "interval": 20
+      }
+    }
+  ]
+}

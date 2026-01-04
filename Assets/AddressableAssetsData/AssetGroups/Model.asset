@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 46a552f1fbbdae44fa725aef9d43dd51
+    m_Address: Prefabs/Buildings/Building_Factory_Small
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d9ad0d99dbc05ac4381ae17dda0e5434
     m_Address: Prefabs/Animation/Cube
     m_ReadOnly: 0

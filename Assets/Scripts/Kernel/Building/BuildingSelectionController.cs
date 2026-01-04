@@ -181,7 +181,7 @@ namespace Kernel.Building
                 }
 
                 // 未选中 => 加入选中（需要对外发事件）
-                SelectBuilding(hitId, hitRuntimeHost, hitView, publishEvent: true);
+                SelectBuilding(hitId, hitRuntimeHost, hitView, publishEvent: false);
             }
             else
             {
