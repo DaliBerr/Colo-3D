@@ -79,6 +79,8 @@ namespace Kernel
 
         private bool isRotating;
 
+        public bool canMoveCamera = true;
+
         private void Awake()
         {
             HandleAwake();
@@ -106,6 +108,7 @@ namespace Kernel
             if (targetCamera == null) return;
             HandleUpdate();
             ReadInputs();
+            if( !canMoveCamera ) return;
             HandleMove(Time.deltaTime);
             HandleRotate(Time.deltaTime);
             HandleZoom(Time.deltaTime);

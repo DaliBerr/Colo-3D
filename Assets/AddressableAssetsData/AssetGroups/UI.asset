@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: UI
   m_GUID: 31cd563e5c4228b43beb5f5bbc6ea4a9
   m_SerializeEntries:
+  - m_GUID: 2133dc52ac255834ab88630441337063
+    m_Address: Prefabs/UI/Factory/Mech
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2c74b1ecd3339b543a18e6e91f9b71e8
     m_Address: Prefabs/UI/OptionsModal
     m_ReadOnly: 0
@@ -48,7 +54,8 @@ MonoBehaviour:
   - m_GUID: 5f87cde03439c6444bbb18b8352558c8
     m_Address: Prefabs/UI/Factory UI
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 60668e54d2b849446aea47f27fda31be
     m_Address: Prefabs/UI/MainMenuUI

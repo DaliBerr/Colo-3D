@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kernel;
 using Kernel.Building;
 using Kernel.GameState;
@@ -24,6 +25,8 @@ namespace Kernel.UI
         //Obsolete
         [SerializeField] private Button AddInteriorBuildingButton;
 
+        [SerializeField] private static readonly byte  _columns = 7;
+
         private int selectedGridIndex = 0;
 
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
@@ -41,7 +44,7 @@ namespace Kernel.UI
 
                 if (TryAddInteriorBuilding("factory_interior_default", selectedGridIndex))
                 {
-                    TryShowInteriorBuilding(selectedGridIndex);
+                    _ = TryShowInteriorBuilding(selectedGridIndex);
                     BuildingFactory.InitializeInternalBehaviours(
                         BuildingFactoryController.Instance.GetCurrentFactoryRuntime()
                         .FactoryInterior.Children[selectedGridIndex]
@@ -52,12 +55,13 @@ namespace Kernel.UI
                 GameDebug.Log("Add Interior Building Button Clicked - Obsolete");
             });
         }
-        private void OnEnable()
+
+        private async Task InitInteriorShow()
         {
             var runtime = BuildingFactoryController.Instance.GetCurrentFactoryRuntime();
             if (runtime == null)
             {
-                GameDebug.LogError("当前没有选中任何工厂，无法打开工厂界面！");
+                GameDebug.LogError("当前没有选中任何工厂，无法初始化工厂界面！");
                 UIManager.Instance.CloseTopModal();
                 return;
             }
@@ -65,14 +69,34 @@ namespace Kernel.UI
             foreach (var child in runtime.FactoryInterior.Children)
             {
                 GetIndexByCellPosition(child.CellPosition);
-                TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition));
+                await TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition));
             }
+        }
+
+        private void OnEnable()
+        {
+            _ = InitInteriorShow();
+            // var runtime = BuildingFactoryController.Instance.GetCurrentFactoryRuntime();
+            // if (runtime == null)
+            // {
+            //     GameDebug.LogError("当前没有选中任何工厂，无法打开工厂界面！");
+            //     UIManager.Instance.CloseTopModal();
+            //     return;
+            // }
+            // // 初始化界面内容，比如显示工厂内部建筑等
+            // foreach (var child in runtime.FactoryInterior.Children)
+            // {
+            //     GetIndexByCellPosition(child.CellPosition);
+            //     TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition));
+            // }
         }
         private void OnDestroy()
         {
+            
             closeButton.onClick.RemoveAllListeners();
             for (int i = 0; i < itemButtons.Count; i++)
             {
+                ClearInteriorBuildingDisplay(i);
                 itemButtons[i].onClick.RemoveAllListeners();
             }
         }
@@ -84,19 +108,52 @@ namespace Kernel.UI
 
         private void OnItemButtonClicked(int index)
         {
-            // GameDebug.Log($"Item button {index} clicked.");
+            GameDebug.Log($"Item button {index} clicked.");
             selectedGridIndex = index;
             itemSelectionPanel.SetActive(true);
             // 在这里添加处理按钮点击的逻辑
         }
 
-        private void TryShowInteriorBuilding(int index)
+        private async Task<GameObject> TryShowInteriorBuilding(int index,string defID = "factory_interior_default")
         {
-            itemButtons[index].TryGetComponent<Image>(out var img);
-            if (img != null)
+            if(!BuildingDatabase.TryGet(defID, out var def))
             {
-                GameDebug.Log($"Showing interior building at index {index} with image {img.sprite.name}");
-                img.color = Color.green; // 示例操作：将按钮颜色改为绿色
+                GameDebug.LogError($"无法找到内部建筑定义，ID：{defID}");
+                return null;
+            }
+            if(def.Category != BuildingCategory.Internal)
+            {
+                GameDebug.LogError($"建筑定义不是工厂内部建筑，ID：{defID}");
+                return null;
+            }
+            if(string.IsNullOrEmpty(def.PrefabAddress))
+            {
+                GameDebug.LogError($"建筑定义没有指定预制体路径，ID：{defID}");
+                return null;
+            }
+            
+            var prefab = await AddressableRef.LoadAsync<GameObject>(def.PrefabAddress);
+            var go = prefab ? Object.Instantiate(prefab)
+                            : new GameObject($"InteriorBuilding_{defID}");
+            
+            var parent = itemButtons[index].transform;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+            return go;
+        
+        }
+
+
+
+
+        public void ClearInteriorBuildingDisplay(int index)
+        {
+            var parent = itemButtons[index].transform;
+            foreach(Transform child in parent)
+            {
+                Object.Destroy(child.gameObject);
             }
         }
 
@@ -144,17 +201,16 @@ namespace Kernel.UI
             return true;
         }
 
-        private static Vector2Int GetCellPositionByIndex(int index)
+        private Vector2Int GetCellPositionByIndex(int index)
         {
-            // 假设每行有4个格子
-            int columns = 5;
+            int columns = _columns;
             int x = index % columns;
             int y = index / columns;
             return new Vector2Int(x, y);
         }
-        private static int GetIndexByCellPosition(Vector2Int position)
+        private int GetIndexByCellPosition(Vector2Int position)
         {
-            int columns = 5;
+            int columns = _columns;
             return position.y * columns + position.x;
         }
     }

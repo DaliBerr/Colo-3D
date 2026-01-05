@@ -192,11 +192,12 @@ namespace Kernel.World
         private void Awake()
         {
             mapControls = InputActionManager.Instance.Map;
-            Instance = this;
-            if(Instance != this)
+            if(Instance != this && Instance != null)
             {
                 Destroy(gameObject);
             }
+            Instance = this;
+
             DontDestroyOnLoad(gameObject);
         }
 

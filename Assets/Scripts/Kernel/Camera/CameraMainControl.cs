@@ -30,7 +30,14 @@ namespace Kernel
         public override void HandleUpdate()
         {
             if (!CanMoveCamera())
-                return;
+            {
+                canMoveCamera = false;
+            }
+            else
+            {
+                canMoveCamera = true;
+            }
+                // return;
             // HandlePan();
             // HandleZoom();
         }

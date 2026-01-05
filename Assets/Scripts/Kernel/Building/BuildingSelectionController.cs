@@ -47,8 +47,10 @@ namespace Kernel.Building
         private void Update()
         {
             if (!IsEnableSelection())
+            {
+                // GameDebug.LogWarning("BuildingSelectionController: Selection is disabled in the current game state.");
                 return;
-
+            }
             if (IsMultiChoice())
                 CheckMultiSelection();
             else
@@ -101,9 +103,11 @@ namespace Kernel.Building
 
             Vector2 pointer = cameraControls.Camera.PointerPosition.ReadValue<Vector2>();
             Ray ray = mainCamera.ScreenPointToRay(pointer);
-
+            GameDebug.Log($"[BuildingSelectionController] Raycast from pointer {pointer}.");
             if (Physics.Raycast(ray, out var hit, 5000f, buildingLayerMask, QueryTriggerInteraction.Collide))
             {
+                GameDebug.Log($"[BuildingSelectionController] Raycast hit collider: {hit.collider.name}.");
+
                 if (!TryResolveBuildingFromHit(hit, out var hitRuntimeHost, out var hitView, out var hitId))
                     return;
 

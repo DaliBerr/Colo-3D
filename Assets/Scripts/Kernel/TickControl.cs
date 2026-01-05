@@ -56,26 +56,26 @@ namespace Kernel
             {
                 // tickDriver.UpdateTickManager(Time.unscaledDeltaTime);
                 var controller = tickDriver.tickManager.TimeCtrl;
-                if (speedControls.Speed.Normal.IsPressed()) // +
+                if (speedControls.Speed.Normal.WasPressedThisFrame()) // +
                 {
                     controller.SetPreset(GameSpeed.Normal);
                     currentSpeed = GameSpeed.Normal;
                     // Events.eventBus.Publish(new SpeedChange(1f,currentSpeed));
 
                 }
-                else if (speedControls.Speed.Fast.IsPressed()) // -
+                else if (speedControls.Speed.Fast.WasPressedThisFrame()) // -
                 {
                     controller.SetPreset(GameSpeed.Fast);
                     currentSpeed = GameSpeed.Fast;
                     // Events.eventBus.Publish(new SpeedChange(2f,currentSpeed));
                 }
-                else if (speedControls.Speed.SuperFast.IsPressed()) // ||
+                else if (speedControls.Speed.SuperFast.WasPressedThisFrame()) // ||
                 {
                     controller.SetPreset(GameSpeed.SuperFast);
                     currentSpeed = GameSpeed.SuperFast;
                     // Events.eventBus.Publish(new SpeedChange(3f,currentSpeed));
                 }
-                else if (speedControls.Speed.Pause.IsPressed())
+                else if (speedControls.Speed.Pause.WasPressedThisFrame())
                 {
                     if (currentSpeed != GameSpeed.Paused)
                     {

@@ -60,6 +60,10 @@ namespace Lonize.UI
         
         public virtual IEnumerator Show(float fade = 0.15f)
         {
+            if(!StatusController.HasStatus(currentStatus))
+            {
+                StatusController.AddStatus(currentStatus);
+            }
             OnBeforeShow();
             gameObject.SetActive(true);
             canvasGroup.blocksRaycasts = true;

@@ -174,7 +174,7 @@ namespace Kernel.Building
         /// param: r 建筑运行时
         /// return: 无
         /// </summary>
-        public void OnUnbind(BuildingRuntime r)
+        public void OnUnbind(BuildingRuntime r)  
         {
             if (RuntimeId > 0)
                 StorageSystem.Instance.Unregister(RuntimeId);

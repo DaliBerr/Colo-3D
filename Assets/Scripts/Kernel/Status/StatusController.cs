@@ -23,6 +23,16 @@ namespace Kernel.GameState
             CurrentStatus.Clear();
         }
 
+        public static void ShowStatus()
+        {
+            string statusStr = "Current Status:";
+            foreach (var status in CurrentStatus)
+            {
+                statusStr += $" {status.StatusName};";
+            }
+            GameDebug.Log(statusStr);
+        }
+
         /// <summary>
         /// 添加状态，如果存在互斥状态则添加失败；若存在允许切换的状态则自动移除旧状态。
         /// </summary>
@@ -64,6 +74,7 @@ namespace Kernel.GameState
                 }
             }
             CurrentStatus.Add(status);
+            ShowStatus();
             return true;
         }
 
@@ -95,6 +106,7 @@ namespace Kernel.GameState
             {
                 CurrentStatus.RemoveAt(idx);
             }
+            ShowStatus();
         }
 
         /// <summary>

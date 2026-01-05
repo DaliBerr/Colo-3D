@@ -62,6 +62,7 @@
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingFactory.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingComponentData.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemComponentData.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Factory\IInteriorBuildingUI.cs" />
     <Compile Include="Assets\Scripts\Lonize\Log\LogSink.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemDataBase.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\StorageDevTest.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Assets\Scripts\Lonize\Scribe\NodeFrame.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingRuntimeHost.cs" />
     <Compile Include="Assets\Scripts\Colo\Def\Building\PowerGenerator.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Factory\SampleInteriorBuildingUI.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIScale.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\GridScaleFix.cs" />

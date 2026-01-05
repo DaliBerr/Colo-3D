@@ -29,7 +29,7 @@ namespace Kernel.UI
             // UI 正在过渡：直接忽略 back
             if (UIManager.Instance.IsNavigating()) return;
 
-            if (uicontrols.UI.Router.IsPressed())
+            if (uicontrols.UI.Router.WasPressedThisFrame())
             {
                 StartCoroutine(HandleBack());
             }

@@ -97,7 +97,10 @@ namespace Lonize.UI
         }
         public async Task RequestLoadGame(string saveName)
         {
-            await  SceneManager.LoadSceneAsync("Main");
+            if(SceneManager.GetActiveScene().name != "Main")
+            {
+                await  SceneManager.LoadSceneAsync("Main");
+            }
             // 开发模式：直接切到主场景
             StatusController.AddStatus(StatusList.PlayingStatus);
             RequestStartGame();

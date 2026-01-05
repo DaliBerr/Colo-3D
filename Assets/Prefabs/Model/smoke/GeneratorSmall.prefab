@@ -74,14 +74,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
       propertyPath: m_Name
-      value: building3
+      value: GeneratorSmall
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7334464884318358205}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8166136868495789624}
@@ -95,6 +92,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1694598343273906792}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1118304197953713448}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2339688941193984849}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4640278155608388932}
     - targetCorrespondingSourceObject: {fileID: 1555330247027435675, guid: f3b23f7426b53f943af9f7ab46210b3a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5899398779299422774}
@@ -4981,80 +4987,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cc62d86984fc6245bd6f5af2ac4c601, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Colo.Animation.Smoke
---- !u!1001 &4480644163724647689
-PrefabInstance:
+--- !u!114 &1118304197953713448
+MonoBehaviour:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1456303377491196147}
-    m_Modifications:
-    - target: {fileID: 745161787350180944, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_Name
-      value: Runtime
-      objectReference: {fileID: 0}
-    - target: {fileID: 4673232694813487765, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: _selectionHighlight
-      value: 
-      objectReference: {fileID: 8797819924863636610}
-    - target: {fileID: 4673232694813487765, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: _tintRenderers.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4673232694813487765, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: '_tintRenderers.Array.data[0]'
-      value: 
-      objectReference: {fileID: 323969898811196316}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
---- !u!4 &7334464884318358205 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6622317659979732916, guid: 951af1f7d8ded4243a5be41f01b4bffa, type: 3}
-  m_PrefabInstance: {fileID: 4480644163724647689}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2269256313762488905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4688fc07c0cb894193a85e64fb76a32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kernel.Building.BuildingRuntimeHost
+  _cellX: 0
+  _cellZ: 0
+  _rotSteps: 0
+  _hasPlacement: 0
+--- !u!114 &2339688941193984849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2269256313762488905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c25780d1dfdd254991627ff592e4899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kernel.Building.BuildingView
+  _tintRenderers:
+  - {fileID: 323969898811196316}
+  _selectionHighlight: {fileID: 8797819924863636610}
+  _ghostVisual: {fileID: 0}
+  _enableOnMouseDownSelect: 0
+  _ghostOkColor: {r: 0.7, g: 1, b: 0.7, a: 0.6}
+  _ghostBlockedColor: {r: 1, g: 0.5, b: 0.5, a: 0.6}
+  _disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+--- !u!114 &4640278155608388932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2269256313762488905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14c008fadb360ab47b48f7145c3952a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kernel.Pool.BuildingPoolMember
 --- !u!1001 &8563958948683901395
 PrefabInstance:
   m_ObjectHideFlags: 0
