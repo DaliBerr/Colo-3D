@@ -78,12 +78,12 @@ namespace Lonize.Events
     public  struct BuildingSelected
     {
         // public readonly string buildingId;
-        public  BuildingRuntime buildingRuntime;
-        public long buildingId => buildingRuntime.BuildingID;
+        public  List<BuildingRuntime> buildingRuntimes;
+        public List<long> buildingIds => buildingRuntimes != null ? buildingRuntimes.ConvertAll(br => br.BuildingID) : new List<long>();
         public  bool isSelected;
-        public BuildingSelected(BuildingRuntime buildingRuntime, bool isSelected)
+        public BuildingSelected(List<BuildingRuntime> buildingRuntimes, bool isSelected)
         {
-            this.buildingRuntime = buildingRuntime;
+            this.buildingRuntimes = buildingRuntimes;
             this.isSelected = isSelected;
         }
     }
@@ -143,5 +143,28 @@ namespace Lonize.Events
         }
     }
 
+    public struct TryModifyInteriorBuildingEvent
+    {
+        public string buildingId;
+        public bool isAdd;
+        public TryModifyInteriorBuildingEvent(string buildingId, bool isAdd)
+        {
+            this.buildingId = buildingId;
+            this.isAdd = isAdd;
+        }
     }
+    
+
+    public struct FactoryGridSelected
+    {
+        public int gridIndex;
+        public bool isEmpty;
+        public FactoryGridSelected(int gridIndex, bool isEmpty)
+        {
+            this.gridIndex = gridIndex;
+            this.isEmpty = isEmpty;
+        }
+
+    }
+}
 }

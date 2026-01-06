@@ -92,24 +92,24 @@ namespace Kernel.Building
         /// param: 无
         /// return: 无
         /// </summary>
-        private void OnMouseDown()
-        {
-            if (!_enableOnMouseDownSelect)
-                return;
+        // private void OnMouseDown()
+        // {
+        //     if (!_enableOnMouseDownSelect)
+        //         return;
 
-            if (_host == null || _host.Runtime == null)
-            {
-                Log.Warn("[BuildingView] OnMouseDown but runtimeHost / Runtime is null.");
-                GameDebug.LogWarning("[BuildingView] OnMouseDown but runtimeHost / Runtime is null.");
-                return;
-            }
+        //     if (_host == null || _host.Runtime == null)
+        //     {
+        //         Log.Warn("[BuildingView] OnMouseDown but runtimeHost / Runtime is null.");
+        //         GameDebug.LogWarning("[BuildingView] OnMouseDown but runtimeHost / Runtime is null.");
+        //         return;
+        //     }
 
-            Lonize.Events.Event.eventBus.Publish(new BuildingSelected
-            {
-                buildingRuntime = _host.Runtime,
-                isSelected = true,
-            });
-        }
+        //     Lonize.Events.Event.eventBus.Publish(new BuildingSelected
+        //     {
+        //         buildingRuntime = _host.Runtime,
+        //         isSelected = true,
+        //     });
+        // }
 
         /// <summary>
         /// summary: 设置基础显示模式（互斥：Normal/Ghost/Disabled）。

@@ -117,12 +117,12 @@ namespace Kernel.Building
                 // 如果当前只选中一个且就是它：再次点击 => 清空
                 if (_selectedHosts.Count == 1 && _selectedHosts.ContainsKey(hitId))
                 {
-                    ClearSelection();
+                    ClearSelection(publishEvent: true);
                     return;
                 }
 
                 // 否则：清空全部，再选中当前
-                ClearSelection();
+                ClearSelection(publishEvent: false);
 
                 SelectBuilding(hitId, hitRuntimeHost, hitView, publishEvent: true);
             }
@@ -166,26 +166,15 @@ namespace Kernel.Building
                 GameDebug.Log($"[MultiSelection] Click building id: {hitId}, selectedCount: {_selectedHosts.Count}");
                 Log.Info($"[BuildingSelectionController] Multi click building id: {hitId}, selectedCount: {_selectedHosts.Count}");
 
-                // 已选中 => 取消选中（需要对外发事件）
+                // 已选中 => 取消选中（对外发布“当前选中快照”事件）
                 if (_selectedHosts.ContainsKey(hitId))
                 {
                     DeselectBuilding(hitId, publishEvent: true);
-
-                    // 如果删完了，维持历史语义：发一个 runtime=null 的“无选中”事件
-                    if (_selectedHosts.Count == 0)
-                    {
-                        Lonize.Events.Event.eventBus.Publish(new BuildingSelected
-                        {
-                            buildingRuntime = null,
-                            isSelected = false
-                        });
-                    }
-
                     return;
                 }
 
                 // 未选中 => 加入选中（需要对外发事件）
-                SelectBuilding(hitId, hitRuntimeHost, hitView, publishEvent: false);
+                SelectBuilding(hitId, hitRuntimeHost, hitView, publishEvent: true);
             }
             else
             {
@@ -256,12 +245,9 @@ namespace Kernel.Building
 
             if (publishEvent)
             {
-                Lonize.Events.Event.eventBus.Publish(new BuildingSelected
-                {
-                    buildingRuntime = host.Runtime,
-                    isSelected = true
-                });
+                PublishSelectionSnapshot();
             }
+
         }
 
         /// <summary>
@@ -275,26 +261,56 @@ namespace Kernel.Building
             if (_selectedViews.TryGetValue(id, out var view) && view != null)
                 view.SetSelected(false);
 
-            if (publishEvent && _selectedHosts.TryGetValue(id, out var host) && host != null && host.Runtime != null)
-            {
-                // 注意：这是“单个建筑被取消选中”的事件（用于 Shift 多选非常关键）
-                Lonize.Events.Event.eventBus.Publish(new BuildingSelected
-                {
-                    buildingRuntime = host.Runtime,
-                    isSelected = false
-                });
-            }
-
             _selectedViews.Remove(id);
             _selectedHosts.Remove(id);
+
+            if (publishEvent)
+            {
+                PublishSelectionSnapshot();
+            }
+
+        }
+
+
+        /// <summary>
+        /// summary: 构建当前选中建筑的运行时快照（用于事件发布，避免外部持有内部字典引用）。
+        /// param: 无
+        /// return: 选中建筑的运行时列表快照（可能为空列表）
+        /// </summary>
+        private List<BuildingRuntime> BuildSelectedRuntimeSnapshot()
+        {
+            if (_selectedHosts.Count == 0)
+                return new List<BuildingRuntime>();
+
+            var list = new List<BuildingRuntime>(_selectedHosts.Count);
+            foreach (var kv in _selectedHosts)
+            {
+                var host = kv.Value;
+                if (host == null || host.Runtime == null)
+                    continue;
+
+                list.Add(host.Runtime);
+            }
+            return list;
         }
 
         /// <summary>
-        /// summary: 清空所有选中（不发布“每个建筑的取消事件”，只保留历史语义：runtime=null, isSelected=false）。
+        /// summary: 发布“当前选中集合”的 BuildingSelected 事件（List 版）。
         /// param: 无
         /// return: 无
         /// </summary>
-        private void ClearSelection()
+        private void PublishSelectionSnapshot()
+        {
+            var runtimes = BuildSelectedRuntimeSnapshot();
+            Lonize.Events.Event.eventBus.Publish(new BuildingSelected(runtimes, runtimes.Count > 0));
+        }
+
+        /// <summary>
+        /// summary: 清空所有选中（发布 List 版 BuildingSelected：空列表 + isSelected=false）。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void ClearSelection(bool publishEvent = true)
         {
             if (_selectedViews.Count > 0)
             {
@@ -308,13 +324,13 @@ namespace Kernel.Building
             _selectedViews.Clear();
             _selectedHosts.Clear();
 
-            Lonize.Events.Event.eventBus.Publish(new BuildingSelected
+            if (publishEvent)
             {
-                buildingRuntime = null,
-                isSelected = false
-            });
+                PublishSelectionSnapshot();
+            }
 
             Log.Info("[BuildingSelectionController] Clear selection (all).");
+
         }
     }
 }

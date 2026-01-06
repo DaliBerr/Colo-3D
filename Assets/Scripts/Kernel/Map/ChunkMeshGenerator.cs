@@ -320,7 +320,7 @@ namespace Kernel.World
             sw.Stop();
             if (logTime)
             {
-                GameDebug.Log($"[ChunkMeshGenerator] 生成完成：{width}×{height}，耗时 {sw.ElapsedMilliseconds} ms");
+                // GameDebug.Log($"[ChunkMeshGenerator] 生成完成：{width}×{height}，耗时 {sw.ElapsedMilliseconds} ms");
                 Log.Info($"[ChunkMeshGenerator] 生成完成：{width}×{height}，耗时 {sw.ElapsedMilliseconds} ms");
             }
 

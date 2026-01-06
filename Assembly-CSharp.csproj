@@ -147,6 +147,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\OptionConfirmPopupModal.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\ScribeDeep.cs" />
     <Compile Include="Assets\Scripts\Lonize\Log\LogForwarder.cs" />
+    <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Factory\FactoryGridSelectionUI.cs" />
     <Compile Include="Assets\Scripts\Kernel\Nav\PathfindingService.cs" />
     <Compile Include="Assets\Scripts\Lonize\Tick\Tick.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\MiniMap.cs" />

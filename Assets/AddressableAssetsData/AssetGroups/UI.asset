@@ -33,6 +33,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5078c826af20e024d8f9d593804cadf5
+    m_Address: Prefabs/UI/Sub UI/Factory/FactoryGridSelectionUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 51dcfdd85e847f54594bed153c79545e
     m_Address: Prefabs/UI/OptionPopup
     m_ReadOnly: 0

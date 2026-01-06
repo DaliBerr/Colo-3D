@@ -122,6 +122,13 @@ namespace Kernel.UI
         
         private void TryOpenFactoryUI()
         {
+            var runtime = BuildingFactoryController.Instance.GetCurrentFactoryRuntime();
+            if (runtime == null)
+            {
+                GameDebug.LogError("当前没有选中任何工厂，无法初始化工厂界面！");
+                UIManager.Instance.CloseTopModal();
+                return;
+            }
             StartCoroutine(UIManager.Instance.ShowModalAndWait<FactoryUI>());
         }
     }

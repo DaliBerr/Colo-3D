@@ -11,6 +11,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using static Lonize.Events.EventList;
 
 namespace Kernel.UI
 {
@@ -20,10 +21,10 @@ namespace Kernel.UI
 
         [SerializeField] private Button closeButton;
         [SerializeField] private List<Button> itemButtons = new List<Button>();
-        [SerializeField] private GameObject itemSelectionPanel;
+        // [SerializeField] private GameObject gridSelectedPanel;
         
         //Obsolete
-        [SerializeField] private Button AddInteriorBuildingButton;
+        // [SerializeField] private Button AddInteriorBuildingButton;
 
         [SerializeField] private static readonly byte  _columns = 7;
 
@@ -31,18 +32,20 @@ namespace Kernel.UI
 
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
 
-        protected override void OnInit()
+        private void OnEnable()
         {
-            closeButton.onClick.AddListener(TryCloseUI);
-            for(int i = 0; i < itemButtons.Count; i++)
-            {
-                int index = i; // 捕获当前索引
-                itemButtons[i].onClick.AddListener(() => OnItemButtonClicked(index));
-            }
-            AddInteriorBuildingButton.onClick.AddListener(() =>
-            {
+            Lonize.Events.Event.eventBus.Subscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
 
-                if (TryAddInteriorBuilding("factory_interior_default", selectedGridIndex))
+            _ = InitInteriorShow();
+        }
+        private void OnDisable()
+        {
+            Lonize.Events.Event.eventBus.Unsubscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
+        }
+
+        private void OnTryAddInteriorBuildingEvent(TryModifyInteriorBuildingEvent evt)
+        {
+            if (TryAddInteriorBuilding(evt.buildingId, selectedGridIndex))
                 {
                     _ = TryShowInteriorBuilding(selectedGridIndex);
                     BuildingFactory.InitializeInternalBehaviours(
@@ -53,7 +56,26 @@ namespace Kernel.UI
                 }
                 
                 GameDebug.Log("Add Interior Building Button Clicked - Obsolete");
-            });
+        }
+
+        protected override void OnInit()
+        {
+            closeButton.onClick.AddListener(TryCloseUI);
+            for(int i = 0; i < itemButtons.Count; i++)
+            {
+                int index = i; // 捕获当前索引
+                itemButtons[i].onClick.AddListener(() =>
+                {
+                    OnItemButtonClicked(index);
+                    Lonize.Events.Event.eventBus.Publish(new FactoryGridSelected(index,CheckEmptyAtIndex(index)));
+                });
+                
+            }
+            // AddInteriorBuildingButton.onClick.AddListener(() =>
+            // {
+
+
+            // });
         }
 
         private async Task InitInteriorShow()
@@ -73,23 +95,6 @@ namespace Kernel.UI
             }
         }
 
-        private void OnEnable()
-        {
-            _ = InitInteriorShow();
-            // var runtime = BuildingFactoryController.Instance.GetCurrentFactoryRuntime();
-            // if (runtime == null)
-            // {
-            //     GameDebug.LogError("当前没有选中任何工厂，无法打开工厂界面！");
-            //     UIManager.Instance.CloseTopModal();
-            //     return;
-            // }
-            // // 初始化界面内容，比如显示工厂内部建筑等
-            // foreach (var child in runtime.FactoryInterior.Children)
-            // {
-            //     GetIndexByCellPosition(child.CellPosition);
-            //     TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition));
-            // }
-        }
         private void OnDestroy()
         {
             
@@ -110,7 +115,8 @@ namespace Kernel.UI
         {
             GameDebug.Log($"Item button {index} clicked.");
             selectedGridIndex = index;
-            itemSelectionPanel.SetActive(true);
+            // gridSelectedPanel.SetActive(true);
+            UIManager.Instance.ShowModal<FactoryGridSelectionUI>();
             // 在这里添加处理按钮点击的逻辑
         }
 
@@ -157,6 +163,22 @@ namespace Kernel.UI
             }
         }
 
+        private bool CheckEmptyAtIndex(int index)
+        {
+            var factoryCtrl = BuildingFactoryController.Instance;
+            var currentFactoryRuntime = factoryCtrl.GetCurrentFactoryRuntime();
+            Vector2Int position = GetCellPositionByIndex(index);
+            foreach (var child in currentFactoryRuntime.FactoryInterior.Children)
+            {
+                if (child.CellPosition == position)
+                {
+                    // GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
+                    return false;
+                }
+            }
+                return true;
+        }
+
         private bool TryAddInteriorBuilding(string defID, int index)
         {
             var factoryCtrl = BuildingFactoryController.Instance;
@@ -169,20 +191,21 @@ namespace Kernel.UI
                 return false;
             }
             
+            CheckEmptyAtIndex(index);
             Vector2Int position = GetCellPositionByIndex(index);
-            // 2. 检查位置是否被占用了 (简单防呆)
-            // 遍历当前的所有子建筑，看看有没有人在这个格子上
-            if (currentFactoryRuntime.FactoryInterior != null)
-            {
-                foreach (var child in currentFactoryRuntime.FactoryInterior.Children)
-                {
-                    if (child.CellPosition == position)
-                    {
-                        GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
-                        return false;
-                    }
-                }
-            }
+            // // 2. 检查位置是否被占用了 (简单防呆)
+            // // 遍历当前的所有子建筑，看看有没有人在这个格子上
+            // if (currentFactoryRuntime.FactoryInterior != null)
+            // {
+            //     foreach (var child in currentFactoryRuntime.FactoryInterior.Children)
+            //     {
+            //         if (child.CellPosition == position)
+            //         {
+            //             GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
+            //             return false;
+            //         }
+            //     }
+            // }
 
             var newChild = BuildingFactory.CreateInternalRuntime(
             currentFactoryRuntime.BuildingID, // 父建筑 ID
