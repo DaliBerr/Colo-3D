@@ -184,7 +184,30 @@ namespace Kernel.Building
         
 
     }
-        public static async Task<Sprite> LoadIconAsync(BuildingDef def) =>
-            await AddressableRef.LoadAsync<Sprite>(def.IconAddress);
+    public static async Task<Sprite> LoadIconAsync(BuildingDef def) =>
+        await AddressableRef.LoadAsync<Sprite>(def.IconAddress);
+
+    /// <summary>
+    /// summary: 构建工厂合成行为并绑定到运行时。
+    /// param: runtime 工厂建筑运行时
+    /// return: 构建的合成行为，失败返回 null
+    /// </summary>
+    public static FactoryCompositeBehaviour BuildFactoryCompositeBehaviour(BuildingRuntime runtime)
+    {
+        if (runtime == null)
+        {
+            return null;
+        }
+
+        if (runtime.CompositeBehaviour != null)
+        {
+            runtime.CompositeBehaviour.OnUnbind(runtime);
+        }
+
+        var composite = new FactoryCompositeBehaviour();
+        composite.OnBind(runtime);
+        runtime.CompositeBehaviour = composite;
+        return composite;
+    }
     }
 }

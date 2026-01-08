@@ -29,6 +29,7 @@ namespace Kernel.Building
         public Dictionary<string, float> RuntimeStats = new();
         [SerializeField] public BuildingCategory Category = BuildingCategory.Single;
         [SerializeField] public FactoryInteriorRuntime FactoryInterior = new();
+        public FactoryCompositeBehaviour CompositeBehaviour;
 
         /// <summary>
         /// summary: 确保工厂内部数据已初始化。
