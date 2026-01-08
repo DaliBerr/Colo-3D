@@ -478,7 +478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f43e0a215710c443878eb29b119fa07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.CameraMainControl
-  moveSpeed: 40
+  moveSpeed: 90
   rotateSpeed: 180
   groundMask:
     serializedVersion: 2
@@ -489,10 +489,10 @@ MonoBehaviour:
   minPitchDeg: 15
   maxPitchDeg: 80
   invertPitch: 0
-  zoomSpeedOrtho: 2
+  zoomSpeedOrtho: 10
   minOrthoSize: 5
   maxOrthoSize: 40
-  zoomSpeedFov: 40
+  zoomSpeedFov: 120
   minFov: 20
   maxFov: 90
   enableGroundFollow: 1
@@ -502,6 +502,7 @@ MonoBehaviour:
   rayMaxDistance: 5000
   sampleUnderCamera: 1
   maxVerticalSpeed: 200
+  canMoveCamera: 1
 --- !u!4 &597903023
 Transform:
   m_ObjectHideFlags: 0

@@ -22,6 +22,10 @@ namespace Kernel.UI
             closeButton.onClick.AddListener(OnCloseButtonClicked);
             addButton.onClick.AddListener(OnAddButtonClicked);
             removeButton.onClick.AddListener(OnRemoveButtonClicked);
+
+            removeButton.gameObject.SetActive(false);
+            addButton.gameObject.SetActive(false);
+            closeButton.gameObject.SetActive(true);
         }
 
         private void OnCloseButtonClicked()
@@ -55,6 +59,7 @@ namespace Kernel.UI
             // 根据 evt.isEmpty 来决定按钮的状态
             if (evt.isEmpty)
             {
+                GameDebug.Log($"addButton GameObject {addButton.gameObject.name} set to active.");
                 addButton.gameObject.SetActive(true);
                 removeButton.gameObject.SetActive(false);
             }

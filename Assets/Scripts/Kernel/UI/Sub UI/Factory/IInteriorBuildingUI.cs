@@ -15,18 +15,18 @@ namespace Kernel.UI
         {
             for (int i = 0; i < InputButtons.Count; i++)
             {
-                InputButtons[i].onClick.AddListener(() => 
+                int index_i = i;
+                InputButtons[index_i].onClick.AddListener(() => 
                 {
-                    int index = i;
-                    OnInputButtonClicked(index);
+                    OnInputButtonClicked(index_i);
                 });
             }
             for (int i = 0; i < OutputButtons.Count; i++)
             {
-                OutputButtons[i].onClick.AddListener(() => 
+                int index_o = i;
+                OutputButtons[index_o].onClick.AddListener(() => 
                 {
-                    int index = i;
-                    OnOutputButtonClicked(index);
+                    OnOutputButtonClicked(index_o);
                 });
             }
         }

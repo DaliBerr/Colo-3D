@@ -45,19 +45,105 @@ namespace Kernel.UI
 
         private void OnTryAddInteriorBuildingEvent(TryModifyInteriorBuildingEvent evt)
         {
-            if (TryAddInteriorBuilding(evt.buildingId, selectedGridIndex))
+            // 防呆：grid index 合法性
+            if (!IsValidGridIndex(selectedGridIndex))
+            {
+                GameDebug.LogWarning($"[FactoryUI] selectedGridIndex 越界：{selectedGridIndex} / itemButtons={itemButtons?.Count ?? 0}");
+                return;
+            }
+
+            if (!evt.isAdd)
+            {
+                TryRemoveInteriorBuilding(selectedGridIndex);
+                GameDebug.Log("[FactoryUI] Remove Interior Building");
+                return;
+            }
+
+            // ✅ 关键：TryAdd 时把“新建的 child runtime”直接拿出来
+            if (TryAddInteriorBuilding(evt.buildingId, selectedGridIndex, out var addedChild))
+            {
+                _ = TryShowInteriorBuilding(selectedGridIndex, evt.buildingId);
+
+                if (addedChild != null)
                 {
-                    _ = TryShowInteriorBuilding(selectedGridIndex);
-                    BuildingFactory.InitializeInternalBehaviours(
-                        BuildingFactoryController.Instance.GetCurrentFactoryRuntime()
-                        .FactoryInterior.Children[selectedGridIndex]
-                    );
-                    GameDebug.Log("Successfully added interior building.");
+                    BuildingFactory.InitializeInternalBehaviours(addedChild);
                 }
-                
-                GameDebug.Log("Add Interior Building Button Clicked - Obsolete");
+                else
+                {
+                    GameDebug.LogWarning("[FactoryUI] 添加成功但 addedChild 为 null，跳过 InitializeInternalBehaviours");
+                }
+
+                GameDebug.Log("[FactoryUI] Successfully added interior building.");
+            }
+            else
+            {
+                GameDebug.LogWarning("[FactoryUI] Failed to add interior building.");
+            }
+        }
+        /// <summary>
+        /// summary: 尝试在指定格子添加内部建筑，并返回新建的运行时数据。
+        /// param: defID 内部建筑定义ID
+        /// param: index 工厂内部格子索引
+        /// param: addedChild 成功时返回新建的子建筑运行时
+        /// return: 是否添加成功
+        /// </summary>
+        private bool TryAddInteriorBuilding(string defID, int index, out FactoryChildRuntime addedChild)
+        {
+            addedChild = null;
+
+            var factoryCtrl = BuildingFactoryController.Instance;
+            if (factoryCtrl == null) return false;
+
+            var currentFactoryRuntime = factoryCtrl.GetCurrentFactoryRuntime();
+            if (currentFactoryRuntime == null)
+            {
+                GameDebug.LogWarning("当前没有选中任何工厂，无法添加内部建筑哦！");
+                return false;
+            }
+
+            if (!IsValidGridIndex(index))
+            {
+                GameDebug.LogWarning($"[FactoryUI] TryAddInteriorBuilding index 越界：{index}");
+                return false;
+            }
+
+            // ✅ 关键：位置不为空就直接退出（你原来调用了但没用返回值）
+            if (!CheckEmptyAtIndex(index))
+            {
+                GameDebug.LogWarning($"[FactoryUI] 格子 {index} 非空，添加取消。");
+                return false;
+            }
+
+            Vector2Int position = GetCellPositionByIndex(index);
+
+            var newChild = BuildingFactory.CreateInternalRuntime(
+                currentFactoryRuntime.BuildingID,
+                defID,
+                position
+            );
+
+            if (newChild == null)
+            {
+                GameDebug.LogError($"创建失败，可能是 Def ID {defID} 不存在或者类型不对。");
+                return false;
+            }
+
+            currentFactoryRuntime.EnsureFactoryInterior().Children.Add(newChild);
+            addedChild = newChild;
+
+            GameDebug.Log($"✨ 成功向工厂 {currentFactoryRuntime.BuildingID} 添加了内部建筑 {defID} @ {position}");
+            return true;
         }
 
+        /// <summary>
+        /// summary: 检查工厂UI格子索引是否有效。
+        /// param: index 格子索引
+        /// return: 是否有效
+        /// </summary>
+        private bool IsValidGridIndex(int index)
+        {
+            return itemButtons != null && index >= 0 && index < itemButtons.Count;
+        }
         protected override void OnInit()
         {
             closeButton.onClick.AddListener(TryCloseUI);
@@ -67,7 +153,6 @@ namespace Kernel.UI
                 itemButtons[i].onClick.AddListener(() =>
                 {
                     OnItemButtonClicked(index);
-                    Lonize.Events.Event.eventBus.Publish(new FactoryGridSelected(index,CheckEmptyAtIndex(index)));
                 });
                 
             }
@@ -116,12 +201,31 @@ namespace Kernel.UI
             GameDebug.Log($"Item button {index} clicked.");
             selectedGridIndex = index;
             // gridSelectedPanel.SetActive(true);
-            UIManager.Instance.ShowModal<FactoryGridSelectionUI>();
+            StartCoroutine(ShowFactoryGridSelectionUI());
             // 在这里添加处理按钮点击的逻辑
+        }
+
+        private IEnumerator ShowFactoryGridSelectionUI()
+        {
+            yield return UIManager.Instance.ShowModalAndWait<FactoryGridSelectionUI>();
+            bool isEmpty = CheckEmptyAtIndex(selectedGridIndex);
+            var evt = new FactoryGridSelected(selectedGridIndex,isEmpty);
+            while(!(UIManager.Instance.GetTopModal() is FactoryGridSelectionUI))
+            {
+                yield return null;
+            }
+
+            Lonize.Events.Event.eventBus.Publish(evt);
         }
 
         private async Task<GameObject> TryShowInteriorBuilding(int index,string defID = "factory_interior_default")
         {
+            if(!IsValidGridIndex(index))
+            {
+                GameDebug.LogError($"[FactoryUI] TryShowInteriorBuilding index 越界：{index}");
+                return null;
+            }
+
             if(!BuildingDatabase.TryGet(defID, out var def))
             {
                 GameDebug.LogError($"无法找到内部建筑定义，ID：{defID}");
@@ -176,7 +280,37 @@ namespace Kernel.UI
                     return false;
                 }
             }
+            GameDebug.Log($"位置 {position} 是空的，可以添加建筑。");
                 return true;
+        }
+
+        private bool TryRemoveInteriorBuilding(int index)
+        {
+            var factoryCtrl = BuildingFactoryController.Instance;
+            if (factoryCtrl == null) return false;
+
+            var currentFactoryRuntime = factoryCtrl.GetCurrentFactoryRuntime();
+            if (currentFactoryRuntime == null)
+            {
+                GameDebug.LogWarning("当前没有选中任何工厂，无法移除内部建筑哦！");
+                return false;
+            }
+            
+            Vector2Int position = GetCellPositionByIndex(index);
+            for (int i = 0; i < currentFactoryRuntime.FactoryInterior.Children.Count; i++)
+            {
+                var child = currentFactoryRuntime.FactoryInterior.Children[i];
+                if (child.CellPosition == position)
+                {
+                    currentFactoryRuntime.FactoryInterior.Children.RemoveAt(i);
+                    ClearInteriorBuildingDisplay(index);
+                    GameDebug.Log($"🗑️ 成功移除了工厂 {currentFactoryRuntime.BuildingID} 内部建筑 @ {position}");
+                    return true;
+                }
+            }
+
+            GameDebug.LogWarning($"位置 {position} 没有建筑，无法移除。");
+            return false;
         }
 
         private bool TryAddInteriorBuilding(string defID, int index)

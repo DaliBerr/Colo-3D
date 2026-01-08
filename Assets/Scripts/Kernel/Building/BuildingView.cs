@@ -37,7 +37,7 @@ namespace Kernel.Building
         [SerializeField] private GameObject _ghostVisual;
 
         [Header("交互（建议由 BuildingSelectionController 统一处理）")]
-        [SerializeField] private bool _enableOnMouseDownSelect = false;
+        // [SerializeField] private bool _enableOnMouseDownSelect = false;
 
         [Header("颜色配置")]
         [SerializeField] private Color _ghostOkColor = new Color(0.7f, 1f, 0.7f, 0.6f);

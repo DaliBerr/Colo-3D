@@ -190,7 +190,6 @@ namespace Lonize.UI
         // return: 用于yield的协程枚举器。
         public IEnumerator PushScreenAndWait<T>() where T : UIScreen
         {
-
             yield return RunNavigationLockedWait(PushScreenCo<T>());
         }
 
@@ -217,6 +216,9 @@ namespace Lonize.UI
         {
             yield return RunNavigationLockedWait(ShowModalCo<T>());
         }
+
+
+
         public void PopScreen()
         {
             // Debug.Log("Popping screen.");

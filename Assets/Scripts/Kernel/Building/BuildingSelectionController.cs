@@ -89,7 +89,7 @@ namespace Kernel.Building
         {
             if (mainCamera == null)
             {
-                GameDebug.LogWarning("BuildingSelectionController: Main camera is not assigned.");
+                // GameDebug.LogWarning("BuildingSelectionController: Main camera is not assigned.");
                 return;
             }
 
@@ -103,10 +103,10 @@ namespace Kernel.Building
 
             Vector2 pointer = cameraControls.Camera.PointerPosition.ReadValue<Vector2>();
             Ray ray = mainCamera.ScreenPointToRay(pointer);
-            GameDebug.Log($"[BuildingSelectionController] Raycast from pointer {pointer}.");
+            // GameDebug.Log($"[BuildingSelectionController] Raycast from pointer {pointer}.");
             if (Physics.Raycast(ray, out var hit, 5000f, buildingLayerMask, QueryTriggerInteraction.Collide))
             {
-                GameDebug.Log($"[BuildingSelectionController] Raycast hit collider: {hit.collider.name}.");
+                // GameDebug.Log($"[BuildingSelectionController] Raycast hit collider: {hit.collider.name}.");
 
                 if (!TryResolveBuildingFromHit(hit, out var hitRuntimeHost, out var hitView, out var hitId))
                     return;
@@ -143,7 +143,7 @@ namespace Kernel.Building
         {
             if (mainCamera == null)
             {
-                GameDebug.LogWarning("BuildingSelectionController: Main camera is not assigned.");
+                // GameDebug.LogWarning("BuildingSelectionController: Main camera is not assigned.");
                 return;
             }
 
