@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using Kernel.Factory.Connections;
 using Lonize.Logging;
 using Lonize.Scribe;
 using UnityEngine;
@@ -25,6 +26,9 @@ namespace Kernel.Building
 
         // 工厂内部子建筑存档
         public List<SaveFactoryBuildingInstance> InteriorBuildings;
+
+        // 工厂内部连接存档
+        public List<SaveFactoryConnectionLink> InteriorLinks;
     }
 
     public class SaveFactoryBuildingInstance
@@ -39,6 +43,21 @@ namespace Kernel.Building
 
         public string[] StatKeys;
         public float[] StatValues;
+    }
+
+    public class SaveFactoryConnectionLink
+    {
+        public long LinkId;
+
+        public long AFactoryId;
+        public long ALocalId;
+        public string APortId;
+
+        public long BFactoryId;
+        public long BLocalId;
+        public string BPortId;
+
+        public ConnectionChannel Channel;
     }
     /// <summary>
     /// 全部建筑的存档数据（作为一个 ISaveItem 被 Scribe 管理）。

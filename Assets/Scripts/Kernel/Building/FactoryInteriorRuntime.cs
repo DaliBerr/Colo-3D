@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kernel.Factory.Connections;
 using Lonize.Logging;
 using Lonize.Tick;
 using UnityEngine;
@@ -40,6 +41,8 @@ namespace Kernel.Building
     public class FactoryInteriorRuntime
     {
         public List<FactoryChildRuntime> Children = new();
+        public FactoryInteriorConnectionsRuntime Connections = new();
+        public List<SaveFactoryConnectionLink> InteriorLinks = new();
         public void Tick(int ticks)
         {
             if (Children == null) return;
@@ -100,8 +103,14 @@ namespace Kernel.Building
         /// </summary>
         public List<SaveFactoryBuildingInstance> CreateSaveData()
         {
+            Connections ??= new FactoryInteriorConnectionsRuntime();
             if (Children == null || Children.Count == 0)
+            {
+                InteriorLinks = Connections != null
+                    ? Connections.ExportLinksForSave()
+                    : new List<SaveFactoryConnectionLink>();
                 return new List<SaveFactoryBuildingInstance>();
+            }
 
             var list = new List<SaveFactoryBuildingInstance>(Children.Count);
             foreach (var child in Children)
@@ -122,17 +131,26 @@ namespace Kernel.Building
                 list.Add(data);
             }
 
+            InteriorLinks = Connections != null
+                ? Connections.ExportLinksForSave()
+                : new List<SaveFactoryConnectionLink>();
+
             return list;
         }
 
         /// <summary>
-        /// summary: 根据存档数据还原工厂内部子建筑列表。
+        /// summary: 根据存档数据还原工厂内部子建筑列表与连接缓存。
         /// param: list 子建筑存档列表
+        /// param: links 连接存档列表
         /// return: 无
         /// </summary>
-        public void ApplySaveData(List<SaveFactoryBuildingInstance> list)
+        public void ApplySaveData(List<SaveFactoryBuildingInstance> list, List<SaveFactoryConnectionLink> links = null)
         {
             Clear();
+            Connections ??= new FactoryInteriorConnectionsRuntime();
+            InteriorLinks = links != null
+                ? new List<SaveFactoryConnectionLink>(links)
+                : new List<SaveFactoryConnectionLink>();
 
             if (list == null || list.Count == 0)
                 return;
