@@ -97,6 +97,7 @@ namespace Kernel.Factory.Connections
         public PortDirection Direction { get; }
         public ConnectionChannel Channel { get; }
         public int MaxLinks { get; } // <=0 表示不限制
+        public bool Required { get; }
 
         /// <summary>
         /// summary: 创建端口信息。
@@ -104,14 +105,16 @@ namespace Kernel.Factory.Connections
         /// param: direction 输入/输出/双向
         /// param: channel 通道类型
         /// param: maxLinks 最大连接数（<=0 不限制）
+        /// param: required 是否为必需端口
         /// return: 端口信息
         /// </summary>
-        public PortInfo(PortKey key, PortDirection direction, ConnectionChannel channel, int maxLinks = 1)
+        public PortInfo(PortKey key, PortDirection direction, ConnectionChannel channel, int maxLinks = 1, bool required = false)
         {
             Key = key;
             Direction = direction;
             Channel = channel;
             MaxLinks = maxLinks;
+            Required = required;
         }
     }
 
@@ -469,6 +472,19 @@ namespace Kernel.Factory.Connections
             var result = new List<LinkInfo>(_links.Count);
             foreach (var link in _links.Values)
                 result.Add(link);
+            return result;
+        }
+
+        /// <summary>
+        /// summary: 获取全部端口信息（只读拷贝）。
+        /// param: 无
+        /// return: 端口信息列表
+        /// </summary>
+        public List<PortInfo> GetAllPorts()
+        {
+            var result = new List<PortInfo>(_ports.Count);
+            foreach (var port in _ports.Values)
+                result.Add(port);
             return result;
         }
 

@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// [UIPrefab("Prefabs/UI/PopupPrefab")]
+[UIPrefab("Prefabs/UI/Popup/Pop-up Prefab")]
 public class PopupModal : UIScreen
 {
     public override Status currentStatus  => StatusList.PopUpStatus;
