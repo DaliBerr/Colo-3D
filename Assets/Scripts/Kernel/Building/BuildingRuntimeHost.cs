@@ -31,13 +31,16 @@ namespace Kernel.Building
         {
             if (Runtime != null && Runtime.Def != null && Runtime.Def.Category == BuildingCategory.Factory)
             {
-                FactoryCompositeBehaviour composite = null;
-                foreach (var behaviour in Behaviours)
+                FactoryCompositeBehaviour composite = Runtime.CompositeBehaviour;
+                if (composite == null)
                 {
-                    if (behaviour is FactoryCompositeBehaviour factoryComposite)
+                    foreach (var behaviour in Behaviours)
                     {
-                        composite = factoryComposite;
-                        break;
+                        if (behaviour is FactoryCompositeBehaviour factoryComposite)
+                        {
+                            composite = factoryComposite;
+                            break;
+                        }
                     }
                 }
 

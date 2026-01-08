@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kernel;
 using Kernel.Building;
+using Kernel.Factory.Connections;
 using Kernel.GameState;
 using Lonize;
 using Lonize.Logging;
@@ -20,6 +21,7 @@ namespace Kernel.UI
     {
 
         [SerializeField] private Button closeButton;
+        [SerializeField] private Button applyDesignButton;
         [SerializeField] private List<Button> itemButtons = new List<Button>();
         // [SerializeField] private GameObject gridSelectedPanel;
         
@@ -27,6 +29,7 @@ namespace Kernel.UI
         // [SerializeField] private Button AddInteriorBuildingButton;
 
         [SerializeField] private static readonly byte  _columns = 7;
+        [SerializeField] private List<FactoryUILinkData> uiLinks = new List<FactoryUILinkData>();
 
         private int selectedGridIndex = 0;
 
@@ -147,6 +150,10 @@ namespace Kernel.UI
         protected override void OnInit()
         {
             closeButton.onClick.AddListener(TryCloseUI);
+            if (applyDesignButton != null)
+            {
+                applyDesignButton.onClick.AddListener(OnApplyDesignButtonClicked);
+            }
             for(int i = 0; i < itemButtons.Count; i++)
             {
                 int index = i; // 捕获当前索引
@@ -184,12 +191,95 @@ namespace Kernel.UI
         {
             
             closeButton.onClick.RemoveAllListeners();
+            if (applyDesignButton != null)
+            {
+                applyDesignButton.onClick.RemoveAllListeners();
+            }
             for (int i = 0; i < itemButtons.Count; i++)
             {
                 ClearInteriorBuildingDisplay(i);
                 itemButtons[i].onClick.RemoveAllListeners();
             }
         }
+        /// <summary>
+        /// summary: 点击完成/应用设计按钮。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void OnApplyDesignButtonClicked()
+        {
+            ApplyFactoryDesign();
+        }
+
+        /// <summary>
+        /// summary: 应用当前工厂内部设计并生成合成行为。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void ApplyFactoryDesign()
+        {
+            var factoryCtrl = BuildingFactoryController.Instance;
+            if (factoryCtrl == null)
+            {
+                GameDebug.LogWarning("[FactoryUI] 未找到 BuildingFactoryController，无法应用设计。");
+                return;
+            }
+
+            var runtime = factoryCtrl.GetCurrentFactoryRuntime();
+            if (runtime == null)
+            {
+                GameDebug.LogWarning("[FactoryUI] 当前没有选中工厂，无法应用设计。");
+                return;
+            }
+
+            var interior = runtime.EnsureFactoryInterior();
+            var children = interior.Children;
+
+            interior.Connections ??= new FactoryInteriorConnectionsRuntime();
+            interior.Connections.RebindAllPorts(children);
+            BuildLinksFromUI(interior.Connections, runtime.BuildingID);
+            interior.InteriorLinks = interior.Connections.ExportLinksForSave();
+
+            BuildingFactory.BuildFactoryCompositeBehaviour(runtime);
+            GameDebug.Log("[FactoryUI] 工厂内部设计已应用完成。");
+        }
+
+        /// <summary>
+        /// summary: 根据 UI 连接数据创建连接图 Link。
+        /// param: connections 连接运行时
+        /// param: factoryId 默认工厂ID
+        /// return: 成功创建的连接数量
+        /// </summary>
+        private int BuildLinksFromUI(FactoryInteriorConnectionsRuntime connections, long factoryId)
+        {
+            if (connections == null || uiLinks == null || uiLinks.Count == 0)
+            {
+                return 0;
+            }
+
+            int createdCount = 0;
+            for (int i = 0; i < uiLinks.Count; i++)
+            {
+                var link = uiLinks[i];
+                var aFactoryId = link.AFactoryId > 0 ? link.AFactoryId : factoryId;
+                var bFactoryId = link.BFactoryId > 0 ? link.BFactoryId : factoryId;
+
+                var a = new PortKey(aFactoryId, link.ALocalId, link.APortId);
+                var b = new PortKey(bFactoryId, link.BLocalId, link.BPortId);
+
+                if (connections.TryCreateLink(a, b, out _, out var error))
+                {
+                    createdCount++;
+                }
+                else
+                {
+                    GameDebug.LogWarning($"[FactoryUI] 连接创建失败: {error}");
+                }
+            }
+
+            return createdCount;
+        }
+
 
         private void TryCloseUI()
         {
@@ -369,6 +459,17 @@ namespace Kernel.UI
         {
             int columns = _columns;
             return position.y * columns + position.x;
+        }
+
+        [System.Serializable]
+        private struct FactoryUILinkData
+        {
+            public long AFactoryId;
+            public long ALocalId;
+            public string APortId;
+            public long BFactoryId;
+            public long BLocalId;
+            public string BPortId;
         }
     }
 }
