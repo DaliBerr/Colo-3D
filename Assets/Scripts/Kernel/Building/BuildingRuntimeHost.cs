@@ -29,6 +29,25 @@ namespace Kernel.Building
 
         public void Tick(int ticks)
         {
+            if (Runtime != null && Runtime.Def != null && Runtime.Def.Category == BuildingCategory.Factory)
+            {
+                FactoryCompositeBehaviour composite = null;
+                foreach (var behaviour in Behaviours)
+                {
+                    if (behaviour is FactoryCompositeBehaviour factoryComposite)
+                    {
+                        composite = factoryComposite;
+                        break;
+                    }
+                }
+
+                if (composite != null)
+                {
+                    composite.Tick(ticks);
+                    return;
+                }
+            }
+
             // 1. 驱动自身的组件 (比如工厂本身的耗电)
             foreach (var behaviour in Behaviours)
             {
