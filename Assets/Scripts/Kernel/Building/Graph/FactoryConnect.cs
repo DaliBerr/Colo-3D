@@ -360,6 +360,90 @@ namespace Kernel.Factory.Connections
         }
 
         /// <summary>
+        /// summary: 按指定ID添加连接（用于读档恢复）。
+        /// param: linkId 连接ID
+        /// param: a 端口A
+        /// param: b 端口B
+        /// param: error 失败原因
+        /// return: 是否成功
+        /// </summary>
+        public bool TryAddLinkWithId(long linkId, PortKey a, PortKey b, out string error)
+        {
+            error = null;
+
+            if (linkId <= 0)
+            {
+                error = "LinkId 非法。";
+                return false;
+            }
+
+            if (_links.ContainsKey(linkId))
+            {
+                error = $"LinkId 已存在：{linkId}";
+                return false;
+            }
+
+            if (a.Equals(b))
+            {
+                error = "不能连接到自身端口。";
+                return false;
+            }
+
+            if (!_ports.TryGetValue(a, out var portA))
+            {
+                error = $"端口不存在：{a}";
+                return false;
+            }
+
+            if (!_ports.TryGetValue(b, out var portB))
+            {
+                error = $"端口不存在：{b}";
+                return false;
+            }
+
+            if (portA.Key.FactoryId != portB.Key.FactoryId)
+            {
+                error = "不允许跨工厂连接。";
+                return false;
+            }
+
+            if (portA.Channel != portB.Channel)
+            {
+                error = $"通道类型不匹配：{portA.Channel} vs {portB.Channel}";
+                return false;
+            }
+
+            if (!ValidateDirections(portA.Direction, portB.Direction))
+            {
+                error = $"方向不匹配：{portA.Direction} -> {portB.Direction}";
+                return false;
+            }
+
+            if (!ValidateCapacity(a, portA, out error)) return false;
+            if (!ValidateCapacity(b, portB, out error)) return false;
+
+            if (!_allowParallelLinks)
+            {
+                if (TryFindExistingLink(a, b, portA.Channel, out var existedId))
+                {
+                    error = $"已存在相同连接（LinkId={existedId}）。";
+                    return false;
+                }
+            }
+
+            var link = new LinkInfo(linkId, a, b, portA.Channel);
+            _links.Add(linkId, link);
+            _portToLinks[a].Add(linkId);
+            _portToLinks[b].Add(linkId);
+
+            if (linkId >= _nextLinkId)
+                _nextLinkId = linkId + 1;
+
+            OnLinkAdded?.Invoke(link);
+            return true;
+        }
+
+        /// <summary>
         /// summary: 尝试获取端口。
         /// param: key 端口键
         /// param: port 返回端口信息
@@ -374,6 +458,19 @@ namespace Kernel.Factory.Connections
         /// return: 是否存在
         /// </summary>
         public bool TryGetLink(long linkId, out LinkInfo link) => _links.TryGetValue(linkId, out link);
+
+        /// <summary>
+        /// summary: 获取全部连接信息（只读拷贝）。
+        /// param: 无
+        /// return: 连接信息列表
+        /// </summary>
+        public List<LinkInfo> GetAllLinks()
+        {
+            var result = new List<LinkInfo>(_links.Count);
+            foreach (var link in _links.Values)
+                result.Add(link);
+            return result;
+        }
 
         /// <summary>
         /// summary: 获取某端口的所有连接ID（只读拷贝）。

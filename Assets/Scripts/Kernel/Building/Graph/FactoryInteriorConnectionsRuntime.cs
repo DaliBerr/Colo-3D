@@ -175,6 +175,70 @@ namespace Kernel.Factory.Connections
         }
 
         /// <summary>
+        /// summary: 从 Graph 导出连接存档列表。
+        /// param: 无
+        /// return: 连接存档列表
+        /// </summary>
+        public List<SaveFactoryConnectionLink> ExportLinksForSave()
+        {
+            if (Graph == null) return new List<SaveFactoryConnectionLink>();
+
+            var links = Graph.GetAllLinks();
+            var result = new List<SaveFactoryConnectionLink>(links.Count);
+
+            foreach (var link in links)
+            {
+                if (link == null) continue;
+                result.Add(new SaveFactoryConnectionLink
+                {
+                    LinkId = link.LinkId,
+                    AFactoryId = link.A.FactoryId,
+                    ALocalId = link.A.LocalBuildingId,
+                    APortId = link.A.PortId,
+                    BFactoryId = link.B.FactoryId,
+                    BLocalId = link.B.LocalBuildingId,
+                    BPortId = link.B.PortId,
+                    Channel = link.Channel
+                });
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// summary: 从连接存档重建 Graph（需在端口绑定完成后调用）。
+        /// param: links 连接存档列表
+        /// return: 无
+        /// </summary>
+        public void RebuildGraphFromLinks(IReadOnlyList<SaveFactoryConnectionLink> links)
+        {
+            if (Graph == null) Graph = new FactoryConnectionGraph(false);
+            if (links == null || links.Count == 0)
+            {
+                Graph.RebuildNextLinkId();
+                return;
+            }
+
+            for (int i = 0; i < links.Count; i++)
+            {
+                var link = links[i];
+                if (link == null) continue;
+
+                var a = new PortKey(link.AFactoryId, link.ALocalId, link.APortId);
+                var b = new PortKey(link.BFactoryId, link.BLocalId, link.BPortId);
+
+                if (Graph.TryAddLinkWithId(link.LinkId, a, b, out var error))
+                {
+                    continue;
+                }
+
+                GameDebug.LogWarning($"[Connections] 连接还原失败: {error}");
+            }
+
+            Graph.RebuildNextLinkId();
+        }
+
+        /// <summary>
         /// summary: 收集某内部建筑的端口声明（扫描 behaviours 中的 IInteriorPortProvider）。
         /// param: child 内部建筑运行时
         /// return: 端口声明列表（可能为空）

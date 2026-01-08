@@ -293,7 +293,10 @@ namespace Kernel.Building
             }
 
             if (Runtime.FactoryInterior != null)
+            {
                 data.InteriorBuildings = Runtime.FactoryInterior.CreateSaveData();
+                data.InteriorLinks = Runtime.FactoryInterior.InteriorLinks;
+            }
 
             return data;
         }
@@ -348,12 +351,18 @@ namespace Kernel.Building
 
             if (data.InteriorBuildings != null && data.InteriorBuildings.Count > 0 && Runtime.FactoryInterior != null)
             {
-                Runtime.FactoryInterior.ApplySaveData(data.InteriorBuildings);
+                Runtime.FactoryInterior.ApplySaveData(data.InteriorBuildings, data.InteriorLinks);
                 foreach (var child in Runtime.FactoryInterior.Children)
                 {
                     if (child == null) continue;
                     BuildingFactory.InitializeInternalBehaviours(child); 
 
+                }
+
+                if (Runtime.FactoryInterior.Connections != null)
+                {
+                    Runtime.FactoryInterior.Connections.RebindAllPorts(Runtime.FactoryInterior.Children);
+                    Runtime.FactoryInterior.Connections.RebuildGraphFromLinks(Runtime.FactoryInterior.InteriorLinks);
                 }
             }
 
