@@ -97,6 +97,7 @@ namespace Lonize.Scribe
                                 RotSteps = br.ReadByte(),
                                 // HP = br.ReadInt32()
                             };
+
                             int statCount = br.ReadInt32();
                             instance.StatKeys = new string[statCount];
                             instance.StatValues = new float[statCount];
@@ -141,6 +142,36 @@ namespace Lonize.Scribe
                                         }
 
                                         instance.InteriorBuildings.Add(interior);
+                                    }
+                                }
+                            }
+                            if (br.BaseStream.Position < br.BaseStream.Length)
+                            {
+                                int linkCount = br.ReadInt32();
+                                if (linkCount > 0)
+                                {
+                                    instance.InteriorLinks = new List<SaveFactoryConnectionLink>(linkCount);
+                                    for (int k = 0; k < linkCount; k++)
+                                    {
+                                        bool hasLink = br.ReadBoolean();
+                                        if (!hasLink)
+                                        {
+                                            instance.InteriorLinks.Add(null);
+                                            continue;
+                                        }
+
+                                        var link = new SaveFactoryConnectionLink
+                                        {
+                                            LinkId = br.ReadInt64(),
+                                            AFactoryId = br.ReadInt64(),
+                                            ALocalId = br.ReadInt64(),
+                                            APortId = br.ReadString(),
+                                            BFactoryId = br.ReadInt64(),
+                                            BLocalId = br.ReadInt64(),
+                                            BPortId = br.ReadString(),
+                                            Channel = (Kernel.Factory.Connections.ConnectionChannel)br.ReadInt32()
+                                        };
+                                        instance.InteriorLinks.Add(link);
                                     }
                                 }
                             }
