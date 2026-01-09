@@ -7,12 +7,14 @@ namespace Kernel.UI
     {
         protected override void OnInputButtonClicked(int index)
         {
+            base.OnInputButtonClicked(index);
             // 示例实现：打印输入按钮点击信息
             GameDebug.Log($"Input Button {index} clicked in SampleInteriorBuildingUI.");
         }
 
         protected override void OnOutputButtonClicked(int index)
         {
+            base.OnOutputButtonClicked(index);
             // 示例实现：打印输出按钮点击信息
             GameDebug.Log($"Output Button {index} clicked in SampleInteriorBuildingUI.");
         }
