@@ -33,6 +33,9 @@ namespace Kernel.UI
         [SerializeField] private Button ConnectionLayerActiveButton;
         
         private ActivateLayer currentActiveLayer = ActivateLayer.Building;
+        private PortKey? pendingPort;
+        private PortDirection pendingDirection = PortDirection.Output;
+        private bool connectionsBound = false;
 
         [SerializeField] private Button applyDesignButton;
         [SerializeField] private List<Button> itemButtons = new List<Button>();
@@ -48,6 +51,8 @@ namespace Kernel.UI
         private void OnEnable()
         {
             Lonize.Events.Event.eventBus.Subscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
+            connectionsBound = false;
+            ClearPendingConnection();
 
             _ = InitInteriorShow();
         }
@@ -76,6 +81,7 @@ namespace Kernel.UI
             if (TryAddInteriorBuilding(evt.buildingId, selectedGridIndex, out var addedChild))
             {
                 _ = TryShowInteriorBuilding(selectedGridIndex, evt.buildingId, addedChild);
+                MarkConnectionsDirty();
 
                 if (addedChild != null)
                 {
@@ -164,6 +170,14 @@ namespace Kernel.UI
             {
                 applyDesignButton.onClick.AddListener(OnApplyDesignButtonClicked);
             }
+            if (BuildingLayerActiveButton != null)
+            {
+                BuildingLayerActiveButton.onClick.AddListener(OnBuildingLayerActiveButtonClicked);
+            }
+            if (ConnectionLayerActiveButton != null)
+            {
+                ConnectionLayerActiveButton.onClick.AddListener(OnConnectionLayerActiveButtonClicked);
+            }
             for(int i = 0; i < itemButtons.Count; i++)
             {
                 int index = i; // 捕获当前索引
@@ -204,6 +218,14 @@ namespace Kernel.UI
             if (applyDesignButton != null)
             {
                 applyDesignButton.onClick.RemoveAllListeners();
+            }
+            if (BuildingLayerActiveButton != null)
+            {
+                BuildingLayerActiveButton.onClick.RemoveAllListeners();
+            }
+            if (ConnectionLayerActiveButton != null)
+            {
+                ConnectionLayerActiveButton.onClick.RemoveAllListeners();
             }
             for (int i = 0; i < itemButtons.Count; i++)
             {
@@ -341,6 +363,26 @@ namespace Kernel.UI
             UIManager.Instance.CloseTopModal();
         }
 
+        /// <summary>
+        /// summary: 切换到建筑编辑层。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void OnBuildingLayerActiveButtonClicked()
+        {
+            SetActiveLayer(ActivateLayer.Building);
+        }
+
+        /// <summary>
+        /// summary: 切换到连接编辑层。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void OnConnectionLayerActiveButtonClicked()
+        {
+            SetActiveLayer(ActivateLayer.Connection);
+        }
+
         private void OnItemButtonClicked(int index)
         {
             GameDebug.Log($"Item button {index} clicked.");
@@ -411,6 +453,7 @@ namespace Kernel.UI
             if (interiorUI != null)
             {
                 interiorUI.InitializePortMeta(child);
+                interiorUI.PortClicked += OnInteriorPortClicked;
             }
 
             return go;
@@ -466,6 +509,7 @@ namespace Kernel.UI
                 {
                     currentFactoryRuntime.FactoryInterior.Children.RemoveAt(i);
                     ClearInteriorBuildingDisplay(index);
+                    MarkConnectionsDirty();
                     GameDebug.Log($"🗑️ 成功移除了工厂 {currentFactoryRuntime.BuildingID} 内部建筑 @ {position}");
                     return true;
                 }
@@ -519,6 +563,211 @@ namespace Kernel.UI
         //     GameDebug.Log($"✨ 成功向工厂 {currentFactoryRuntime.BuildingID} 添加了内部建筑 {defID  } @ {position}");
         //     return true;
         // }
+
+        /// <summary>
+        /// summary: 标记连接数据需要重新绑定。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void MarkConnectionsDirty()
+        {
+            connectionsBound = false;
+            ClearPendingConnection();
+        }
+
+        /// <summary>
+        /// summary: 设置当前激活层并处理连接状态。
+        /// param: layer 目标层级
+        /// return: 无
+        /// </summary>
+        private void SetActiveLayer(ActivateLayer layer)
+        {
+            if (currentActiveLayer == layer)
+            {
+                return;
+            }
+
+            currentActiveLayer = layer;
+            ClearPendingConnection();
+
+            if (layer == ActivateLayer.Connection)
+            {
+                EnsureConnectionsBound();
+            }
+        }
+
+        /// <summary>
+        /// summary: 清空待连接端口状态。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void ClearPendingConnection()
+        {
+            pendingPort = null;
+            pendingDirection = PortDirection.Output;
+        }
+
+        /// <summary>
+        /// summary: 处理内部建筑端口按钮点击。
+        /// param: key 端口键
+        /// param: direction 端口方向
+        /// return: 无
+        /// </summary>
+        private void OnInteriorPortClicked(PortKey key, PortDirection direction)
+        {
+            if (currentActiveLayer != ActivateLayer.Connection)
+            {
+                return;
+            }
+
+            if (!EnsureConnectionsBound())
+            {
+                GameDebug.LogWarning("[FactoryUI] 连接运行时未准备好，无法处理端口点击。");
+                return;
+            }
+
+            if (direction == PortDirection.Output)
+            {
+                TrySetPendingPort(key);
+                return;
+            }
+
+            if (direction == PortDirection.Input)
+            {
+                TryCreateLinkFromPending(key);
+                return;
+            }
+
+            GameDebug.LogWarning($"[FactoryUI] 不支持的端口方向：{direction}");
+        }
+
+        /// <summary>
+        /// summary: 尝试设置待连接端口。
+        /// param: key 端口键
+        /// return: 无
+        /// </summary>
+        private void TrySetPendingPort(PortKey key)
+        {
+            if (!TryGetConnectionsRuntime(out var connections))
+            {
+                return;
+            }
+
+            if (connections.Graph == null || !connections.Graph.TryGetPort(key, out var port))
+            {
+                GameDebug.LogWarning($"[FactoryUI] 端口不存在，无法设置待连接端口：{key}");
+                return;
+            }
+
+            if (port.Direction != PortDirection.Output && port.Direction != PortDirection.Bidirectional)
+            {
+                GameDebug.LogWarning($"[FactoryUI] 端口方向不匹配，无法作为输出端口：{port.Direction}");
+                return;
+            }
+
+            pendingPort = key;
+            pendingDirection = port.Direction;
+            GameDebug.Log($"[FactoryUI] 已记录待连接端口：{key}");
+        }
+
+        /// <summary>
+        /// summary: 使用待连接端口创建连接。
+        /// param: inputKey 输入端口键
+        /// return: 无
+        /// </summary>
+        private void TryCreateLinkFromPending(PortKey inputKey)
+        {
+            if (!pendingPort.HasValue)
+            {
+                GameDebug.LogWarning("[FactoryUI] 尚未选择输出端口，无法创建连接。");
+                return;
+            }
+
+            if (pendingDirection != PortDirection.Output && pendingDirection != PortDirection.Bidirectional)
+            {
+                GameDebug.LogWarning($"[FactoryUI] 待连接端口方向不匹配：{pendingDirection}");
+                ClearPendingConnection();
+                return;
+            }
+
+            if (!TryGetConnectionsRuntime(out var connections))
+            {
+                return;
+            }
+
+            if (connections.Graph == null || !connections.Graph.TryGetPort(inputKey, out var port))
+            {
+                GameDebug.LogWarning($"[FactoryUI] 端口不存在，无法创建连接：{inputKey}");
+                return;
+            }
+
+            if (port.Direction != PortDirection.Input && port.Direction != PortDirection.Bidirectional)
+            {
+                GameDebug.LogWarning($"[FactoryUI] 端口方向不匹配，无法作为输入端口：{port.Direction}");
+                return;
+            }
+
+            if (connections.TryCreateLink(pendingPort.Value, inputKey, out _, out var error))
+            {
+                ClearPendingConnection();
+                GameDebug.Log($"[FactoryUI] 连接创建成功：{pendingPort.Value} -> {inputKey}");
+                return;
+            }
+
+            GameDebug.LogWarning($"[FactoryUI] 连接创建失败：{error}");
+        }
+
+        /// <summary>
+        /// summary: 确保连接运行时已绑定端口。
+        /// param: 无
+        /// return: 是否绑定成功
+        /// </summary>
+        private bool EnsureConnectionsBound()
+        {
+            if (connectionsBound)
+            {
+                return true;
+            }
+
+            if (!TryGetConnectionsRuntime(out var connections))
+            {
+                return false;
+            }
+
+            var runtime = BuildingFactoryController.Instance?.GetCurrentFactoryRuntime();
+            if (runtime == null)
+            {
+                GameDebug.LogWarning("[FactoryUI] 当前没有选中工厂，无法绑定端口。");
+                return false;
+            }
+
+            var interior = runtime.EnsureFactoryInterior();
+            connections.RebindAllPorts(interior.Children);
+            connectionsBound = true;
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 获取当前工厂的连接运行时。
+        /// param: connections 返回连接运行时
+        /// return: 是否成功获取
+        /// </summary>
+        private bool TryGetConnectionsRuntime(out FactoryInteriorConnectionsRuntime connections)
+        {
+            connections = null;
+
+            var runtime = BuildingFactoryController.Instance?.GetCurrentFactoryRuntime();
+            if (runtime == null)
+            {
+                GameDebug.LogWarning("[FactoryUI] 当前没有选中工厂，无法获取连接运行时。");
+                return false;
+            }
+
+            var interior = runtime.EnsureFactoryInterior();
+            interior.Connections ??= new FactoryInteriorConnectionsRuntime();
+            connections = interior.Connections;
+            return true;
+        }
 
         private Vector2Int GetCellPositionByIndex(int index)
         {

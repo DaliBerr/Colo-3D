@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kernel.Building;
 using Kernel.Factory.Connections;
@@ -27,6 +28,8 @@ namespace Kernel.UI
         [SerializeField] public long BuildingParentId;
         [SerializeField] public int BuildingLocalId;
 
+        public event Action<PortKey, PortDirection> PortClicked;
+
         private void OnEnable()
         {
             for (int i = 0; i < InputButtons.Count; i++)
@@ -54,11 +57,11 @@ namespace Kernel.UI
 
         protected virtual void OnInputButtonClicked(int index)
         {
-            // 子类重写以实现输入按钮点击逻辑
+            HandlePortButtonClicked(index, PortDirection.Input);
         }
         protected virtual void OnOutputButtonClicked(int index)
         {
-            // 子类重写以实现输出按钮点击逻辑
+            HandlePortButtonClicked(index, PortDirection.Output);
         }
 
         private void Start()
@@ -79,6 +82,63 @@ namespace Kernel.UI
         protected virtual void handleAwake()
         {
             // 子类重写以实现初始化逻辑
+        }
+
+        /// <summary>
+        /// summary: 处理端口按钮点击并触发回调。
+        /// param: index 端口按钮索引
+        /// param: direction 端口方向
+        /// return: 无
+        /// </summary>
+        private void HandlePortButtonClicked(int index, PortDirection direction)
+        {
+            if (!TryGetPortKey(direction, index, out var key))
+            {
+                return;
+            }
+
+            PortClicked?.Invoke(key, direction);
+        }
+
+        /// <summary>
+        /// summary: 尝试根据按钮索引解析端口键。
+        /// param: direction 端口方向
+        /// param: index 端口按钮索引
+        /// param: key 返回端口键
+        /// return: 是否解析成功
+        /// </summary>
+        private bool TryGetPortKey(PortDirection direction, int index, out PortKey key)
+        {
+            key = default;
+
+            var metas = direction == PortDirection.Input ? InputPortMetas : OutputPortMetas;
+            if (metas == null || metas.Count == 0)
+            {
+                GameDebug.LogWarning($"[InteriorUI] 端口元数据为空，direction={direction}");
+                return false;
+            }
+
+            if (index < 0 || index >= metas.Count)
+            {
+                GameDebug.LogWarning($"[InteriorUI] 端口按钮索引越界：{index} / {metas.Count}");
+                return false;
+            }
+
+            var meta = metas[index];
+            if (string.IsNullOrEmpty(meta.PortId))
+            {
+                GameDebug.LogWarning($"[InteriorUI] 端口ID为空，direction={direction} index={index}");
+                return false;
+            }
+
+            if (BuildingParentId <= 0 || BuildingLocalId <= 0)
+            {
+                GameDebug.LogWarning($"[InteriorUI] 建筑标识无效：Parent={BuildingParentId} Local={BuildingLocalId}");
+                return false;
+            }
+
+            key = new PortKey(BuildingParentId, BuildingLocalId, meta.PortId);
+            return true;
         }
 
         /// <summary>
