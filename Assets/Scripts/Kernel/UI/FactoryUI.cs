@@ -234,7 +234,7 @@ namespace Kernel.UI
 
             var interior = runtime.EnsureFactoryInterior();
             var children = interior.Children;
-
+            // GameDebug.Log($"[FactoryUI] 应用工厂设计，内部建筑数量：{children?.Count ?? 0}");
             interior.Connections ??= new FactoryInteriorConnectionsRuntime();
             interior.Connections.RebindAllPorts(children);
             BuildLinksFromUI(interior.Connections, runtime.BuildingID);
@@ -403,50 +403,50 @@ namespace Kernel.UI
             return false;
         }
 
-        private bool TryAddInteriorBuilding(string defID, int index)
-        {
-            var factoryCtrl = BuildingFactoryController.Instance;
-            if (factoryCtrl == null) return false;
+        // private bool TryAddInteriorBuilding(string defID, int index)
+        // {
+        //     var factoryCtrl = BuildingFactoryController.Instance;
+        //     if (factoryCtrl == null) return false;
 
-            var currentFactoryRuntime = factoryCtrl.GetCurrentFactoryRuntime();
-            if (currentFactoryRuntime == null)
-            {
-                GameDebug.LogWarning("当前没有选中任何工厂，无法添加内部建筑哦！");
-                return false;
-            }
+        //     var currentFactoryRuntime = factoryCtrl.GetCurrentFactoryRuntime();
+        //     if (currentFactoryRuntime == null)
+        //     {
+        //         GameDebug.LogWarning("当前没有选中任何工厂，无法添加内部建筑哦！");
+        //         return false;
+        //     }
             
-            CheckEmptyAtIndex(index);
-            Vector2Int position = GetCellPositionByIndex(index);
-            // // 2. 检查位置是否被占用了 (简单防呆)
-            // // 遍历当前的所有子建筑，看看有没有人在这个格子上
-            // if (currentFactoryRuntime.FactoryInterior != null)
-            // {
-            //     foreach (var child in currentFactoryRuntime.FactoryInterior.Children)
-            //     {
-            //         if (child.CellPosition == position)
-            //         {
-            //             GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
-            //             return false;
-            //         }
-            //     }
-            // }
+        //     CheckEmptyAtIndex(index);
+        //     Vector2Int position = GetCellPositionByIndex(index);
+        //     // // 2. 检查位置是否被占用了 (简单防呆)
+        //     // // 遍历当前的所有子建筑，看看有没有人在这个格子上
+        //     // if (currentFactoryRuntime.FactoryInterior != null)
+        //     // {
+        //     //     foreach (var child in currentFactoryRuntime.FactoryInterior.Children)
+        //     //     {
+        //     //         if (child.CellPosition == position)
+        //     //         {
+        //     //             GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
+        //     //             return false;
+        //     //         }
+        //     //     }
+        //     // }
 
-            var newChild = BuildingFactory.CreateInternalRuntime(
-            currentFactoryRuntime.BuildingID, // 父建筑 ID
-                defID,                            // 内部建筑 Def ID
-                position                          // 放置位置
-            );
+        //     var newChild = BuildingFactory.CreateInternalRuntime(
+        //     currentFactoryRuntime.BuildingID, // 父建筑 ID
+        //         defID,                            // 内部建筑 Def ID
+        //         position                          // 放置位置
+        //     );
 
-            if (newChild == null)
-            {
-                GameDebug.LogError($"创建失败，可能是 Def ID {defID} 不存在或者类型不对。");
-                return false;
-            }
+        //     if (newChild == null)
+        //     {
+        //         GameDebug.LogError($"创建失败，可能是 Def ID {defID} 不存在或者类型不对。");
+        //         return false;
+        //     }
 
-            currentFactoryRuntime.EnsureFactoryInterior().Children.Add(newChild);
-            GameDebug.Log($"✨ 成功向工厂 {currentFactoryRuntime.BuildingID} 添加了内部建筑 {defID  } @ {position}");
-            return true;
-        }
+        //     currentFactoryRuntime.EnsureFactoryInterior().Children.Add(newChild);
+        //     GameDebug.Log($"✨ 成功向工厂 {currentFactoryRuntime.BuildingID} 添加了内部建筑 {defID  } @ {position}");
+        //     return true;
+        // }
 
         private Vector2Int GetCellPositionByIndex(int index)
         {

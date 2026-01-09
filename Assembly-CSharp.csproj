@@ -85,6 +85,7 @@
     <Compile Include="Assets\Scripts\Lonize\Event\Events.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\PopupModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\StorageContainer.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\FactoryCompositeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\UIInputRouter.cs" />
     <Compile Include="Assets\InputSystem\AnimationControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Pool\PoolMember.cs" />

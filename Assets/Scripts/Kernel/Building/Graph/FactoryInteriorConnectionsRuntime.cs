@@ -95,10 +95,12 @@ namespace Kernel.Factory.Connections
 
             int count = 0;
             var ports = CollectPorts(child);
+            
             if (ports == null) return 0;
 
             foreach (var desc in ports)
             {
+                GameDebug.Log($"[Connections] {desc.PortId} {desc.Direction} {desc.Channel} {desc.MaxLinks}");
                 if (string.IsNullOrEmpty(desc.PortId)) continue;
 
                 var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
