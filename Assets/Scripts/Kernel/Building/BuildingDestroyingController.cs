@@ -209,6 +209,7 @@ namespace Kernel.Building
             GameObject buildingGo = host.gameObject;
 
             TryReleaseOccupancyArea(host);
+            host.CleanupForRemoval();
 
             var poolMember = buildingGo.GetComponent<BuildingPoolMember>();
             if (PoolManager.Instance != null && poolMember != null)
