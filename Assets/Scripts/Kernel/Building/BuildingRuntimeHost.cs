@@ -63,6 +63,126 @@ namespace Kernel.Building
         }
 
         private DevControls _devControls;
+        /// <summary>
+        /// summary: 在建筑被移除/回收前清理运行时数据与行为，避免残留状态被复用。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        public void CleanupForRemoval()
+        {
+            if (Runtime == null)
+            {
+                Behaviours?.Clear();
+                return;
+            }
+
+            bool compositeInList = ContainsBehaviour(Behaviours, Runtime.CompositeBehaviour);
+            UnbindBehaviours(Behaviours, Runtime);
+            Behaviours?.Clear();
+
+            if (Runtime.CompositeBehaviour != null && !compositeInList)
+            {
+                SafeUnbindBehaviour(Runtime.CompositeBehaviour, Runtime);
+            }
+
+            Runtime.CompositeBehaviour = null;
+
+            if (Runtime.Def != null && Runtime.Def.Category == BuildingCategory.Factory)
+            {
+                ClearFactoryInteriorRuntime(Runtime);
+                BuildingIDManager.ReleaseLocalIdContext(Runtime.BuildingID);
+            }
+
+            Runtime.RuntimeStats?.Clear();
+        }
+
+        /// <summary>
+        /// summary: 清理工厂内部建筑运行时数据与行为（包含连接与统计数据）。
+        /// param: runtime 工厂建筑运行时
+        /// return: 无
+        /// </summary>
+        private static void ClearFactoryInteriorRuntime(BuildingRuntime runtime)
+        {
+            if (runtime?.FactoryInterior == null)
+                return;
+
+            var interior = runtime.FactoryInterior;
+            if (interior.Children != null)
+            {
+                foreach (var child in interior.Children)
+                {
+                    if (child == null) continue;
+                    UnbindBehaviours(child.Behaviours, child.ProxyRuntime);
+                    child.Behaviours?.Clear();
+                    child.RuntimeStats?.Clear();
+                    child.ProxyRuntime = null;
+                }
+
+                interior.Children.Clear();
+            }
+
+            interior.InteriorLinks?.Clear();
+            interior.Connections?.Graph?.Clear();
+        }
+
+        /// <summary>
+        /// summary: 安全解绑行为列表，避免异常阻断清理流程。
+        /// param: behaviours 行为列表
+        /// param: runtime 解绑所需运行时
+        /// return: 无
+        /// </summary>
+        private static void UnbindBehaviours(List<IBuildingBehaviour> behaviours, BuildingRuntime runtime)
+        {
+            if (behaviours == null || behaviours.Count == 0)
+                return;
+
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                var behaviour = behaviours[i];
+                SafeUnbindBehaviour(behaviour, runtime);
+            }
+        }
+
+        /// <summary>
+        /// summary: 解绑单个行为并记录异常。
+        /// param: behaviour 需要解绑的行为
+        /// param: runtime 对应运行时
+        /// return: 无
+        /// </summary>
+        private static void SafeUnbindBehaviour(IBuildingBehaviour behaviour, BuildingRuntime runtime)
+        {
+            if (behaviour == null)
+                return;
+
+            try
+            {
+                behaviour.OnUnbind(runtime);
+            }
+            catch (System.Exception ex)
+            {
+                GameDebug.LogWarning($"[BuildingRuntimeHost] 行为解绑异常：{behaviour.GetType().Name}, error={ex}");
+            }
+        }
+
+        /// <summary>
+        /// summary: 判断行为列表中是否包含指定行为引用。
+        /// param: behaviours 行为列表
+        /// param: target 目标行为
+        /// return: true=包含；false=不包含
+        /// </summary>
+        private static bool ContainsBehaviour(List<IBuildingBehaviour> behaviours, IBuildingBehaviour target)
+        {
+            if (behaviours == null || target == null)
+                return false;
+
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                if (ReferenceEquals(behaviours[i], target))
+                    return true;
+            }
+
+            return false;
+        }
         private void OnEnable()
         {
             // 尝试注册。如果 TickDriver 还没准备好（比如场景刚开始加载），
