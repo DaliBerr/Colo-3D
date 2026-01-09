@@ -75,7 +75,7 @@ namespace Kernel.UI
             // ✅ 关键：TryAdd 时把“新建的 child runtime”直接拿出来
             if (TryAddInteriorBuilding(evt.buildingId, selectedGridIndex, out var addedChild))
             {
-                _ = TryShowInteriorBuilding(selectedGridIndex, evt.buildingId);
+                _ = TryShowInteriorBuilding(selectedGridIndex, evt.buildingId, addedChild);
 
                 if (addedChild != null)
                 {
@@ -193,7 +193,7 @@ namespace Kernel.UI
             foreach (var child in runtime.FactoryInterior.Children)
             {
                 GetIndexByCellPosition(child.CellPosition);
-                await TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition));
+                await TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition), child.Def.Id, child);
             }
         }
 
@@ -363,7 +363,7 @@ namespace Kernel.UI
             Lonize.Events.Event.eventBus.Publish(evt);
         }
 
-        private async Task<GameObject> TryShowInteriorBuilding(int index,string defID = "factory_interior_default")
+        private async Task<GameObject> TryShowInteriorBuilding(int index, string defID = "factory_interior_default", FactoryChildRuntime child = null)
         {
             if(!IsValidGridIndex(index))
             {
@@ -396,6 +396,23 @@ namespace Kernel.UI
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = Vector3.one;
+
+            if (child == null)
+            {
+                var runtime = BuildingFactoryController.Instance?.GetCurrentFactoryRuntime();
+                if (runtime != null)
+                {
+                    var cell = GetCellPositionByIndex(index);
+                    child = runtime.FactoryInterior.Children.Find(target => target != null && target.CellPosition == cell);
+                }
+            }
+
+            var interiorUI = go.GetComponent<IInteriorBuildingUI>();
+            if (interiorUI != null)
+            {
+                interiorUI.InitializePortMeta(child);
+            }
+
             return go;
         
         }
