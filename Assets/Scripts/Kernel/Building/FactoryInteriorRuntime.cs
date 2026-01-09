@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using Kernel.Factory.Connections;
 using Lonize.Logging;
-using Lonize.Tick;
 using UnityEngine;
 
 namespace Kernel.Building
 {
     [Serializable]
-    public class FactoryChildRuntime:ITickable
+    public class FactoryChildRuntime
     {
         // public BuildingRuntime Runtime;
         public BuildingDef Def;
@@ -20,21 +19,6 @@ namespace Kernel.Building
 
         public List<IBuildingBehaviour> Behaviours = new();
         public BuildingRuntime ProxyRuntime;
-/// <summary>
-        /// 驱动内部组件的 Tick
-        /// </summary>
-        public void Tick(int ticks)
-        {
-            if (Behaviours == null) return;
-            
-            foreach (var behaviour in Behaviours)
-            {
-                if (behaviour is ITickable tickable)
-                {
-                    tickable.Tick(ticks);
-                }
-            }
-        }
     }
 
     [Serializable]
@@ -43,16 +27,6 @@ namespace Kernel.Building
         public List<FactoryChildRuntime> Children = new();
         public FactoryInteriorConnectionsRuntime Connections = new();
         public List<SaveFactoryConnectionLink> InteriorLinks = new();
-        public void Tick(int ticks)
-        {
-            if (Children == null) return;
-            
-            // 遍历所有子建筑，驱动它们的 Tick
-            foreach (var child in Children)
-            {
-                child?.Tick(ticks);
-            }
-        }
         /// <summary>
         /// summary: 清空工厂内部的所有子建筑数据。
         /// param: 无
