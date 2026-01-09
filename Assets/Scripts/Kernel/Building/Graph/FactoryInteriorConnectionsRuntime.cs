@@ -15,6 +15,7 @@ namespace Kernel.Factory.Connections
         public readonly PortDirection Direction;
         public readonly ConnectionChannel Channel;
         public readonly int MaxLinks;
+        public readonly bool Required;
 
         /// <summary>
         /// summary: 创建端口声明。
@@ -22,14 +23,16 @@ namespace Kernel.Factory.Connections
         /// param: direction 端口方向
         /// param: channel 通道类型
         /// param: maxLinks 最大连接数（<=0 不限制）
+        /// param: required 是否为必需端口
         /// return: 端口声明
         /// </summary>
-        public PortDescriptor(string portId, PortDirection direction, ConnectionChannel channel, int maxLinks = 1)
+        public PortDescriptor(string portId, PortDirection direction, ConnectionChannel channel, int maxLinks = 1, bool required = false)
         {
             PortId = portId ?? string.Empty;
             Direction = direction;
             Channel = channel;
             MaxLinks = maxLinks;
+            Required = required;
         }
     }
 
@@ -104,7 +107,7 @@ namespace Kernel.Factory.Connections
                 if (string.IsNullOrEmpty(desc.PortId)) continue;
 
                 var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
-                var info = new PortInfo(key, desc.Direction, desc.Channel, desc.MaxLinks);
+                var info = new PortInfo(key, desc.Direction, desc.Channel, desc.MaxLinks, desc.Required);
 
                 if (Graph.TryBindPort(info, out var error))
                 {
@@ -117,6 +120,80 @@ namespace Kernel.Factory.Connections
             }
 
             return count;
+        }
+
+        /// <summary>
+        /// summary: 校验当前连接图（必需端口、方向/通道、孤立节点等）。
+        /// param: errors 返回错误列表
+        /// return: 是否通过校验
+        /// </summary>
+        public bool ValidateGraph(out List<string> errors)
+        {
+            errors = new List<string>();
+
+            if (Graph == null)
+            {
+                errors.Add("连接图未初始化。");
+                return false;
+            }
+
+            var ports = Graph.GetAllPorts();
+            var links = Graph.GetAllLinks();
+
+            var portLinkCounts = new Dictionary<PortKey, int>();
+            var buildingLinkMap = new Dictionary<(long FactoryId, long LocalId), bool>();
+
+            for (int i = 0; i < ports.Count; i++)
+            {
+                var port = ports[i];
+                var linkCount = Graph.GetLinkIdsOfPort(port.Key).Count;
+                portLinkCounts[port.Key] = linkCount;
+
+                var buildingKey = (port.Key.FactoryId, port.Key.LocalBuildingId);
+                if (!buildingLinkMap.ContainsKey(buildingKey))
+                    buildingLinkMap.Add(buildingKey, false);
+
+                if (linkCount > 0)
+                    buildingLinkMap[buildingKey] = true;
+
+                if (port.Required && linkCount == 0)
+                    errors.Add($"必需端口未连通：{port.Key}");
+            }
+
+            for (int i = 0; i < links.Count; i++)
+            {
+                var link = links[i];
+                if (link == null) continue;
+
+                if (!Graph.TryGetPort(link.A, out var portA))
+                {
+                    errors.Add($"连接引用不存在端口：{link.A}");
+                    continue;
+                }
+
+                if (!Graph.TryGetPort(link.B, out var portB))
+                {
+                    errors.Add($"连接引用不存在端口：{link.B}");
+                    continue;
+                }
+
+                if (portA.Channel != portB.Channel)
+                    errors.Add($"连接通道不匹配：{portA.Channel} vs {portB.Channel} ({link.A} <-> {link.B})");
+
+                if (link.Channel != portA.Channel || link.Channel != portB.Channel)
+                    errors.Add($"连接通道与端口不一致：{link.Channel} ({link.A} <-> {link.B})");
+
+                if (!ValidateDirections(portA.Direction, portB.Direction))
+                    errors.Add($"连接方向不匹配：{portA.Direction} -> {portB.Direction} ({link.A} <-> {link.B})");
+            }
+
+            foreach (var kv in buildingLinkMap)
+            {
+                if (!kv.Value)
+                    errors.Add($"孤立节点：FactoryId={kv.Key.FactoryId}, LocalId={kv.Key.LocalId}");
+            }
+
+            return errors.Count == 0;
         }
 
         /// <summary>
@@ -261,6 +338,20 @@ namespace Kernel.Factory.Connections
                 }
             }
             return list;
+        }
+
+        /// <summary>
+        /// summary: 校验端口方向是否允许连接。
+        /// param: a A方向
+        /// param: b B方向
+        /// return: 是否允许
+        /// </summary>
+        private static bool ValidateDirections(PortDirection a, PortDirection b)
+        {
+            if (a == PortDirection.Bidirectional || b == PortDirection.Bidirectional)
+                return true;
+
+            return a == PortDirection.Output && b == PortDirection.Input;
         }
     }
 }

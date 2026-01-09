@@ -237,7 +237,22 @@ namespace Kernel.UI
             // GameDebug.Log($"[FactoryUI] 应用工厂设计，内部建筑数量：{children?.Count ?? 0}");
             interior.Connections ??= new FactoryInteriorConnectionsRuntime();
             interior.Connections.RebindAllPorts(children);
-            BuildLinksFromUI(interior.Connections, runtime.BuildingID);
+            var linkErrors = new List<string>();
+            BuildLinksFromUI(interior.Connections, runtime.BuildingID, linkErrors);
+
+            if (!interior.Connections.ValidateGraph(out var graphErrors))
+            {
+                graphErrors.InsertRange(0, linkErrors);
+                ShowValidationErrors(graphErrors);
+                return;
+            }
+
+            if (linkErrors.Count > 0)
+            {
+                ShowValidationErrors(linkErrors);
+                return;
+            }
+
             interior.InteriorLinks = interior.Connections.ExportLinksForSave();
 
             BuildingFactory.BuildFactoryCompositeBehaviour(runtime);
@@ -248,9 +263,10 @@ namespace Kernel.UI
         /// summary: 根据 UI 连接数据创建连接图 Link。
         /// param: connections 连接运行时
         /// param: factoryId 默认工厂ID
+        /// param: errors 返回连接创建失败的错误列表
         /// return: 成功创建的连接数量
         /// </summary>
-        private int BuildLinksFromUI(FactoryInteriorConnectionsRuntime connections, long factoryId)
+        private int BuildLinksFromUI(FactoryInteriorConnectionsRuntime connections, long factoryId, List<string> errors)
         {
             if (connections == null || uiLinks == null || uiLinks.Count == 0)
             {
@@ -273,11 +289,40 @@ namespace Kernel.UI
                 }
                 else
                 {
+                    errors?.Add(error);
                     GameDebug.LogWarning($"[FactoryUI] 连接创建失败: {error}");
                 }
             }
 
             return createdCount;
+        }
+
+        /// <summary>
+        /// summary: 通过弹窗提示校验失败原因。
+        /// param: errors 错误列表
+        /// return: 无
+        /// </summary>
+        private void ShowValidationErrors(IReadOnlyList<string> errors)
+        {
+            if (errors == null || errors.Count == 0) return;
+            StartCoroutine(ShowValidationPopup(string.Join("\n", errors)));
+        }
+
+        /// <summary>
+        /// summary: 弹出校验失败提示框。
+        /// param: message 提示内容
+        /// return: 协程枚举器
+        /// </summary>
+        private IEnumerator ShowValidationPopup(string message)
+        {
+            yield return UIManager.Instance.ShowModalAndWait<PopupModal>();
+            var modal = UIManager.Instance.GetTopModal(false) as PopupModal;
+            if (modal == null) yield break;
+
+            modal.SetMessage(message);
+            modal.SetConfirmButtonActive(false);
+            modal.SetCloseButtonActive(true);
+            modal.SetCloseButtonText("确定");
         }
 
 
