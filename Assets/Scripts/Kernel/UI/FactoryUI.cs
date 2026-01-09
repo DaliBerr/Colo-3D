@@ -19,14 +19,24 @@ namespace Kernel.UI
     [UIPrefab("Prefabs/UI/Factory UI")]
     public sealed class FactoryUI : UIScreen
     {
+        
+        private enum ActivateLayer
+        {
+            Building,
+            Connection
+        }
 
         [SerializeField] private Button closeButton;
+
+
+        [SerializeField] private Button BuildingLayerActiveButton;
+        [SerializeField] private Button ConnectionLayerActiveButton;
+        
+        private ActivateLayer currentActiveLayer = ActivateLayer.Building;
+
         [SerializeField] private Button applyDesignButton;
         [SerializeField] private List<Button> itemButtons = new List<Button>();
-        // [SerializeField] private GameObject gridSelectedPanel;
-        
-        //Obsolete
-        // [SerializeField] private Button AddInteriorBuildingButton;
+
 
         [SerializeField] private static readonly byte  _columns = 7;
         [SerializeField] private List<FactoryUILinkData> uiLinks = new List<FactoryUILinkData>();
