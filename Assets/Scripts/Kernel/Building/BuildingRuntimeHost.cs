@@ -60,12 +60,6 @@ namespace Kernel.Building
                 }
             }
 
-            // 2. --- 新增：驱动内部世界的 Tick ---
-            if (Runtime != null && Runtime.FactoryInterior != null)
-            {
-                Runtime.FactoryInterior.Tick(ticks);
-            }
-            // ---------------------------------
         }
 
         private DevControls _devControls;
