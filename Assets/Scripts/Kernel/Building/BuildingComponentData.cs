@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kernel.Factory.Connections;
 using Kernel.Storage;
 using Lonize.Logging;
 using Lonize.Tick;
@@ -105,12 +106,14 @@ namespace Kernel.Building
             // throw new NotImplementedException();
         }
     }
-    public class TestCounterBehaviour : IBuildingBehaviour
+    public class TestCounterBehaviour : IBuildingBehaviour, IInteriorPortProvider
     {
         private int _interval;      // 触发间隔（来自 JSON）
         private int _tickAccumulator; // 当前积累的 tick
         private int _counter;       // 计数器
         private long _buildingId;   // 绑定的建筑 ID，方便看日志
+        private const string TickInputPortId = "tick_in";
+        private const string TickOutputPortId = "tick_out";
 
         public TestCounterBehaviour(int interval)
         {
@@ -139,6 +142,20 @@ namespace Kernel.Building
                 _counter++;
                 GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Tick: {_counter * _interval} | Count: {_counter}");
             }
+        }
+
+        /// <summary>
+        /// summary: 提供测试计数器的端口声明列表。
+        /// param: 无
+        /// return: 端口声明列表
+        /// </summary>
+        public IEnumerable<PortDescriptor> GetPorts()
+        {
+            return new List<PortDescriptor>
+            {
+                new PortDescriptor(TickInputPortId, PortDirection.Input, ConnectionChannel.Compute, 1),
+                new PortDescriptor(TickOutputPortId, PortDirection.Output, ConnectionChannel.Compute, 1)
+            };
         }
     }
     public class StorageBehaviour : IBuildingBehaviour, IBuildingBehaviourLifecycle
