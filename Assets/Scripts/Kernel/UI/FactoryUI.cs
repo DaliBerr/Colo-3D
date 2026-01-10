@@ -6,13 +6,14 @@ using Kernel.Building;
 using Kernel.Factory.Connections;
 using Kernel.GameState;
 using Lonize;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize.UI;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.UI
 {
@@ -50,7 +51,7 @@ namespace Kernel.UI
 
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
+            EventManager.eventBus.Subscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
             connectionsBound = false;
             ClearPendingConnection();
 
@@ -58,7 +59,7 @@ namespace Kernel.UI
         }
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
+            EventManager.eventBus.Unsubscribe<TryModifyInteriorBuildingEvent>(OnTryAddInteriorBuildingEvent);
         }
 
         private void OnTryAddInteriorBuildingEvent(TryModifyInteriorBuildingEvent evt)
@@ -402,7 +403,7 @@ namespace Kernel.UI
                 yield return null;
             }
 
-            Lonize.Events.Event.eventBus.Publish(evt);
+            Lonize.EventSystem.EventManager.eventBus.Publish(evt);
         }
 
         private async Task<GameObject> TryShowInteriorBuilding(int index, string defID = "factory_interior_default", FactoryChildRuntime child = null)
@@ -588,6 +589,7 @@ namespace Kernel.UI
             }
 
             currentActiveLayer = layer;
+            SetLayerButtonColors(Color.green, Color.white);
             ClearPendingConnection();
 
             if (layer == ActivateLayer.Connection)
@@ -595,6 +597,28 @@ namespace Kernel.UI
                 EnsureConnectionsBound();
             }
         }
+
+        private void SetLayerButtonColors(Color activeColor, Color inactiveColor)
+        {
+
+            if(currentActiveLayer == ActivateLayer.Building)
+            {
+                BuildingLayerActiveButton.GetComponent<Image>().color = activeColor;
+                ConnectionLayerActiveButton.GetComponent<Image>().color = inactiveColor;
+                // 根据 currentActiveLayer 设置按钮颜色
+                // 这里可以根据需要自定义颜色
+            }
+            else if(currentActiveLayer == ActivateLayer.Connection)
+            {
+                BuildingLayerActiveButton.GetComponent<Image>().color = inactiveColor;
+                ConnectionLayerActiveButton.GetComponent<Image>().color = activeColor;
+                // 根据 currentActiveLayer 设置按钮颜色
+                // 这里可以根据需要自定义颜色
+            }
+            // 根据 currentActiveLayer 设置按钮颜色
+            // 这里可以根据需要自定义颜色
+        }
+
 
         /// <summary>
         /// summary: 清空待连接端口状态。

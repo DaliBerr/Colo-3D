@@ -4499,6 +4499,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.UI.FactoryUI
   canvasGroup: {fileID: 6158709966447088995}
   closeButton: {fileID: 2371759699818314890}
+  BuildingLayerActiveButton: {fileID: 1552669008715206460}
+  ConnectionLayerActiveButton: {fileID: 5615854430754478228}
   applyDesignButton: {fileID: 1698519177316701080}
   itemButtons:
   - {fileID: 8908302982895668073}

@@ -21,14 +21,14 @@ namespace Kernel.Building
 
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe< Lonize.Events.EventList.MapReady>(OnMapReady);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe< Lonize.EventSystem.EventList.MapReady>(OnMapReady);
             
         }
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe< Lonize.Events.EventList.MapReady>(OnMapReady);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe< Lonize.EventSystem.EventList.MapReady>(OnMapReady);
         }
-        private void OnMapReady( Lonize.Events.EventList.MapReady evt)
+        private void OnMapReady( Lonize.EventSystem.EventList.MapReady evt)
         {
             if (evt.value)
             {

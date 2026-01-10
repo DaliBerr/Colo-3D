@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public abstract class ToggleHolder : MonoBehaviour
 {
@@ -87,7 +87,7 @@ public abstract class ToggleHolder : MonoBehaviour
         UnityAction<bool> ua = v =>
         {
             callback(v);
-            Lonize.Events.Event.eventBus?.Publish(new SettingChanged(true));
+            Lonize.EventSystem.EventManager.eventBus?.Publish(new SettingChanged(true));
         };
 
         _listenerMap.Add(callback, ua);

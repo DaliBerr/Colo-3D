@@ -1,10 +1,10 @@
 using Kernel.GameState;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize.UI;
 using UnityEngine;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.UI
 {
@@ -55,12 +55,12 @@ namespace Kernel.UI
         }
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<SettingChanged>(OnSettingsChanged);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<SettingChanged>(OnSettingsChanged);
             // TitleText.text = Localization.LocalizationManager.Instance.GetLocalizedText("Options");
         }
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe<SettingChanged>(OnSettingsChanged);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<SettingChanged>(OnSettingsChanged);
         }
         private void OnSettingsChanged(SettingChanged evt)
         {

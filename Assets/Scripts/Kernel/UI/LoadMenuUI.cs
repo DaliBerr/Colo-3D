@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Kernel.GameState;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Localization;
 using Lonize.UI;
 using TMPro;
@@ -287,7 +287,7 @@ namespace Kernel.UI
             }
             else
             {
-                Lonize.Events.Event.eventBus.Publish(new EventList.LoadGameRequest(name));
+                Lonize.EventSystem.EventManager.eventBus.Publish(new EventList.LoadGameRequest(name));
             }
             
         }
@@ -304,7 +304,7 @@ namespace Kernel.UI
             if(!Path.HasExtension(name) && scanExtensions!=null && scanExtensions.Length>0){
                 name += scanExtensions[0];
             }
-            Lonize.Events.Event.eventBus.Publish(new EventList.SaveGameRequest(name));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new EventList.SaveGameRequest(name));
 
             StartCoroutine(CoDelayedRefresh(0.15f));
         }

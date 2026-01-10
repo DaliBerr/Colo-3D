@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Lonize.Logging;
 
 
-namespace Lonize.Events
+namespace Lonize.EventSystem
 {
-
+    //Not for public use
     public sealed class EventBus {
         private readonly Dictionary<Type, List<Delegate>> _map = new();
         // private readonly object _gate = new();

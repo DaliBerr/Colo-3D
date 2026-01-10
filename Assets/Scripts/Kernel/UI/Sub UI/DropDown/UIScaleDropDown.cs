@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Kernel;
-using Lonize.Events;
+using Lonize.EventSystem;
 using TMPro;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public class UIScaleDropDown: DropdownHolder
 {
@@ -32,7 +32,7 @@ public class UIScaleDropDown: DropdownHolder
         onValueChanged(index =>
         {
             OptionsManager.Instance.Settings.UIScale = Options[index];
-            Event.eventBus.Publish(new SettingChanged(true));
+            EventManager.eventBus.Publish(new SettingChanged(true));
         });
         //TODO:添加确认弹窗,并计时回退
     }

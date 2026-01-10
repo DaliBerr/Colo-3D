@@ -5,9 +5,9 @@ using Lonize.Tick;
 using Lonize.UI;
 using UnityEngine;
 
-namespace Lonize.Events
+namespace Lonize.EventSystem
 {
-    public static class Event
+    public static class EventManager
     {
         public static readonly EventBus eventBus = new();
     }

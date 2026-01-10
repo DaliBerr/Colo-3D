@@ -10,7 +10,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Lonize.Logging;
 using Kernel.UI;
-using Lonize.Events;
+using Lonize.EventSystem;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using Kernel.GameState;
@@ -46,9 +46,9 @@ namespace Lonize.UI
             Instance = this;
             DontDestroyOnLoad(gameObject);
             // 防呆：确保有 EventSystem
-            if (!FindAnyObjectByType<EventSystem>())
+            if (!FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>())
             {
-                var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+                var go = new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem), typeof(StandaloneInputModule));
                 DontDestroyOnLoad(go);
             }
         }
@@ -104,7 +104,7 @@ namespace Lonize.UI
             // 开发模式：直接切到主场景
             StatusController.AddStatus(StatusList.PlayingStatus);
             RequestStartGame();
-            Events.Event.eventBus.Publish(new EventList.LoadGameRequest(saveName));
+            EventSystem.EventManager.eventBus.Publish(new EventList.LoadGameRequest(saveName));
         }
 
         /// <summary>

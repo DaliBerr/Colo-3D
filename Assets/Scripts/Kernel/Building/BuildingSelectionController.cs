@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using Kernel.GameState;
 using Lonize;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.Building
 {
@@ -302,7 +302,7 @@ namespace Kernel.Building
         private void PublishSelectionSnapshot()
         {
             var runtimes = BuildSelectedRuntimeSnapshot();
-            Lonize.Events.Event.eventBus.Publish(new BuildingSelected(runtimes, runtimes.Count > 0));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new BuildingSelected(runtimes, runtimes.Count > 0));
         }
 
         /// <summary>

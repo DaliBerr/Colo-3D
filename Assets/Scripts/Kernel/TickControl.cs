@@ -1,9 +1,9 @@
 using UnityEngine;
 using Lonize.Tick;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 namespace Kernel
 {
     public  class TickControl: MonoBehaviour
@@ -46,7 +46,7 @@ namespace Kernel
         private void HandleSpeedChanged(GameSpeed preset, float mult)
         {
             // 通过 EventBus 广播（你的全局总线）
-            Lonize.Events.Event.eventBus.Publish(new SpeedChange(mult, preset));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new SpeedChange(mult, preset));
             // 也可以加日志
             Log.Info($"Speed -> {preset} ({mult}x)");
         }

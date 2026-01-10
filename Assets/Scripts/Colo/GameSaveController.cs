@@ -1,7 +1,7 @@
 using Kernel;
 using Kernel.World;
 using Lonize;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using UnityEngine;
 
@@ -23,8 +23,8 @@ namespace Colo
 
         public void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<EventList.SaveGameRequest>(OnSaveGameRequest);
-            Lonize.Events.Event.eventBus.Subscribe<EventList.LoadGameRequest>(OnLoadGameRequest);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<EventList.SaveGameRequest>(OnSaveGameRequest);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<EventList.LoadGameRequest>(OnLoadGameRequest);
         }
         private void OnSaveGameRequest(EventList.SaveGameRequest evt)
         {
