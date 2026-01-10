@@ -35,23 +35,23 @@ namespace Kernel.UI
 
         private void OnAddButtonClicked()
         {
-            Lonize.EventSystem.EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", true));
+            EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", true));
             // GameDebug.Log("Add Button Clicked in FactoryGridSelectionUI.");
         }
         private void OnRemoveButtonClicked()
         {
-            Lonize.EventSystem.EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", false));
+            EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", false));
             // GameDebug.Log("Remove Button Clicked in FactoryGridSelectionUI.");
         }
 
         private void OnEnable()
         {
-            Lonize.EventSystem.EventManager.eventBus.Subscribe<FactoryGridSelected>(OnFactoryGridSelected);
+            EventManager.eventBus.Subscribe<FactoryGridSelected>(OnFactoryGridSelected);
         }
 
         private void OnDisable()
         {
-            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<FactoryGridSelected>(OnFactoryGridSelected);
+            EventManager.eventBus.Unsubscribe<FactoryGridSelected>(OnFactoryGridSelected);
         }
         private void OnFactoryGridSelected(FactoryGridSelected evt)
         {

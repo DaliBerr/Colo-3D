@@ -277,7 +277,7 @@ namespace Kernel.UI
                     continue;
                 }
 
-                button.interactable = isInteractable;
+                button.gameObject.SetActive(isInteractable);
             }
         }
 
@@ -297,7 +297,7 @@ namespace Kernel.UI
                         continue;
                     }
 
-                    button.interactable = isInteractable;
+                    button.gameObject.SetActive(isInteractable);
                 }
             }
 
@@ -310,7 +310,7 @@ namespace Kernel.UI
                         continue;
                     }
 
-                    button.interactable = isInteractable;
+                    button.gameObject.SetActive(isInteractable);
                 }
             }
         }

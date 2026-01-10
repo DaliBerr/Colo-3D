@@ -57,15 +57,15 @@ namespace Kernel.Building
     /// <summary>
     /// summary: 行为生命周期扩展（用于资源注销等）。
     /// </summary>
-    public interface IBuildingBehaviourLifecycle
-    {
-        /// <summary>
-        /// summary: 解绑回调（宿主销毁/拆除时调用）。
-        /// param: runtime 建筑运行时
-        /// return: 无
-        /// </summary>
+    // public interface IBuildingBehaviourLifecycle
+    // {
+    //     /// <summary>
+    //     /// summary: 解绑回调（宿主销毁/拆除时调用）。
+    //     /// param: runtime 建筑运行时
+    //     /// return: 无
+    //     /// </summary>
         
-    }
+    // }
     // ——示例行为——
 
     // 发电机：持续输出功率
@@ -112,8 +112,14 @@ namespace Kernel.Building
         private int _tickAccumulator; // 当前积累的 tick
         private int _counter;       // 计数器
         private long _buildingId;   // 绑定的建筑 ID，方便看日志
-        private const string TickInputPortId = "tick_in";
-        private const string TickOutputPortId = "tick_out";
+
+
+        private const string InputPortID_Parent = "tick_in";
+        private const string OutputPortID_Parent = "tick_out";
+        private int _inputPortCount = -1;
+        private int _outputPortCount = -1;
+        // private const string TickInputPortId = "tick_in";
+        // private const string TickOutputPortId = "tick_out";
 
         public TestCounterBehaviour(int interval)
         {
@@ -151,14 +157,73 @@ namespace Kernel.Building
         /// </summary>
         public IEnumerable<PortDescriptor> GetPorts()
         {
-            return new List<PortDescriptor>
+            var ui = (_inputPortCount < 0 || _outputPortCount < 0) ? FindInteriorUI() : null;
+            int inputCount = _inputPortCount;
+            int outputCount = _outputPortCount;
+
+            if (inputCount < 0)
             {
-                new PortDescriptor(TickInputPortId, PortDirection.Input, ConnectionChannel.Compute, 1),
-                new PortDescriptor(TickOutputPortId, PortDirection.Output, ConnectionChannel.Compute, 1)
-            };
+                inputCount = ui != null ? (ui.InputButtons?.Count ?? 0) : 1;
+                if (ui != null) _inputPortCount = inputCount;
+            }
+
+            if (outputCount < 0)
+            {
+                outputCount = ui != null ? (ui.OutputButtons?.Count ?? 0) : 1;
+                if (ui != null) _outputPortCount = outputCount;
+            }
+
+            int capacity = Math.Max(0, inputCount) + Math.Max(0, outputCount);
+            if (capacity == 0) return Array.Empty<PortDescriptor>();
+
+            var ports = new List<PortDescriptor>(capacity);
+
+            if (inputCount == 1)
+            {
+                ports.Add(new PortDescriptor(InputPortID_Parent, PortDirection.Input, ConnectionChannel.Item, 1));
+            }
+            else if (inputCount > 1)
+            {
+                for (int i = 0; i < inputCount; i++)
+                {
+                    ports.Add(new PortDescriptor($"{InputPortID_Parent}_{i}", PortDirection.Input, ConnectionChannel.Item, 1));
+                }
+            }
+
+            if (outputCount == 1)
+            {
+                ports.Add(new PortDescriptor(OutputPortID_Parent, PortDirection.Output, ConnectionChannel.Item, 1));
+            }
+            else if (outputCount > 1)
+            {
+                for (int i = 0; i < outputCount; i++)
+                {
+                    ports.Add(new PortDescriptor($"{OutputPortID_Parent}_{i}", PortDirection.Output, ConnectionChannel.Item, 1));
+                }
+            }
+
+            return ports;
+        }
+
+        private Kernel.UI.IInteriorBuildingUI FindInteriorUI()
+        {
+            var uis = UnityEngine.Object.FindObjectsByType<Kernel.UI.IInteriorBuildingUI>(UnityEngine.FindObjectsSortMode.None);
+            if (uis == null || uis.Length == 0) return null;
+
+            for (int i = 0; i < uis.Length; i++)
+            {
+                var ui = uis[i];
+                if (ui == null) continue;
+                if (_buildingId > 0 && ui.BuildingLocalId == _buildingId)
+                {
+                    return ui;
+                }
+            }
+
+            return null;
         }
     }
-    public class StorageBehaviour : IBuildingBehaviour, IBuildingBehaviourLifecycle
+    public class StorageBehaviour : IBuildingBehaviour
     {
         public int Capacity;
         public int Priority;

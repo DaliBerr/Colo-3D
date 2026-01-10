@@ -89,6 +89,7 @@ GameObject:
   - component: {fileID: 7816000163062064643}
   - component: {fileID: 602518168494320297}
   - component: {fileID: 7270480359445987480}
+  - component: {fileID: -2335066130932988013}
   m_Layer: 0
   m_Name: Pop-up Prefab
   m_TagString: Untagged
@@ -166,6 +167,22 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &-2335066130932988013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010205436084290411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed5fed55432a0144ca1510482bbed853, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupModal
+  canvasGroup: {fileID: 7270480359445987480}
+  closeButton: {fileID: 6388727187421028139}
+  confirmButton: {fileID: 2438728953877373761}
+  messageText: {fileID: 1546393784640732088}
 --- !u!1 &1570824382675636270
 GameObject:
   m_ObjectHideFlags: 0

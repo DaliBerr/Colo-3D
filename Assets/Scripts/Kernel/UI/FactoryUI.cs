@@ -83,7 +83,7 @@ namespace Kernel.UI
             {
                 _ = TryShowInteriorBuilding(selectedGridIndex, evt.buildingId, addedChild);
                 MarkConnectionsDirty();
-
+                RefreshButtons();
                 if (addedChild != null)
                 {
                     BuildingFactory.InitializeInternalBehaviours(addedChild);
@@ -99,6 +99,8 @@ namespace Kernel.UI
             {
                 GameDebug.LogWarning("[FactoryUI] Failed to add interior building.");
             }
+            // RefreshInteriorButtonState();
+            
         }
         /// <summary>
         /// summary: 尝试在指定格子添加内部建筑，并返回新建的运行时数据。
@@ -173,11 +175,11 @@ namespace Kernel.UI
             }
             if (BuildingLayerActiveButton != null)
             {
-                BuildingLayerActiveButton.onClick.AddListener(() => SetActiveLayer(ActivateLayer.Building));
+                BuildingLayerActiveButton.onClick.AddListener(() => OnBuildingLayerActiveButtonClicked());
             }
             if (ConnectionLayerActiveButton != null)
             {
-                ConnectionLayerActiveButton.onClick.AddListener(() => SetActiveLayer(ActivateLayer.Connection));
+                ConnectionLayerActiveButton.onClick.AddListener(() => OnConnectionLayerActiveButtonClicked());
             }
             for(int i = 0; i < itemButtons.Count; i++)
             {
@@ -188,10 +190,11 @@ namespace Kernel.UI
                 });
                 
             }
-            RefreshInteriorButtonState();
+            // RefreshInteriorButtonState();
+            RefreshButtons();
             // AddInteriorBuildingButton.onClick.AddListener(() =>
             // {
-
+            SetLayerButtonColors(Color.green, Color.white);
 
             // });
         }
@@ -240,10 +243,39 @@ namespace Kernel.UI
         /// param: layer 目标激活层级
         /// return: 无
         /// </summary>
-        private void SetActiveLayer(ActivateLayer layer)
+        // private void SetActiveLayer(ActivateLayer layer)
+        // {
+        //     currentActiveLayer = layer;
+        //     RefreshInteriorButtonState();
+        // }
+
+
+        private void RefreshFactoryUIButtons()
         {
-            currentActiveLayer = layer;
+            // 根据 currentActiveLayer 刷新按钮状态
+            switch (currentActiveLayer)
+            {
+                case ActivateLayer.Building:
+                    // 设置建筑层按钮为激活状态
+                    foreach (var button in itemButtons)
+                    {
+                        button.interactable = true;
+                    }
+                    break;
+                case ActivateLayer.Connection:
+                    // 设置连接层按钮为激活状态
+                    foreach (var button in itemButtons)
+                    {
+                        button.interactable = false;
+                    }
+                    break;
+            }
+        }
+
+        private void RefreshButtons()
+        {
             RefreshInteriorButtonState();
+            RefreshFactoryUIButtons();
         }
 
         /// <summary>
@@ -253,6 +285,7 @@ namespace Kernel.UI
         /// </summary>
         private void RefreshInteriorButtonState()
         {
+
             if (itemButtons == null)
             {
                 return;
@@ -284,6 +317,7 @@ namespace Kernel.UI
                     {
                         case ActivateLayer.Building:
                             interiorUi.SetAllButtonsInteractable(false);
+                            
                             break;
                         case ActivateLayer.Connection:
                             interiorUi.SetAllButtonsInteractable(false);
@@ -541,7 +575,7 @@ namespace Kernel.UI
             {
                 if (child.CellPosition == position)
                 {
-                    // GameDebug.LogError($"位置 {position} 已经有东西啦！添加失败。");
+                    GameDebug.LogError($"位置 {position} 已经有东西啦！");
                     return false;
                 }
             }
@@ -650,6 +684,8 @@ namespace Kernel.UI
             currentActiveLayer = layer;
             SetLayerButtonColors(Color.green, Color.white);
             ClearPendingConnection();
+            // RefreshInteriorButtonState();
+            RefreshButtons();
 
             if (layer == ActivateLayer.Connection)
             {
@@ -789,9 +825,10 @@ namespace Kernel.UI
                 GameDebug.LogWarning($"[FactoryUI] 端口方向不匹配，无法作为输入端口：{port.Direction}");
                 return;
             }
-
-            if (connections.TryCreateLink(pendingPort.Value, inputKey, out _, out var error))
+            GameDebug.Log($"[FactoryUI] pendingPort :{pendingPort}");
+            if (connections.TryCreateLink(pendingPort.Value, inputKey, out var linkId, out var error))
             {
+                GameDebug.Log($"[FactoryUI] 创建连接成功，Link ID：{linkId}");
                 ClearPendingConnection();
                 GameDebug.Log($"[FactoryUI] 连接创建成功：{pendingPort.Value} -> {inputKey}");
                 return;
