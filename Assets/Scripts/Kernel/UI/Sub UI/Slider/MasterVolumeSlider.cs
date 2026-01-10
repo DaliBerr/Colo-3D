@@ -1,8 +1,8 @@
 
 using Kernel;
-using Lonize.Events;
+using Lonize.EventSystem;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public class MasterVolumeSlider : SliderHolder
 {
@@ -18,7 +18,7 @@ public class MasterVolumeSlider : SliderHolder
         onValueChanged((value) =>
         {
             OptionsManager.Instance.Settings.MasterVolume = value;
-            Event.eventBus.Publish(new SettingChanged(true));
+            EventManager.eventBus.Publish(new SettingChanged(true));
         });
     }
 }

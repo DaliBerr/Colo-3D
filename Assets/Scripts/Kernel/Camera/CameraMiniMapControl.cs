@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.UI;
 using Unity.VisualScripting;
 using Kernel.GameState;

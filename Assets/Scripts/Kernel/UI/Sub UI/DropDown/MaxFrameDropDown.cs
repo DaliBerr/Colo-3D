@@ -1,10 +1,10 @@
 
 using System.Collections.Generic;
 using Kernel;
-using Lonize.Events;
+using Lonize.EventSystem;
 using TMPro;
 using UnityEngine;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public class MaxFrameDropDown : DropdownHolder
 {
@@ -33,7 +33,7 @@ public class MaxFrameDropDown : DropdownHolder
         {
             
             OptionsManager.Instance.Settings.MaxFrame = GetOptionFloat(Options[index]);
-            Lonize.Events.Event.eventBus.Publish(new SettingChanged(true));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new SettingChanged(true));
         });
     }
 

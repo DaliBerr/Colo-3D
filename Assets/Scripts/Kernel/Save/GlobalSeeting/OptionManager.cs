@@ -3,10 +3,10 @@ using UnityEngine;
 using Lonize.Scribe;
 using Lonize.Logging;
 using UnityEngine.UI;
-using Lonize.Events;
+using Lonize.EventSystem;
 using System.Collections.Generic;
 using System.Collections;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel{
 public class OptionsManager : MonoBehaviour
@@ -114,7 +114,7 @@ public class OptionsManager : MonoBehaviour
     public void CancelChanges()
     {
         LoadOptions();
-            Lonize.Events.Event.eventBus.Publish(new CancelSettingChange(new List<string>()));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new CancelSettingChange(new List<string>()));
     }
 
     public void ResetToDefaults()

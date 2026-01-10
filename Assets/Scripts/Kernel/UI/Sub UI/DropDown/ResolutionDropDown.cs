@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Kernel;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize.UI;
 using TMPro;
 using UnityEngine;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public class ResolutionDropDown : DropdownHolder
 {
@@ -121,17 +121,17 @@ public class ResolutionDropDown : DropdownHolder
         Vector2Int chosen = _resolutionMap[index];
         OptionsManager.Instance.Settings.Resolution = chosen;
 
-        Lonize.Events.Event.eventBus?.Publish(new SettingChanged(true));
+        Lonize.EventSystem.EventManager.eventBus?.Publish(new SettingChanged(true));
         UIManager.Instance.ShowModal<OptionConfirmPopupModal>();
     }
 
     private void Awake()
     {
-        Lonize.Events.Event.eventBus.Subscribe<CancelSettingChange>(OnCancelSettingChange);
+        Lonize.EventSystem.EventManager.eventBus.Subscribe<CancelSettingChange>(OnCancelSettingChange);
     }
     private void OnDestroy()
     {
-        Lonize.Events.Event.eventBus.Unsubscribe<CancelSettingChange>(OnCancelSettingChange);
+        Lonize.EventSystem.EventManager.eventBus.Unsubscribe<CancelSettingChange>(OnCancelSettingChange);
     }
     private void OnCancelSettingChange(CancelSettingChange evt)
     {

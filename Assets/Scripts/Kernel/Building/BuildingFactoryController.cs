@@ -21,12 +21,12 @@ namespace Kernel.Building
 
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<Lonize.Events.EventList.BuildingSelected>(OnFactorySelected);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<Lonize.EventSystem.EventList.BuildingSelected>(OnFactorySelected);
         }
 
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe<Lonize.Events.EventList.BuildingSelected>(OnFactorySelected);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<Lonize.EventSystem.EventList.BuildingSelected>(OnFactorySelected);
         }
 
         private static BuildingRuntime _currentFactoryRuntime;
@@ -36,7 +36,7 @@ namespace Kernel.Building
         /// param: evt 建筑选择事件（包含 buildingRuntimes 与 isSelected）。
         /// return: 无返回值。
         /// </summary>
-        private void OnFactorySelected(Lonize.Events.EventList.BuildingSelected evt)
+        private void OnFactorySelected(Lonize.EventSystem.EventList.BuildingSelected evt)
         {
             // 0) 没有任何选中：直接清空
             if (!evt.isSelected || evt.buildingRuntimes == null || evt.buildingRuntimes.Count == 0)

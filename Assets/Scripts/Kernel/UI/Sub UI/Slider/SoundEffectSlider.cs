@@ -1,7 +1,7 @@
 using Kernel;
-using Lonize.Events;
+using Lonize.EventSystem;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 public class SoundEffectSlider : SliderHolder
 {
@@ -17,7 +17,7 @@ public class SoundEffectSlider : SliderHolder
         onValueChanged((value) =>
         {
             OptionsManager.Instance.Settings.SoundEffectVolume = value;
-            Event.eventBus.Publish(new SettingChanged(true));
+            EventManager.eventBus.Publish(new SettingChanged(true));
         });
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using TMPro;
 using UnityEngine;

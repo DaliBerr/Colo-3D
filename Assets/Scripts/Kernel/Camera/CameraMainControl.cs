@@ -2,10 +2,10 @@ using UnityEngine;
 using Lonize.UI;
 using UnityEngine.EventSystems;
 using TMPro;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Kernel.GameState;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 namespace Kernel
 {
     public class CameraMainControl : CameraControl
@@ -20,7 +20,7 @@ namespace Kernel
         }
         void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<SpeedChange>(OnSpeedChanged);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<SpeedChange>(OnSpeedChanged);
         }
         private void OnSpeedChanged(SpeedChange evt)
         {

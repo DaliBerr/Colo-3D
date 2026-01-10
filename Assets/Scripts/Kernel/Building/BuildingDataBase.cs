@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Kernel.GameState;
 using Kernel.UI;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Localization;
 using Lonize.Logging;
 using Newtonsoft.Json;
@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.Building
 {
@@ -199,7 +199,7 @@ namespace Kernel.Building
 
             // BuildingEvents.RaiseDatabaseLoaded(Defs.Keys.ToList());
             // Events.eventBus.Publish(new BuildingLoadingProgress(Defs.Keys.Count, Defs.Count));
-            Lonize.Events.Event.eventBus.Publish(new BuildingLoaded(Defs.Keys.Count));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new BuildingLoaded(Defs.Keys.Count));
         }
 
         public static bool TryGet(string id, out BuildingDef def) => Defs.TryGetValue(id, out def);

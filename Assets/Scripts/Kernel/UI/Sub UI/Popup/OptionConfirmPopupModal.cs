@@ -1,7 +1,7 @@
 using System.Collections;
 using Kernel;
 using Kernel.GameState;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Localization;
 using Lonize.Logging;
 using Lonize.UI;

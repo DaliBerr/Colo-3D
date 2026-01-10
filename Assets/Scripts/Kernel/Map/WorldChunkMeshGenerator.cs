@@ -1,5 +1,5 @@
 using Lonize;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize.Scribe;
 using UnityEngine;
@@ -85,12 +85,12 @@ namespace Kernel.World
         private void OnEnable()
         {
             // 订阅一次主场景初始化事件
-            Lonize.Events.Event.eventBus.Subscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
         }
         private void OnDisable()
         {
             // 记得取消订阅，避免泄漏/重复回调
-            Lonize.Events.Event.eventBus.Unsubscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<EventList.MainSceneInitialized>(OnMainSceneInitialized);
         }
         private void LogState(string stage)
         {
@@ -302,7 +302,7 @@ namespace Kernel.World
             GameDebug.Log($"[WorldChunkMeshGenerator] 世界生成完成：{worldCols}×{worldRows}，耗时 {sw.ElapsedMilliseconds} ms");
             Log.Info($"[WorldChunkMeshGenerator] 世界生成完成：{worldCols}×{worldRows}，耗时 {sw.ElapsedMilliseconds} ms");
             
-            Lonize.Events.Event.eventBus.Publish(new EventList.MapReady(true));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new EventList.MapReady(true));
             return true;
         }
         /// <summary>
@@ -497,7 +497,7 @@ namespace Kernel.World
                 else
                 {
                     GameDebug.Log("[WorldChunkMeshGenerator] 存档参数与当前世界一致，无需重建世界。");
-                    Lonize.Events.Event.eventBus.Publish(new EventList.MapReady(true));
+                    Lonize.EventSystem.EventManager.eventBus.Publish(new EventList.MapReady(true));
                 }
             
                 GameDebug.Log($"[SaveMapInfo] Loaded Map Info: seed={mapInfo.worldseed}, cols={mapInfo.worldcols}, rows={mapInfo.worldrows}, chunkW={mapInfo.chunkwidth}, chunkH={mapInfo.chunkheight}, cellSize={mapInfo.cellsize}");

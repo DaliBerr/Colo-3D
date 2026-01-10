@@ -61,7 +61,7 @@ namespace Kernel.UI
                 if (UIManager.Instance.GetTopModal())
                 {
                     var a = UIManager.Instance.GetTopModal();
-                    Lonize.Events.Event.eventBus.Publish(new Lonize.Events.EventList.CloseModalRequest(a));
+                    Lonize.EventSystem.EventManager.eventBus.Publish(new Lonize.EventSystem.EventList.CloseModalRequest(a));
                     yield return UIManager.Instance.PopModalAndWait();
                     yield break;
                 }

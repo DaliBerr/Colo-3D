@@ -1,10 +1,10 @@
 
 using Kernel.GameState;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using Lonize.UI;
 using UnityEngine.UI;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.UI
 {
@@ -35,23 +35,23 @@ namespace Kernel.UI
 
         private void OnAddButtonClicked()
         {
-            Lonize.Events.Event.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", true));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", true));
             // GameDebug.Log("Add Button Clicked in FactoryGridSelectionUI.");
         }
         private void OnRemoveButtonClicked()
         {
-            Lonize.Events.Event.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", false));
+            Lonize.EventSystem.EventManager.eventBus.Publish(new TryModifyInteriorBuildingEvent("factory_interior_default", false));
             // GameDebug.Log("Remove Button Clicked in FactoryGridSelectionUI.");
         }
 
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<FactoryGridSelected>(OnFactoryGridSelected);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<FactoryGridSelected>(OnFactoryGridSelected);
         }
 
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe<FactoryGridSelected>(OnFactoryGridSelected);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<FactoryGridSelected>(OnFactoryGridSelected);
         }
         private void OnFactoryGridSelected(FactoryGridSelected evt)
         {

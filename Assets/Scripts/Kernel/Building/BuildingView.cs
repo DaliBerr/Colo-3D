@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Lonize;
-using Lonize.Events;
+using Lonize.EventSystem;
 using Lonize.Logging;
 using UnityEngine;
-using static Lonize.Events.EventList;
+using static Lonize.EventSystem.EventList;
 
 namespace Kernel.Building
 {

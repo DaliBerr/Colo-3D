@@ -54,13 +54,13 @@ namespace Kernel.UI
         private bool isOpenLogConsole = false;
         private void OnEnable()
         {
-            Lonize.Events.Event.eventBus.Subscribe<Lonize.Events.EventList.CloseModalRequest>(OnCloseModalRequest);
+            Lonize.EventSystem.EventManager.eventBus.Subscribe<Lonize.EventSystem.EventList.CloseModalRequest>(OnCloseModalRequest);
         }
         private void OnDisable()
         {
-            Lonize.Events.Event.eventBus.Unsubscribe<Lonize.Events.EventList.CloseModalRequest>(OnCloseModalRequest);
+            Lonize.EventSystem.EventManager.eventBus.Unsubscribe<Lonize.EventSystem.EventList.CloseModalRequest>(OnCloseModalRequest);
         }
-        private void OnCloseModalRequest(Lonize.Events.EventList.CloseModalRequest evt)
+        private void OnCloseModalRequest(Lonize.EventSystem.EventList.CloseModalRequest evt)
         {
             GameDebug.Log("MainUI received CloseModalRequest for " + evt.modalUI.name);
             if(evt.modalUI.name == "LogUI(Clone)")
