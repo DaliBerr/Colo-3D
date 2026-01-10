@@ -389,7 +389,7 @@ namespace Kernel.Building
             {
                 data.StatKeys = System.Array.Empty<string>();
                 data.StatValues = System.Array.Empty<float>();
-                return data;
+                // return data;
             }
 
             data.StatKeys = new string[total];
