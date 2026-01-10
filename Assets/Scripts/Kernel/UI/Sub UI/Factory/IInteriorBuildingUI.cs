@@ -257,5 +257,63 @@ namespace Kernel.UI
             }
         }
 
+        /// <summary>
+        /// summary: 设置所有按钮的可交互状态。
+        /// param: isInteractable 是否可交互
+        /// return: 无
+        /// </summary>
+        public void SetAllButtonsInteractable(bool isInteractable)
+        {
+            var buttons = GetComponentsInChildren<Button>(true);
+            if (buttons == null)
+            {
+                return;
+            }
+
+            foreach (var button in buttons)
+            {
+                if (button == null)
+                {
+                    continue;
+                }
+
+                button.interactable = isInteractable;
+            }
+        }
+
+        /// <summary>
+        /// summary: 设置输入与输出按钮的可交互状态。
+        /// param: isInteractable 是否可交互
+        /// return: 无
+        /// </summary>
+        public void SetPortButtonsInteractable(bool isInteractable)
+        {
+            if (InputButtons != null)
+            {
+                foreach (var button in InputButtons)
+                {
+                    if (button == null)
+                    {
+                        continue;
+                    }
+
+                    button.interactable = isInteractable;
+                }
+            }
+
+            if (OutputButtons != null)
+            {
+                foreach (var button in OutputButtons)
+                {
+                    if (button == null)
+                    {
+                        continue;
+                    }
+
+                    button.interactable = isInteractable;
+                }
+            }
+        }
+
     }
 }

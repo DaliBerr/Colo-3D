@@ -173,11 +173,11 @@ namespace Kernel.UI
             }
             if (BuildingLayerActiveButton != null)
             {
-                BuildingLayerActiveButton.onClick.AddListener(OnBuildingLayerActiveButtonClicked);
+                BuildingLayerActiveButton.onClick.AddListener(() => SetActiveLayer(ActivateLayer.Building));
             }
             if (ConnectionLayerActiveButton != null)
             {
-                ConnectionLayerActiveButton.onClick.AddListener(OnConnectionLayerActiveButtonClicked);
+                ConnectionLayerActiveButton.onClick.AddListener(() => SetActiveLayer(ActivateLayer.Connection));
             }
             for(int i = 0; i < itemButtons.Count; i++)
             {
@@ -188,6 +188,7 @@ namespace Kernel.UI
                 });
                 
             }
+            RefreshInteriorButtonState();
             // AddInteriorBuildingButton.onClick.AddListener(() =>
             // {
 
@@ -232,6 +233,64 @@ namespace Kernel.UI
             {
                 ClearInteriorBuildingDisplay(i);
                 itemButtons[i].onClick.RemoveAllListeners();
+            }
+        }
+        /// <summary>
+        /// summary: 切换当前激活的界面层级。
+        /// param: layer 目标激活层级
+        /// return: 无
+        /// </summary>
+        private void SetActiveLayer(ActivateLayer layer)
+        {
+            currentActiveLayer = layer;
+            RefreshInteriorButtonState();
+        }
+
+        /// <summary>
+        /// summary: 刷新内部建筑按钮的交互状态。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RefreshInteriorButtonState()
+        {
+            if (itemButtons == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < itemButtons.Count; i++)
+            {
+                var button = itemButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var interiorUis = button.GetComponentsInChildren<IInteriorBuildingUI>(true);
+                if (interiorUis == null || interiorUis.Length == 0)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < interiorUis.Length; j++)
+                {
+                    var interiorUi = interiorUis[j];
+                    if (interiorUi == null)
+                    {
+                        continue;
+                    }
+
+                    switch (currentActiveLayer)
+                    {
+                        case ActivateLayer.Building:
+                            interiorUi.SetAllButtonsInteractable(false);
+                            break;
+                        case ActivateLayer.Connection:
+                            interiorUi.SetAllButtonsInteractable(false);
+                            interiorUi.SetPortButtonsInteractable(true);
+                            break;
+                    }
+                }
             }
         }
         /// <summary>
