@@ -107,6 +107,12 @@ namespace Kernel.Factory.Connections
                 if (string.IsNullOrEmpty(desc.PortId)) continue;
 
                 var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
+
+                if (Graph.TryGetPort(key, out _))
+                {
+                    continue; 
+                }
+                
                 var info = new PortInfo(key, desc.Direction, desc.Channel, desc.MaxLinks, desc.Required);
 
                 if (Graph.TryBindPort(info, out var error))
@@ -352,6 +358,29 @@ namespace Kernel.Factory.Connections
                 return true;
 
             return a == PortDirection.Output && b == PortDirection.Input;
+        }
+
+
+        /// <summary>
+        /// summary: 同步所有端口（只绑定未绑定的，不清除现有连接）。
+        /// 适用于 WYSIWYG 模式，确保 Graph 中包含所有子建筑的端口。
+        /// </summary>
+        public void SyncPorts(IReadOnlyList<FactoryChildRuntime> children)
+        {
+            if (Graph == null) Graph = new FactoryConnectionGraph(false);
+            // 注意：这里不调用 Graph.Clear()！
+
+            if (children == null) return;
+
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child == null) continue;
+                
+                // BindChildPorts 内部调用 TryBindPort，如果端口已存在会返回 false 并忽略，
+                // 所以这里重复调用是安全的，不会覆盖已有数据。
+                BindChildPorts(child);
+            }
         }
     }
 }

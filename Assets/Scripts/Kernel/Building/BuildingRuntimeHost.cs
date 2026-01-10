@@ -432,8 +432,10 @@ namespace Kernel.Building
             {
                 data.InteriorBuildings = Runtime.FactoryInterior.CreateSaveData();
                 data.InteriorLinks = Runtime.FactoryInterior.InteriorLinks;
-            }
 
+                GameDebug.Log($"[SaveBuildingInstance] Factory Interior Save Data: {data.InteriorBuildings?.Count} buildings, {data.InteriorLinks?.Count} links.");
+            }
+            
             return data;
         }
 

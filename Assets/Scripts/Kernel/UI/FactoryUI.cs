@@ -87,6 +87,11 @@ namespace Kernel.UI
                 if (addedChild != null)
                 {
                     BuildingFactory.InitializeInternalBehaviours(addedChild);
+                    if (TryGetConnectionsRuntime(out var connections))
+                    {
+                        connections.BindChildPorts(addedChild);
+                        GameDebug.Log($"[FactoryUI] 已自动绑定新建筑的端口: {evt.buildingId}");
+                    }
                 }
                 else
                 {
@@ -361,23 +366,35 @@ namespace Kernel.UI
             var interior = runtime.EnsureFactoryInterior();
             var children = interior.Children;
             // GameDebug.Log($"[FactoryUI] 应用工厂设计，内部建筑数量：{children?.Count ?? 0}");
-            interior.Connections ??= new FactoryInteriorConnectionsRuntime();
-            interior.Connections.RebindAllPorts(children);
-            var linkErrors = new List<string>();
-            BuildLinksFromUI(interior.Connections, runtime.BuildingID, linkErrors);
+            // interior.Connections ??= new FactoryInteriorConnectionsRuntime();
+            // interior.Connections.RebindAllPorts(children);
+            // var linkErrors = new List<string>();
+            // BuildLinksFromUI(interior.Connections, runtime.BuildingID, linkErrors);
+            if (interior.Connections == null)
+            {
+                GameDebug.LogWarning("[FactoryUI] 连接数据为空，没有什么可保存的。");
+                return; 
+            }
 
+            // 1. 校验 Graph (此时 Graph 里已经是你刚才连好的线了)
             if (!interior.Connections.ValidateGraph(out var graphErrors))
             {
-                graphErrors.InsertRange(0, linkErrors);
+                // 如果有之前的 linkErrors 逻辑，这里只需要展示 graphErrors
                 ShowValidationErrors(graphErrors);
                 return;
             }
+            // if (!interior.Connections.ValidateGraph(out var graphErrors))
+            // {
+            //     graphErrors.InsertRange(0, linkErrors);
+            //     ShowValidationErrors(graphErrors);
+            //     return;
+            // }
 
-            if (linkErrors.Count > 0)
-            {
-                ShowValidationErrors(linkErrors);
-                return;
-            }
+            // if (linkErrors.Count > 0)
+            // {
+            //     ShowValidationErrors(linkErrors);
+            //     return;
+            // }
 
             interior.InteriorLinks = interior.Connections.ExportLinksForSave();
 
@@ -601,6 +618,11 @@ namespace Kernel.UI
                 var child = currentFactoryRuntime.FactoryInterior.Children[i];
                 if (child.CellPosition == position)
                 {
+                    if (TryGetConnectionsRuntime(out var connections))
+                    {
+                        int removedPorts = connections.UnbindChildPorts(child);
+                        GameDebug.Log($"[FactoryUI] 移除建筑同时清理了 {removedPorts} 个端口绑定。");
+                    }
                     currentFactoryRuntime.FactoryInterior.Children.RemoveAt(i);
                     ClearInteriorBuildingDisplay(index);
                     MarkConnectionsDirty();
@@ -827,14 +849,36 @@ namespace Kernel.UI
             }
             GameDebug.Log($"[FactoryUI] pendingPort :{pendingPort}");
             if (connections.TryCreateLink(pendingPort.Value, inputKey, out var linkId, out var error))
-            {
-                GameDebug.Log($"[FactoryUI] 创建连接成功，Link ID：{linkId}");
-                ClearPendingConnection();
-                GameDebug.Log($"[FactoryUI] 连接创建成功：{pendingPort.Value} -> {inputKey}");
-                return;
-            }
+                {
+                    GameDebug.Log($"[FactoryUI] 创建连接成功，Link ID：{linkId}");
+                    
+                    // 我们需要把这次成功的连接记录到 uiLinks 里，防止 Apply 时被丢失
+                    var newLinkData = new FactoryUILinkData
+                    {
+                        // A 端点 (Output)
+                        AFactoryId = pendingPort.Value.FactoryId,
+                        ALocalId = pendingPort.Value.LocalBuildingId,
+                        APortId = pendingPort.Value.PortId,
 
-            GameDebug.LogWarning($"[FactoryUI] 连接创建失败：{error}");
+                        // B 端点 (Input)
+                        BFactoryId = inputKey.FactoryId,
+                        BLocalId = inputKey.LocalBuildingId,
+                        BPortId = inputKey.PortId,
+                        
+                        // 注意：这里可能需要获取 Channel，虽然 uiLinks 定义里好像没用到 Channel 做匹配，
+                        // 但如果结构体里有 Channel 字段最好也填上。
+                        // 暂时假设 uiLinks 只是为了重建连接关系。
+                    };
+                    
+                    uiLinks.Add(newLinkData);
+
+                    GameDebug.Log($"[FactoryUI] 连接创建成功并已记录：{pendingPort.Value} -> {inputKey}");
+
+                    ClearPendingConnection();
+                    return;
+                }
+
+                GameDebug.LogWarning($"[FactoryUI] 连接创建失败：{error}");
         }
 
         /// <summary>
@@ -862,7 +906,8 @@ namespace Kernel.UI
             }
 
             var interior = runtime.EnsureFactoryInterior();
-            connections.RebindAllPorts(interior.Children);
+            // connections.RebindAllPorts(interior.Children);
+            connections.SyncPorts(interior.Children);
             connectionsBound = true;
             return true;
         }
