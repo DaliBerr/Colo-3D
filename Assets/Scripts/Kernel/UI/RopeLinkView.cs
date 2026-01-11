@@ -9,9 +9,13 @@ namespace Kernel.UI
         public RectTransform container;
         public UIRopeGraphic ropeGraphic;
         public float sagFactor = 0.15f;
-        public float sagMin = 8f;
+        public float sagMin = 3f;
         public float sagMax = 120f;
         public float sagSmooth = 8f;
+
+        [SerializeField] public float sagDistanceMax = 600f;
+        [SerializeField] public AnimationCurve sagByDistance = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
 
         private readonly List<Vector2> points = new List<Vector2>();
         private float currentSag;
@@ -33,6 +37,19 @@ namespace Kernel.UI
             }
 
             SetEndpoints(fromScreen, toScreen);
+        }
+
+
+        /// <summary>
+        /// summary: 根据两端距离计算目标下垂量（使用曲线映射）。
+        /// param: distance 两端点距离（UI本地坐标距离）
+        /// return: 目标下垂量
+        /// </summary>
+        private float CalcTargetSag(float distance)
+        {
+            float d01 = Mathf.Clamp01(distance / Mathf.Max(1f, sagDistanceMax));
+            float k = Mathf.Clamp01(sagByDistance.Evaluate(d01));
+            return Mathf.Lerp(sagMin, sagMax, k);
         }
 
         /// <summary>
@@ -80,7 +97,8 @@ namespace Kernel.UI
             }
 
             float distance = Vector2.Distance(p0, p2);
-            float targetSag = MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
+            // float targetSag = MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
+            float targetSag = CalcTargetSag(distance);
             float t = Mathf.Clamp01(sagSmooth * Time.deltaTime);
             currentSag = Mathf.Lerp(currentSag, targetSag, t);
 

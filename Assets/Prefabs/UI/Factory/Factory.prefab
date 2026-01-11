@@ -8827,10 +8827,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.UI.RopeLinkView
   container: {fileID: 3672205929564631084}
   ropeGraphic: {fileID: 3868126450527734536}
-  sagFactor: 0.15
-  sagMin: 8
+  sagFactor: 0.25
+  sagMin: 1
   sagMax: 120
   sagSmooth: 8
+  sagDistanceMax: 600
+  sagByDistance:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1.0040779
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!222 &1861208749658669779
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8853,9 +8878,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.UI.UIRopeGraphic
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  thickness: 10
+  thickness: 5
   uvTileUnit: 100
 --- !u!1001 &556369196171679825
 PrefabInstance:
