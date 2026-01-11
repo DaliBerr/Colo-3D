@@ -4644,6 +4644,8 @@ MonoBehaviour:
   - {fileID: 853778635949413811}
   - {fileID: 5213635839409547615}
   - {fileID: 7477978206445536891}
+  ropePreview: {fileID: 1839100006669842722}
+  ropeLinksContainer: {fileID: 3148280903564317279}
   uiLinks: []
 --- !u!1 &4580439169949824738
 GameObject:
@@ -8820,15 +8822,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 9198900127366057332}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5b59c880694f304384dfa784a14359f, type: 3}
+  m_Script: {fileID: 11500000, guid: c6b30cb730a56164d8b4fdf3a371af20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.UI.RopeLinkView
   container: {fileID: 3672205929564631084}
   ropeGraphic: {fileID: 3868126450527734536}
   sagFactor: 0.15
-  sagMin: 20
-  sagMax: 180
-  sagSmooth: 14
+  sagMin: 8
+  sagMax: 120
+  sagSmooth: 8
 --- !u!222 &1861208749658669779
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8846,15 +8848,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 9198900127366057332}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f936206508d317b4cb1ba25a0cff10f6, type: 3}
+  m_Script: {fileID: 11500000, guid: 17b4bfa319ccf2341b22e973ea579da8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kernel.UI.UIRopeGraphic
   m_Material: {fileID: 0}
-  m_Color: {r: 0.16259317, g: 0.8436657, b: 0.19438918, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   thickness: 10
-  uvTileUnit: 60
+  uvTileUnit: 100
 --- !u!1001 &556369196171679825
 PrefabInstance:
   m_ObjectHideFlags: 0
