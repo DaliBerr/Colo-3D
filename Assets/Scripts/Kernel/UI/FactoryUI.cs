@@ -37,15 +37,19 @@ namespace Kernel.UI
         private PortKey? pendingPort;
         private PortDirection pendingDirection = PortDirection.Output;
         private bool connectionsBound = false;
+        private RectTransform pendingPortRect;
 
         [SerializeField] private Button applyDesignButton;
         [SerializeField] private List<Button> itemButtons = new List<Button>();
+        [SerializeField] private RopeLinkView ropePreview;
+        [SerializeField] private RectTransform ropeLinksContainer;
 
 
         [SerializeField] private static readonly byte  _columns = 7;
         [SerializeField] private List<FactoryUILinkData> uiLinks = new List<FactoryUILinkData>();
 
         private int selectedGridIndex = 0;
+        private readonly Dictionary<long, RopeLinkBinding> ropeLinks = new Dictionary<long, RopeLinkBinding>();
 
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
 
@@ -242,6 +246,16 @@ namespace Kernel.UI
                 ClearInteriorBuildingDisplay(i);
                 itemButtons[i].onClick.RemoveAllListeners();
             }
+        }
+
+        /// <summary>
+        /// summary: 更新绳索预览状态。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void Update()
+        {
+            UpdateRopePreview();
         }
         /// <summary>
         /// summary: 切换当前激活的界面层级。
@@ -623,6 +637,7 @@ namespace Kernel.UI
                         int removedPorts = connections.UnbindChildPorts(child);
                         GameDebug.Log($"[FactoryUI] 移除建筑同时清理了 {removedPorts} 个端口绑定。");
                     }
+                    RemoveRopeLinksForBuilding(child);
                     currentFactoryRuntime.FactoryInterior.Children.RemoveAt(i);
                     ClearInteriorBuildingDisplay(index);
                     MarkConnectionsDirty();
@@ -746,6 +761,11 @@ namespace Kernel.UI
         {
             pendingPort = null;
             pendingDirection = PortDirection.Output;
+            pendingPortRect = null;
+            if (ropePreview != null)
+            {
+                ropePreview.gameObject.SetActive(false);
+            }
         }
 
         /// <summary>
@@ -785,30 +805,36 @@ namespace Kernel.UI
         /// <summary>
         /// summary: 尝试设置待连接端口。
         /// param: key 端口键
-        /// return: 无
+        /// return: 是否设置成功
         /// </summary>
-        private void TrySetPendingPort(PortKey key)
+        private bool TrySetPendingPort(PortKey key)
         {
             if (!TryGetConnectionsRuntime(out var connections))
             {
-                return;
+                return false;
             }
 
             if (connections.Graph == null || !connections.Graph.TryGetPort(key, out var port))
             {
                 GameDebug.LogWarning($"[FactoryUI] 端口不存在，无法设置待连接端口：{key}");
-                return;
+                return false;
             }
 
             if (port.Direction != PortDirection.Output && port.Direction != PortDirection.Bidirectional)
             {
                 GameDebug.LogWarning($"[FactoryUI] 端口方向不匹配，无法作为输出端口：{port.Direction}");
-                return;
+                return false;
             }
 
             pendingPort = key;
             pendingDirection = port.Direction;
+            pendingPortRect = FindPortButtonRect(key);
+            if (ropePreview != null)
+            {
+                ropePreview.gameObject.SetActive(pendingPortRect != null);
+            }
             GameDebug.Log($"[FactoryUI] 已记录待连接端口：{key}");
+            return true;
         }
 
         /// <summary>
@@ -873,6 +899,7 @@ namespace Kernel.UI
                     uiLinks.Add(newLinkData);
 
                     GameDebug.Log($"[FactoryUI] 连接创建成功并已记录：{pendingPort.Value} -> {inputKey}");
+                    CreateRopeLinkView(pendingPort.Value, inputKey, linkId);
 
                     ClearPendingConnection();
                     return;
@@ -947,6 +974,278 @@ namespace Kernel.UI
             return position.y * columns + position.x;
         }
 
+        /// <summary>
+        /// summary: 更新预览绳索的终点位置。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void UpdateRopePreview()
+        {
+            if (ropePreview == null || !pendingPort.HasValue || currentActiveLayer != ActivateLayer.Connection)
+            {
+                return;
+            }
+
+            if (pendingPortRect == null)
+            {
+                pendingPortRect = FindPortButtonRect(pendingPort.Value);
+            }
+
+            if (pendingPortRect == null)
+            {
+                ropePreview.gameObject.SetActive(false);
+                return;
+            }
+
+            ropePreview.gameObject.SetActive(true);
+
+            if (TryGetHoveredInputRect(out var hoveredRect))
+            {
+                ropePreview.SetEndpoints(pendingPortRect, hoveredRect);
+                return;
+            }
+
+            var mousePosition = GetMouseScreenPosition();
+            ropePreview.SetEndpoints(pendingPortRect, mousePosition);
+        }
+
+        /// <summary>
+        /// summary: 尝试获取鼠标悬停的输入端口按钮。
+        /// param: rect 返回按钮 RectTransform
+        /// return: 是否找到
+        /// </summary>
+        private bool TryGetHoveredInputRect(out RectTransform rect)
+        {
+            rect = null;
+
+            if (itemButtons == null || itemButtons.Count == 0)
+            {
+                return false;
+            }
+
+            var mousePosition = GetMouseScreenPosition();
+            var camera = GetUICamera();
+
+            for (int i = 0; i < itemButtons.Count; i++)
+            {
+                var button = itemButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var interiorUis = button.GetComponentsInChildren<IInteriorBuildingUI>(true);
+                if (interiorUis == null || interiorUis.Length == 0)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < interiorUis.Length; j++)
+                {
+                    var interiorUi = interiorUis[j];
+                    if (interiorUi == null || interiorUi.InputButtons == null)
+                    {
+                        continue;
+                    }
+
+                    for (int k = 0; k < interiorUi.InputButtons.Count; k++)
+                    {
+                        var inputButton = interiorUi.InputButtons[k];
+                        if (inputButton == null)
+                        {
+                            continue;
+                        }
+
+                        var inputRect = inputButton.GetComponent<RectTransform>();
+                        if (inputRect == null)
+                        {
+                            continue;
+                        }
+
+                        if (RectTransformUtility.RectangleContainsScreenPoint(inputRect, mousePosition, camera))
+                        {
+                            rect = inputRect;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// summary: 获取鼠标屏幕坐标。
+        /// param: 无
+        /// return: 鼠标屏幕坐标
+        /// </summary>
+        private Vector2 GetMouseScreenPosition()
+        {
+            if (Mouse.current != null)
+            {
+                return Mouse.current.position.ReadValue();
+            }
+
+            return Input.mousePosition;
+        }
+
+        /// <summary>
+        /// summary: 获取 UI 相机。
+        /// param: 无
+        /// return: UI 相机
+        /// </summary>
+        private Camera GetUICamera()
+        {
+            if (ropePreview == null || ropePreview.container == null)
+            {
+                return null;
+            }
+
+            var canvas = ropePreview.container.GetComponentInParent<Canvas>();
+            return canvas != null ? canvas.worldCamera : null;
+        }
+
+        /// <summary>
+        /// summary: 根据端口键查找按钮 RectTransform。
+        /// param: key 端口键
+        /// return: 按钮 RectTransform
+        /// </summary>
+        private RectTransform FindPortButtonRect(PortKey key)
+        {
+            if (itemButtons == null || itemButtons.Count == 0)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < itemButtons.Count; i++)
+            {
+                var button = itemButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var interiorUis = button.GetComponentsInChildren<IInteriorBuildingUI>(true);
+                if (interiorUis == null || interiorUis.Length == 0)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < interiorUis.Length; j++)
+                {
+                    var interiorUi = interiorUis[j];
+                    if (interiorUi == null)
+                    {
+                        continue;
+                    }
+
+                    if (interiorUi.TryGetPortButtonRect(key, out var rect))
+                    {
+                        return rect;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// summary: 创建连接绳索视图。
+        /// param: outputKey 输出端口键
+        /// param: inputKey 输入端口键
+        /// param: linkId 连接ID
+        /// return: 无
+        /// </summary>
+        private void CreateRopeLinkView(PortKey outputKey, PortKey inputKey, long linkId)
+        {
+            if (ropePreview == null || ropeLinksContainer == null)
+            {
+                return;
+            }
+
+            var outputRect = FindPortButtonRect(outputKey);
+            var inputRect = FindPortButtonRect(inputKey);
+
+            var linkView = Instantiate(ropePreview, ropeLinksContainer);
+            linkView.gameObject.SetActive(true);
+            linkView.container = ropeLinksContainer;
+
+            if (outputRect != null && inputRect != null)
+            {
+                linkView.SetEndpoints(outputRect, inputRect);
+            }
+
+            ropeLinks[linkId] = new RopeLinkBinding
+            {
+                View = linkView,
+                OutputKey = outputKey,
+                InputKey = inputKey
+            };
+        }
+
+        /// <summary>
+        /// summary: 移除指定连接的绳索视图。
+        /// param: linkId 连接ID
+        /// return: 无
+        /// </summary>
+        private void RemoveRopeLinkView(long linkId)
+        {
+            if (!ropeLinks.TryGetValue(linkId, out var binding))
+            {
+                return;
+            }
+
+            if (binding.View != null)
+            {
+                Destroy(binding.View.gameObject);
+            }
+
+            ropeLinks.Remove(linkId);
+        }
+
+        /// <summary>
+        /// summary: 移除与指定建筑相关的绳索视图。
+        /// param: child 内部建筑运行时
+        /// return: 无
+        /// </summary>
+        private void RemoveRopeLinksForBuilding(FactoryChildRuntime child)
+        {
+            if (child == null || ropeLinks.Count == 0)
+            {
+                return;
+            }
+
+            var toRemove = new List<long>();
+            foreach (var pair in ropeLinks)
+            {
+                if (IsPortFromBuilding(pair.Value.OutputKey, child) || IsPortFromBuilding(pair.Value.InputKey, child))
+                {
+                    toRemove.Add(pair.Key);
+                }
+            }
+
+            for (int i = 0; i < toRemove.Count; i++)
+            {
+                RemoveRopeLinkView(toRemove[i]);
+            }
+        }
+
+        /// <summary>
+        /// summary: 判断端口是否属于指定建筑。
+        /// param: key 端口键
+        /// param: child 内部建筑运行时
+        /// return: 是否属于
+        /// </summary>
+        private bool IsPortFromBuilding(PortKey key, FactoryChildRuntime child)
+        {
+            if (child == null)
+            {
+                return false;
+            }
+
+            return key.FactoryId == child.BuildingParentID && key.LocalBuildingId == child.BuildingLocalID;
+        }
+
         [System.Serializable]
         private struct FactoryUILinkData
         {
@@ -956,6 +1255,13 @@ namespace Kernel.UI
             public long BFactoryId;
             public long BLocalId;
             public string BPortId;
+        }
+
+        private struct RopeLinkBinding
+        {
+            public RopeLinkView View;
+            public PortKey OutputKey;
+            public PortKey InputKey;
         }
     }
 }
