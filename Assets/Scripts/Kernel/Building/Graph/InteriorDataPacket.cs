@@ -8,6 +8,7 @@ namespace Kernel.Factory.Connections
     public sealed class InteriorDataPacket
     {
         public PortKey PortKey { get; }
+        public string PortId { get; }
         public ConnectionChannel Channel { get; }
         public object Payload { get; }
 
@@ -21,6 +22,7 @@ namespace Kernel.Factory.Connections
         public InteriorDataPacket(PortKey portKey, ConnectionChannel channel, object payload)
         {
             PortKey = portKey;
+            PortId = portKey.PortId;
             Channel = channel;
             Payload = payload;
         }
