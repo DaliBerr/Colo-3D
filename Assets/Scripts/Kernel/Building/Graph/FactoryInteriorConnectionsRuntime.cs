@@ -42,7 +42,7 @@ namespace Kernel.Factory.Connections
     public interface IInteriorPortProvider
     {
         /// <summary>
-        /// summary: 获取该建筑提供的端口列表。
+        /// summary: 获取该建筑提供的端口列表（PortId 必须与 Behaviour 使用的 ID 完全一致）。
         /// param: 无
         /// return: 端口声明枚举
         /// </summary>
@@ -101,9 +101,10 @@ namespace Kernel.Factory.Connections
             
             if (ports == null) return 0;
 
-            foreach (var desc in ports)
+            foreach (var port in ports)
             {
-                GameDebug.Log($"[Connections] {desc.PortId} {desc.Direction} {desc.Channel} {desc.MaxLinks}");
+                var desc = port.Descriptor;
+                GameDebug.Log($"[Connections] Bind PortId={desc.PortId} Provider={port.ProviderName} Direction={desc.Direction} Channel={desc.Channel} MaxLinks={desc.MaxLinks}");
                 if (string.IsNullOrEmpty(desc.PortId)) continue;
 
                 var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
@@ -215,8 +216,9 @@ namespace Kernel.Factory.Connections
             var ports = CollectPorts(child);
             if (ports == null) return 0;
 
-            foreach (var desc in ports)
+            foreach (var port in ports)
             {
+                var desc = port.Descriptor;
                 if (string.IsNullOrEmpty(desc.PortId)) continue;
 
                 var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
@@ -328,9 +330,9 @@ namespace Kernel.Factory.Connections
         /// param: child 内部建筑运行时
         /// return: 端口声明列表（可能为空）
         /// </summary>
-        private static List<PortDescriptor> CollectPorts(FactoryChildRuntime child)
+        private static List<PortDescriptorContext> CollectPorts(FactoryChildRuntime child)
         {
-            var list = new List<PortDescriptor>();
+            var list = new List<PortDescriptorContext>();
             if (child.Behaviours == null) return list;
 
             for (int i = 0; i < child.Behaviours.Count; i++)
@@ -340,7 +342,8 @@ namespace Kernel.Factory.Connections
                 {
                     var ports = provider.GetPorts();
                     if (ports == null) continue;
-                    foreach (var p in ports) list.Add(p);
+                    var providerName = bh.GetType().Name;
+                    foreach (var p in ports) list.Add(new PortDescriptorContext(p, providerName));
                 }
             }
             return list;
@@ -380,6 +383,24 @@ namespace Kernel.Factory.Connections
                 // BindChildPorts 内部调用 TryBindPort，如果端口已存在会返回 false 并忽略，
                 // 所以这里重复调用是安全的，不会覆盖已有数据。
                 BindChildPorts(child);
+            }
+        }
+
+        /// <summary>
+        /// summary: 端口声明上下文（用于记录来源 Behaviour）。
+        /// param: descriptor 端口声明
+        /// param: providerName 端口提供者名称
+        /// return: 上下文实例
+        /// </summary>
+        private readonly struct PortDescriptorContext
+        {
+            public readonly PortDescriptor Descriptor;
+            public readonly string ProviderName;
+
+            public PortDescriptorContext(PortDescriptor descriptor, string providerName)
+            {
+                Descriptor = descriptor;
+                ProviderName = providerName ?? string.Empty;
             }
         }
     }

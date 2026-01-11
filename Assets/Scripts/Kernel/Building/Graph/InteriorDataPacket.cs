@@ -47,7 +47,7 @@ namespace Kernel.Factory.Connections
     public interface IInteriorDataInput
     {
         /// <summary>
-        /// summary: 接收输入的数据包。
+        /// summary: 接收输入的数据包（请使用 packet.PortId 区分来源端口，且须与 GetPorts() 的 PortId 完全一致）。
         /// param: packet 数据包
         /// return: 无
         /// </summary>

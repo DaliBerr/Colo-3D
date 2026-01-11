@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kernel.Factory.Connections;
 using Lonize.Logging;
@@ -298,9 +299,10 @@ namespace Kernel.Building
 
                     foreach (var packet in packets)
                     {
-                        if (packet != null)
+                        var normalized = NormalizeOutputPacket(packet);
+                        if (normalized != null)
                         {
-                            _outgoingBuffer.Add(packet);
+                            _outgoingBuffer.Add(normalized);
                         }
                     }
                 }
@@ -316,6 +318,27 @@ namespace Kernel.Building
         {
             _incomingBuffer = _outgoingBuffer;
             _outgoingBuffer = new List<InteriorDataPacket>();
+        }
+
+        /// <summary>
+        /// summary: 标准化输出数据包，确保 PortId 与端口一致。
+        /// param: packet 原始数据包
+        /// return: 标准化后的数据包
+        /// </summary>
+        private static InteriorDataPacket NormalizeOutputPacket(InteriorDataPacket packet)
+        {
+            if (packet == null) return null;
+
+            var portId = packet.PortId ?? string.Empty;
+            var keyPortId = packet.PortKey.PortId ?? string.Empty;
+
+            if (string.Equals(portId, keyPortId, StringComparison.Ordinal))
+            {
+                return packet;
+            }
+
+            GameDebug.LogWarning($"[FactoryComposite] PortId 与 PortKey 不一致，已以 PortKey 为准。PacketPortId={portId}, KeyPortId={keyPortId}");
+            return new InteriorDataPacket(packet.PortKey, packet.Channel, packet.Payload);
         }
     }
 }
