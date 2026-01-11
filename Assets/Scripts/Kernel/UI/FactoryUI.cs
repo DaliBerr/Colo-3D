@@ -874,6 +874,12 @@ namespace Kernel.UI
                 return;
             }
             GameDebug.Log($"[FactoryUI] pendingPort :{pendingPort}");
+            var outputRect = pendingPortRect ?? FindPortButtonRect(pendingPort.Value);
+            var inputRect = FindPortButtonRect(inputKey);
+            if (ropePreview != null && outputRect != null && inputRect != null)
+            {
+                ropePreview.SetEndpoints(outputRect, inputRect);
+            }
             if (connections.TryCreateLink(pendingPort.Value, inputKey, out var linkId, out var error))
                 {
                     GameDebug.Log($"[FactoryUI] 创建连接成功，Link ID：{linkId}");
@@ -899,7 +905,7 @@ namespace Kernel.UI
                     uiLinks.Add(newLinkData);
 
                     GameDebug.Log($"[FactoryUI] 连接创建成功并已记录：{pendingPort.Value} -> {inputKey}");
-                    CreateRopeLinkView(pendingPort.Value, inputKey, linkId);
+                    CreateRopeLinkView(pendingPort.Value, inputKey, linkId, outputRect, inputRect);
 
                     ClearPendingConnection();
                     return;
@@ -1154,17 +1160,19 @@ namespace Kernel.UI
         /// param: outputKey 输出端口键
         /// param: inputKey 输入端口键
         /// param: linkId 连接ID
+        /// param: outputRect 输出端口 RectTransform
+        /// param: inputRect 输入端口 RectTransform
         /// return: 无
         /// </summary>
-        private void CreateRopeLinkView(PortKey outputKey, PortKey inputKey, long linkId)
+        private void CreateRopeLinkView(PortKey outputKey, PortKey inputKey, long linkId, RectTransform outputRect, RectTransform inputRect)
         {
             if (ropePreview == null || ropeLinksContainer == null)
             {
                 return;
             }
 
-            var outputRect = FindPortButtonRect(outputKey);
-            var inputRect = FindPortButtonRect(inputKey);
+            outputRect ??= FindPortButtonRect(outputKey);
+            inputRect ??= FindPortButtonRect(inputKey);
 
             var linkView = Instantiate(ropePreview, ropeLinksContainer);
             linkView.gameObject.SetActive(true);
