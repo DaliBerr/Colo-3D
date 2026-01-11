@@ -1184,7 +1184,7 @@ namespace Kernel.UI
 
             if (outputRect != null && inputRect != null)
             {
-                linkView.SetEndpoints(outputRect, inputRect);
+                linkView.SetEndpointsImmediate(outputRect, inputRect);
             }
 
             ropeLinks[linkId] = new RopeLinkBinding
