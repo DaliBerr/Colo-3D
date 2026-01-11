@@ -32,7 +32,7 @@ namespace Kernel.UI
                 return;
             }
 
-            SetEndpoints(fromScreen, toScreen);
+            SetEndpoints(fromScreen, toScreen, true);
         }
 
         /// <summary>
@@ -53,16 +53,17 @@ namespace Kernel.UI
                 return;
             }
 
-            SetEndpoints(fromScreen, toScreen);
+            SetEndpoints(fromScreen, toScreen, true);
         }
 
         /// <summary>
         /// summary: 通过屏幕坐标设置两端点。
         /// param: fromScreen 起点屏幕坐标
         /// param: toScreen 终点屏幕坐标
+        /// param: smoothSag 是否平滑下凹变化
         /// return: 无
         /// </summary>
-        private void SetEndpoints(Vector2 fromScreen, Vector2 toScreen)
+        private void SetEndpoints(Vector2 fromScreen, Vector2 toScreen, bool smoothSag)
         {
             if (!TryGetCanvasCamera(out var cam))
             {
@@ -80,13 +81,51 @@ namespace Kernel.UI
             }
 
             float distance = Vector2.Distance(p0, p2);
-            float targetSag = MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
-            float t = Mathf.Clamp01(sagSmooth * Time.deltaTime);
-            currentSag = Mathf.Lerp(currentSag, targetSag, t);
+            float targetSag = CalcTargetSag(distance);
+            if (smoothSag)
+            {
+                float t = Mathf.Clamp01(sagSmooth * Time.deltaTime);
+                currentSag = Mathf.Lerp(currentSag, targetSag, t);
+            }
+            else
+            {
+                currentSag = targetSag;
+            }
 
             int segments = MathUtils.BezierRopeMath.CalcSegments(distance);
             MathUtils.BezierRopeMath.BuildQuadraticPoints(p0, p2, currentSag, segments, points);
             ropeGraphic.SetPoints(points);
+        }
+
+        /// <summary>
+        /// summary: 立即设置两端点并固定下凹量。
+        /// param: from 起点 RectTransform
+        /// param: to 终点 RectTransform
+        /// return: 无
+        /// </summary>
+        public void SetEndpointsImmediate(RectTransform from, RectTransform to)
+        {
+            if (container == null || ropeGraphic == null || from == null || to == null)
+            {
+                return;
+            }
+
+            if (!TryGetScreenPoint(from, out var fromScreen) || !TryGetScreenPoint(to, out var toScreen))
+            {
+                return;
+            }
+
+            SetEndpoints(fromScreen, toScreen, false);
+        }
+
+        /// <summary>
+        /// summary: 计算目标下凹量。
+        /// param: distance 端点距离
+        /// return: 目标下凹量
+        /// </summary>
+        private float CalcTargetSag(float distance)
+        {
+            return MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
         }
 
         /// <summary>

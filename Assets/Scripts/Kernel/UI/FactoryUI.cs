@@ -223,6 +223,9 @@ namespace Kernel.UI
                 GetIndexByCellPosition(child.CellPosition);
                 await TryShowInteriorBuilding(GetIndexByCellPosition(child.CellPosition), child.Def.Id, child);
             }
+
+            EnsureConnectionsBound();
+            RefreshRopeLinks();
         }
 
         private void OnDestroy()
@@ -295,6 +298,7 @@ namespace Kernel.UI
         {
             RefreshInteriorButtonState();
             RefreshFactoryUIButtons();
+            RefreshRopeLinks();
         }
 
         /// <summary>
@@ -874,6 +878,12 @@ namespace Kernel.UI
                 return;
             }
             GameDebug.Log($"[FactoryUI] pendingPort :{pendingPort}");
+            var outputRect = pendingPortRect ?? FindPortButtonRect(pendingPort.Value);
+            var inputRect = FindPortButtonRect(inputKey);
+            if (ropePreview != null && outputRect != null && inputRect != null)
+            {
+                ropePreview.SetEndpoints(outputRect, inputRect);
+            }
             if (connections.TryCreateLink(pendingPort.Value, inputKey, out var linkId, out var error))
                 {
                     GameDebug.Log($"[FactoryUI] 创建连接成功，Link ID：{linkId}");
@@ -899,7 +909,7 @@ namespace Kernel.UI
                     uiLinks.Add(newLinkData);
 
                     GameDebug.Log($"[FactoryUI] 连接创建成功并已记录：{pendingPort.Value} -> {inputKey}");
-                    CreateRopeLinkView(pendingPort.Value, inputKey, linkId);
+                    CreateRopeLinkView(pendingPort.Value, inputKey, linkId, outputRect, inputRect);
 
                     ClearPendingConnection();
                     return;
@@ -1154,17 +1164,19 @@ namespace Kernel.UI
         /// param: outputKey 输出端口键
         /// param: inputKey 输入端口键
         /// param: linkId 连接ID
+        /// param: outputRect 输出端口 RectTransform
+        /// param: inputRect 输入端口 RectTransform
         /// return: 无
         /// </summary>
-        private void CreateRopeLinkView(PortKey outputKey, PortKey inputKey, long linkId)
+        private void CreateRopeLinkView(PortKey outputKey, PortKey inputKey, long linkId, RectTransform outputRect, RectTransform inputRect)
         {
             if (ropePreview == null || ropeLinksContainer == null)
             {
                 return;
             }
 
-            var outputRect = FindPortButtonRect(outputKey);
-            var inputRect = FindPortButtonRect(inputKey);
+            outputRect ??= FindPortButtonRect(outputKey);
+            inputRect ??= FindPortButtonRect(inputKey);
 
             var linkView = Instantiate(ropePreview, ropeLinksContainer);
             linkView.gameObject.SetActive(true);
@@ -1172,7 +1184,7 @@ namespace Kernel.UI
 
             if (outputRect != null && inputRect != null)
             {
-                linkView.SetEndpoints(outputRect, inputRect);
+                linkView.SetEndpointsImmediate(outputRect, inputRect);
             }
 
             ropeLinks[linkId] = new RopeLinkBinding
@@ -1228,6 +1240,110 @@ namespace Kernel.UI
             {
                 RemoveRopeLinkView(toRemove[i]);
             }
+        }
+
+        /// <summary>
+        /// summary: 刷新并重建所有连接绳索视图。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RefreshRopeLinks()
+        {
+            if (!TryGetConnectionsRuntime(out var connections))
+            {
+                return;
+            }
+
+            if (connections.Graph == null)
+            {
+                return;
+            }
+
+            ClearAllRopeLinks();
+
+            var links = connections.Graph.GetAllLinks();
+            for (int i = 0; i < links.Count; i++)
+            {
+                var link = links[i];
+                if (!TryResolveLinkEndpoints(connections, link, out var outputKey, out var inputKey))
+                {
+                    outputKey = link.A;
+                    inputKey = link.B;
+                }
+
+                var outputRect = FindPortButtonRect(outputKey);
+                var inputRect = FindPortButtonRect(inputKey);
+                if (outputRect == null || inputRect == null)
+                {
+                    continue;
+                }
+
+                CreateRopeLinkView(outputKey, inputKey, link.LinkId, outputRect, inputRect);
+            }
+        }
+
+        /// <summary>
+        /// summary: 清除所有连接绳索视图。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void ClearAllRopeLinks()
+        {
+            if (ropeLinks.Count == 0)
+            {
+                return;
+            }
+
+            var toRemove = new List<long>(ropeLinks.Keys);
+            for (int i = 0; i < toRemove.Count; i++)
+            {
+                RemoveRopeLinkView(toRemove[i]);
+            }
+        }
+
+        /// <summary>
+        /// summary: 根据连接信息解析输出与输入端口。
+        /// param: connections 连接运行时
+        /// param: link 连接信息
+        /// param: outputKey 输出端口键
+        /// param: inputKey 输入端口键
+        /// return: 是否成功解析
+        /// </summary>
+        private bool TryResolveLinkEndpoints(FactoryInteriorConnectionsRuntime connections, LinkInfo link, out PortKey outputKey, out PortKey inputKey)
+        {
+            outputKey = default;
+            inputKey = default;
+
+            if (connections == null || connections.Graph == null || link == null)
+            {
+                return false;
+            }
+
+            if (!connections.Graph.TryGetPort(link.A, out var portA) || !connections.Graph.TryGetPort(link.B, out var portB))
+            {
+                return false;
+            }
+
+            bool aIsOutput = portA.Direction == PortDirection.Output || portA.Direction == PortDirection.Bidirectional;
+            bool aIsInput = portA.Direction == PortDirection.Input || portA.Direction == PortDirection.Bidirectional;
+            bool bIsOutput = portB.Direction == PortDirection.Output || portB.Direction == PortDirection.Bidirectional;
+            bool bIsInput = portB.Direction == PortDirection.Input || portB.Direction == PortDirection.Bidirectional;
+
+            if (aIsOutput && bIsInput)
+            {
+                outputKey = link.A;
+                inputKey = link.B;
+                return true;
+            }
+
+            if (bIsOutput && aIsInput)
+            {
+                outputKey = link.B;
+                inputKey = link.A;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
