@@ -259,6 +259,7 @@ namespace Kernel.UI
         private void Update()
         {
             UpdateRopePreview();
+            HandleRopeCancelInput();
         }
         /// <summary>
         /// summary: 切换当前激活的界面层级。
@@ -271,7 +272,25 @@ namespace Kernel.UI
         //     RefreshInteriorButtonState();
         // }
 
+        /// <summary>
+        /// summary: 处理绳索预览的取消输入。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void HandleRopeCancelInput()
+        {
+            if (!pendingPort.HasValue || currentActiveLayer != ActivateLayer.Connection)
+            {
+                return;
+            }
 
+            var action = InputActionManager.Instance?.UI?.UI.RopeCancel;
+            if (action != null && action.WasPressedThisFrame())
+            {
+                ClearPendingConnection();
+            }
+        }
+        
         private void RefreshFactoryUIButtons()
         {
             // 根据 currentActiveLayer 刷新按钮状态

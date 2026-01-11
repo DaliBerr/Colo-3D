@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lonize;
 using Lonize.Math;
 using UnityEngine;
 
@@ -26,6 +27,7 @@ namespace Kernel.UI
         /// <return>无。</return>
         public void SetEndpoints(RectTransform from, RectTransform to)
         {
+
             if (container == null || ropeGraphic == null || from == null || to == null)
             {
                 return;
@@ -98,11 +100,16 @@ namespace Kernel.UI
             }
 
             float distance = Vector2.Distance(p0, p2);
-            // float targetSag = MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
             float targetSag = CalcTargetSag(distance);
-            float t = Mathf.Clamp01(sagSmooth * Time.deltaTime);
-            currentSag = Mathf.Lerp(currentSag, targetSag, t);
-
+            if (smoothSag)
+            {
+                float t = Mathf.Clamp01(sagSmooth * Time.deltaTime);
+                currentSag = Mathf.Lerp(currentSag, targetSag, t);
+            }
+            else
+            {
+                currentSag = targetSag;
+            }
             int segments = MathUtils.BezierRopeMath.CalcSegments(distance);
             MathUtils.BezierRopeMath.BuildQuadraticPoints(p0, p2, currentSag, segments, points);
             ropeGraphic.SetPoints(points);
@@ -134,10 +141,10 @@ namespace Kernel.UI
         /// param: distance 端点距离
         /// return: 目标下凹量
         /// </summary>
-        private float CalcTargetSag(float distance)
-        {
-            return MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
-        }
+        // private float CalcTargetSag(float distance)
+        // {
+        //     return MathUtils.BezierRopeMath.CalcSag(distance, sagFactor, sagMin, sagMax);
+        // }
 
         /// <summary>
         /// summary: 尝试获取屏幕坐标。

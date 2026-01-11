@@ -102,6 +102,15 @@ namespace Lonize
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RopeCancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""c3dd9eb9-2089-446c-b5a8-34ca01b4b700"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -115,6 +124,17 @@ namespace Lonize
                     ""action"": ""Router"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1485bf85-88b5-4701-9348-c1e8c4c0fe5f"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RopeCancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -124,6 +144,7 @@ namespace Lonize
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Router = m_UI.FindAction("Router", throwIfNotFound: true);
+            m_UI_RopeCancel = m_UI.FindAction("RopeCancel", throwIfNotFound: true);
         }
 
         ~@UIControls()
@@ -205,6 +226,7 @@ namespace Lonize
         private readonly InputActionMap m_UI;
         private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
         private readonly InputAction m_UI_Router;
+        private readonly InputAction m_UI_RopeCancel;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -220,6 +242,10 @@ namespace Lonize
             /// Provides access to the underlying input action "UI/Router".
             /// </summary>
             public InputAction @Router => m_Wrapper.m_UI_Router;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/RopeCancel".
+            /// </summary>
+            public InputAction @RopeCancel => m_Wrapper.m_UI_RopeCancel;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -249,6 +275,9 @@ namespace Lonize
                 @Router.started += instance.OnRouter;
                 @Router.performed += instance.OnRouter;
                 @Router.canceled += instance.OnRouter;
+                @RopeCancel.started += instance.OnRopeCancel;
+                @RopeCancel.performed += instance.OnRopeCancel;
+                @RopeCancel.canceled += instance.OnRopeCancel;
             }
 
             /// <summary>
@@ -263,6 +292,9 @@ namespace Lonize
                 @Router.started -= instance.OnRouter;
                 @Router.performed -= instance.OnRouter;
                 @Router.canceled -= instance.OnRouter;
+                @RopeCancel.started -= instance.OnRopeCancel;
+                @RopeCancel.performed -= instance.OnRopeCancel;
+                @RopeCancel.canceled -= instance.OnRopeCancel;
             }
 
             /// <summary>
@@ -310,6 +342,13 @@ namespace Lonize
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnRouter(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "RopeCancel" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnRopeCancel(InputAction.CallbackContext context);
         }
     }
 }
