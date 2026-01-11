@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Kernel.Factory.Connections;
+using Lonize.Logging;
 using Lonize.Tick;
 
 namespace Kernel.Building
@@ -212,6 +213,20 @@ namespace Kernel.Building
         }
 
         /// <summary>
+        /// summary: 尝试通过端口键解析目标节点。
+        /// param: key 端口键
+        /// param: node 解析到的节点
+        /// return: 是否解析成功
+        /// </summary>
+        public bool TryResolveNode(PortKey key, out FactoryNodeRuntime node)
+        {
+            if (_nodeByLocalId.TryGetValue(key.LocalBuildingId, out node)) return true;
+
+            GameDebug.LogWarning($"[FactoryComposite] 未找到节点，端口键: {key}");
+            return false;
+        }
+
+        /// <summary>
         /// summary: 将输入缓冲内的数据包按连接路由到下游节点。
         /// param: 无
         /// return: 无
@@ -243,7 +258,7 @@ namespace Kernel.Building
                     if (!graph.TryGetPort(targetKey, out var targetPort)) continue;
                     if (targetPort.Direction == PortDirection.Output) continue;
 
-                    if (!_nodeByLocalId.TryGetValue(targetKey.LocalBuildingId, out var targetNode)) continue;
+                    if (!TryResolveNode(targetKey, out var targetNode)) continue;
                     var behaviours = targetNode.Child?.Behaviours;
                     if (behaviours == null) continue;
 
