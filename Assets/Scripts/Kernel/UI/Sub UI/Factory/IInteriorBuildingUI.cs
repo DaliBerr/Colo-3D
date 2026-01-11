@@ -315,5 +315,80 @@ namespace Kernel.UI
             }
         }
 
+        /// <summary>
+        /// summary: 尝试根据端口键获取对应按钮的 RectTransform。
+        /// param: key 端口键
+        /// param: rect 返回按钮 RectTransform
+        /// return: 是否找到
+        /// </summary>
+        public bool TryGetPortButtonRect(PortKey key, out RectTransform rect)
+        {
+            rect = null;
+
+            if (BuildingParentId <= 0 || BuildingLocalId <= 0)
+            {
+                return false;
+            }
+
+            if (key.FactoryId != BuildingParentId || key.LocalBuildingId != BuildingLocalId)
+            {
+                return false;
+            }
+
+            if (TryGetButtonRect(InputPortMetas, InputButtons, key.PortId, out rect))
+            {
+                return true;
+            }
+
+            if (TryGetButtonRect(OutputPortMetas, OutputButtons, key.PortId, out rect))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// summary: 根据端口ID在按钮列表中查找 RectTransform。
+        /// param: metas 端口元数据列表
+        /// param: buttons 按钮列表
+        /// param: portId 端口ID
+        /// param: rect 返回 RectTransform
+        /// return: 是否找到
+        /// </summary>
+        private static bool TryGetButtonRect(List<InteriorPortButtonMeta> metas, List<Button> buttons, string portId, out RectTransform rect)
+        {
+            rect = null;
+
+            if (metas == null || buttons == null || string.IsNullOrEmpty(portId))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < metas.Count; i++)
+            {
+                if (!string.Equals(metas[i].PortId, portId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (i < 0 || i >= buttons.Count)
+                {
+                    return false;
+                }
+
+                var button = buttons[i];
+                if (button == null)
+                {
+                    return false;
+                }
+
+                rect = button.GetComponent<RectTransform>();
+                return rect != null;
+            }
+
+            return false;
+        }
+
     }
 }
