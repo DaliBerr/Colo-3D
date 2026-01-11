@@ -98,6 +98,8 @@ namespace Kernel.Building
         private FactoryInteriorConnectionsRuntime _connections;
         private readonly List<FactoryNodeRuntime> _nodes = new();
         private readonly Dictionary<long, FactoryNodeRuntime> _nodeByLocalId = new();
+        private List<InteriorDataPacket> _incomingBuffer = new();
+        private List<InteriorDataPacket> _outgoingBuffer = new();
 
         public IReadOnlyList<FactoryNodeRuntime> Nodes => _nodes;
 
@@ -123,6 +125,8 @@ namespace Kernel.Building
             _connections = null;
             _nodes.Clear();
             _nodeByLocalId.Clear();
+            _incomingBuffer.Clear();
+            _outgoingBuffer.Clear();
         }
 
         /// <summary>
@@ -137,6 +141,8 @@ namespace Kernel.Building
             var orderedNodes = BuildTraversalOrder();
             if (orderedNodes.Count == 0) return;
 
+            RouteIncomingBuffer();
+
             for (int i = 0; i < orderedNodes.Count; i++)
             {
                 var node = orderedNodes[i];
@@ -144,6 +150,9 @@ namespace Kernel.Building
                 node.TickBehaviours(ticks);
                 node.CompleteStep();
             }
+
+            CollectOutgoingBuffer();
+            SwapBuffers();
         }
 
         /// <summary>
@@ -200,6 +209,98 @@ namespace Kernel.Building
             {
                 ordered.Add(node);
             }
+        }
+
+        /// <summary>
+        /// summary: 将输入缓冲内的数据包按连接路由到下游节点。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RouteIncomingBuffer()
+        {
+            if (_incomingBuffer == null || _incomingBuffer.Count == 0) return;
+
+            var graph = _connections?.Graph;
+            if (graph == null) return;
+
+            for (int i = 0; i < _incomingBuffer.Count; i++)
+            {
+                var packet = _incomingBuffer[i];
+                if (packet == null) continue;
+
+                if (!graph.TryGetPort(packet.PortKey, out var sourcePort)) continue;
+                if (sourcePort.Direction == PortDirection.Input) continue;
+
+                var links = graph.GetLinksOfPort(packet.PortKey);
+                if (links == null || links.Count == 0) continue;
+
+                for (int j = 0; j < links.Count; j++)
+                {
+                    var link = links[j];
+                    if (link == null || link.Channel != packet.Channel) continue;
+
+                    var targetKey = link.GetOther(packet.PortKey);
+                    if (!graph.TryGetPort(targetKey, out var targetPort)) continue;
+                    if (targetPort.Direction == PortDirection.Output) continue;
+
+                    if (!_nodeByLocalId.TryGetValue(targetKey.LocalBuildingId, out var targetNode)) continue;
+                    var behaviours = targetNode.Child?.Behaviours;
+                    if (behaviours == null) continue;
+
+                    var routedPacket = new InteriorDataPacket(targetKey, packet.Channel, packet.Payload);
+                    foreach (var behaviour in behaviours)
+                    {
+                        if (behaviour is IInteriorDataInput input)
+                        {
+                            input.ReceiveInput(routedPacket);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// summary: 收集节点输出数据并写入输出缓冲。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void CollectOutgoingBuffer()
+        {
+            if (_outgoingBuffer == null) return;
+
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                var node = _nodes[i];
+                var behaviours = node.Child?.Behaviours;
+                if (behaviours == null) continue;
+
+                foreach (var behaviour in behaviours)
+                {
+                    if (behaviour is not IInteriorDataOutput output) continue;
+
+                    var packets = output.CollectOutputs();
+                    if (packets == null) continue;
+
+                    foreach (var packet in packets)
+                    {
+                        if (packet != null)
+                        {
+                            _outgoingBuffer.Add(packet);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// summary: 交换输入输出缓冲。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void SwapBuffers()
+        {
+            _incomingBuffer = _outgoingBuffer;
+            _outgoingBuffer = new List<InteriorDataPacket>();
         }
     }
 }
