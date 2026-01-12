@@ -66,9 +66,6 @@ namespace Kernel.Building
             InputPortCount = -1;
             OutputPortCount = -1;
             _pendingOutputs.Clear();
-            _inactivePorts.Clear();
-            _portsActive = true;
-            RefreshDefaultPortIds();
         }
 
         /// <summary>
@@ -88,9 +85,13 @@ namespace Kernel.Building
         public virtual void Tick(int ticks)
         {
             if (ticks <= 0) return;
-
+            
             UpdatePortContext();
+            OnPreTick(ticks);
             OnTick(ticks);
+            OnPostTick(ticks);
+
+            
         }
 
         /// <summary>
@@ -289,6 +290,38 @@ namespace Kernel.Building
 
             _defaultInputPortIds.Add(DefaultPowerPortId);
             _defaultInputPortIds.Add(DefaultComputePortId);
+        /// summary: 子类处理预 Tick 逻辑。
+        /// param: ticks Tick 数量
+        /// return: 无
+        /// </summary>
+        protected virtual void OnPreTick(int ticks)
+        {
+        }
+        /// <summary>
+        /// summary: 子类处理 Tick 逻辑。
+        /// param: ticks Tick 数量
+        /// return: 无
+        /// </summary>
+        protected virtual void OnTick(int ticks)
+        {
+        }
+
+        /// <summary>
+        /// summary: 子类处理后 Tick 逻辑。
+        /// param: ticks Tick 数量
+        /// return: 无
+        /// </summary>
+        protected virtual void OnPostTick(int ticks)
+        {
+        }
+        /// <summary>
+        /// summary: 将输出负载加入缓冲队列。
+        /// param: payload 输出负载
+        /// return: 无
+        /// </summary>
+        protected void EnqueueOutput(object payload)
+        {
+            _pendingOutputs.Enqueue(payload);
         }
 
         /// <summary>
