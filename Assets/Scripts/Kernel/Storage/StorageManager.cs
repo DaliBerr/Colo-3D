@@ -84,6 +84,21 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 更新指定容器的标签过滤并触发变化事件。
+        /// param: runtimeId 建筑运行时ID
+        /// param: tags 允许标签列表（空=全收）
+        /// return: 是否成功更新
+        /// </summary>
+        public bool UpdateContainerFilter(long runtimeId, List<string> tags)
+        {
+            if (!TryGet(runtimeId, out var c)) return false;
+
+            c.UpdateAllowTags(tags);
+            OnContainerChanged?.Invoke(runtimeId);
+            return true;
+        }
+
+        /// <summary>
         /// summary: 选择最佳存入容器（优先级高优先，其次距离近）。
         /// param: itemId 物品ID
         /// param: fromCell 起点格子
