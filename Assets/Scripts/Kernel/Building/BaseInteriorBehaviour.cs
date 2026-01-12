@@ -56,6 +56,19 @@ namespace Kernel.Building
         public int PreferredOutputIndex { get; set; } = 0;
 
         /// <summary>
+        /// summary: 设置输出端口选择模式与首选索引。
+        /// param: mode 选择模式
+        /// param: preferredIndex 首选端口索引
+        /// return: 无
+        /// </summary>
+        public void SetOutputSelectionMode(OutputSelectionMode mode, int preferredIndex = 0)
+        {
+            SelectionMode = mode;
+            PreferredOutputIndex = preferredIndex;
+            EnableOutputSelection = mode != OutputSelectionMode.Default;
+        }
+
+        /// <summary>
         /// summary: 轮询输出端口的游标，默认 0。
         /// return: 当前轮询游标
         /// </summary>
