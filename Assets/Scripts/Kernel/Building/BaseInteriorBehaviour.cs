@@ -11,7 +11,13 @@ namespace Kernel.Building
     /// </summary>
     public abstract class BaseInteriorBehaviour : IBuildingBehaviour, IInteriorPortProvider, IInteriorDataOutput, IInteriorDataInput
     {
+        private const string DefaultPowerPortId = "power_in";
+        private const string DefaultComputePortId = "compute_in";
+
         private readonly Queue<object> _pendingOutputs = new();
+        private readonly List<string> _defaultInputPortIds = new();
+        private readonly HashSet<string> _inactivePorts = new(StringComparer.Ordinal);
+        private bool _portsActive = true;
 
         /// <summary>
         /// summary: 当前所属工厂ID。
@@ -55,7 +61,7 @@ namespace Kernel.Building
         /// </summary>
         public virtual void OnBind(BuildingRuntime runtime)
         {
-            BuildingLocalId = runtime?.BuildingID ?? -1;
+            BuildingLocalId = runtime?.BuildingID ?? 0;
             FactoryId = 0;
             InputPortCount = -1;
             OutputPortCount = -1;
@@ -96,7 +102,27 @@ namespace Kernel.Building
         public IEnumerable<PortDescriptor> GetPorts()
         {
             UpdatePortContext();
-            return BuildPorts() ?? Array.Empty<PortDescriptor>();
+            if (!_portsActive)
+            {
+                return Array.Empty<PortDescriptor>();
+            }
+
+            var ports = new List<PortDescriptor>();
+            AppendDefaultPorts(ports);
+
+            var customPorts = BuildPorts();
+            if (customPorts != null)
+            {
+                foreach (var port in customPorts)
+                {
+                    if (IsPortActive(port.PortId))
+                    {
+                        ports.Add(port);
+                    }
+                }
+            }
+
+            return ports;
         }
 
         /// <summary>
@@ -107,6 +133,36 @@ namespace Kernel.Building
         protected virtual IEnumerable<PortDescriptor> BuildPorts()
         {
             return Array.Empty<PortDescriptor>();
+        }
+
+        /// <summary>
+        /// summary: 设置所有端口的启用状态。
+        /// param: isActive 是否启用端口
+        /// return: 无
+        /// </summary>
+        public void SetPortsActive(bool isActive)
+        {
+            _portsActive = isActive;
+        }
+
+        /// <summary>
+        /// summary: 设置单个端口的启用状态。
+        /// param: portId 端口ID
+        /// param: isActive 是否启用
+        /// return: 无
+        /// </summary>
+        public void SetPortActive(string portId, bool isActive)
+        {
+            if (string.IsNullOrEmpty(portId)) return;
+
+            if (isActive)
+            {
+                _inactivePorts.Remove(portId);
+            }
+            else
+            {
+                _inactivePorts.Add(portId);
+            }
         }
 
         /// <summary>
@@ -161,6 +217,79 @@ namespace Kernel.Building
         }
 
         /// <summary>
+        /// summary: 子类处理 Tick 逻辑。
+        /// param: ticks Tick 数量
+        /// return: 无
+        /// </summary>
+        protected virtual void OnTick(int ticks)
+        {
+        }
+
+        /// <summary>
+        /// summary: 将输出负载加入缓冲队列。
+        /// param: payload 输出负载
+        /// return: 无
+        /// </summary>
+        protected void EnqueueOutput(object payload)
+        {
+            _pendingOutputs.Enqueue(payload);
+        }
+
+        /// <summary>
+        /// summary: 追加默认输入端口（电力/算力）。
+        /// param: ports 端口列表
+        /// return: 无
+        /// </summary>
+        private void AppendDefaultPorts(List<PortDescriptor> ports)
+        {
+            if (ports == null) return;
+            if (_defaultInputPortIds.Count == 0) return;
+
+            for (int i = 0; i < _defaultInputPortIds.Count; i++)
+            {
+                var portId = _defaultInputPortIds[i];
+                if (!IsPortActive(portId)) continue;
+
+                if (portId.StartsWith(DefaultPowerPortId, StringComparison.Ordinal))
+                {
+                    ports.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Power, 1));
+                }
+                else if (portId.StartsWith(DefaultComputePortId, StringComparison.Ordinal))
+                {
+                    ports.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Compute, 1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// summary: 判断端口是否启用。
+        /// param: portId 端口ID
+        /// return: 是否启用
+        /// </summary>
+        private bool IsPortActive(string portId)
+        {
+            if (string.IsNullOrEmpty(portId)) return false;
+            return !_inactivePorts.Contains(portId);
+        }
+
+        /// <summary>
+        /// summary: 刷新默认输入端口ID。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RefreshDefaultPortIds()
+        {
+            _defaultInputPortIds.Clear();
+
+            if (InputPortCount > 1)
+            {
+                _defaultInputPortIds.Add($"{DefaultPowerPortId}_0");
+                _defaultInputPortIds.Add($"{DefaultComputePortId}_1");
+                return;
+            }
+
+            _defaultInputPortIds.Add(DefaultPowerPortId);
+            _defaultInputPortIds.Add(DefaultComputePortId);
         /// summary: 子类处理预 Tick 逻辑。
         /// param: ticks Tick 数量
         /// return: 无
@@ -221,6 +350,8 @@ namespace Kernel.Building
             {
                 OutputPortCount = ui.OutputButtons?.Count ?? 0;
             }
+
+            RefreshDefaultPortIds();
         }
 
         /// <summary>
