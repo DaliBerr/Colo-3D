@@ -106,22 +106,17 @@ namespace Kernel.Building
             // throw new NotImplementedException();
         }
     }
-    public class TestCounterBehaviour : IBuildingBehaviour, IInteriorPortProvider, IInteriorDataOutput, IInteriorDataInput
+    public class TestCounterBehaviour : BaseInteriorBehaviour
     {
         private int _interval;      // 触发间隔（来自 JSON）
         private int _tickAccumulator; // 当前积累的 tick
         private int _counter;       // 计数器
-        private long _buildingId;   // 绑定的建筑 ID，方便看日志
-        private long _factoryId;    // 父工厂ID（用于端口键）
         private int _tickCounter;   // 每 Tick 递增的计数器
         private int _receivedSum;   // 接收累计值
-        private readonly Queue<int> _pendingOutputs = new();
 
 
         private const string InputPortID_Parent = "tick_in";
         private const string OutputPortID_Parent = "tick_out";
-        private int _inputPortCount = -1;
-        private int _outputPortCount = -1;
         // private const string TickInputPortId = "tick_in";
         // private const string TickOutputPortId = "tick_out";
 
@@ -130,33 +125,38 @@ namespace Kernel.Building
             _interval = Mathf.Max(1, interval); // 保护一下，防止除以0
         }
 
-        public void OnBind(BuildingRuntime runtime)
+        /// <summary>
+        /// summary: 绑定计数器行为并初始化状态。
+        /// param: runtime 建筑运行时
+        /// return: 无
+        /// </summary>
+        public override void OnBind(BuildingRuntime runtime)
         {
-            _buildingId = runtime.BuildingID;
+            base.OnBind(runtime);
             _counter = 0;
             _tickAccumulator = 0;
             _tickCounter = 0;
             _receivedSum = 0;
-            _factoryId = 0;
-            _pendingOutputs.Clear();
-            GameDebug.Log($"[TestCounter] 绑定成功！ID: {_buildingId}, 间隔: {_interval}");
-        }
-        public void OnUnbind(BuildingRuntime runtime)
-        {
-            GameDebug.Log($"[TestCounter] 解绑成功！ID: {_buildingId}, 总计数: {_counter}");
+            GameDebug.Log($"[TestCounter] 绑定成功！ID: {BuildingLocalId}, 间隔: {_interval}");
         }
 
         /// <summary>
-        /// summary: Tick 时推进计数并输出数据包。
+        /// summary: 解绑计数器行为并输出统计日志。
+        /// param: runtime 建筑运行时
+        /// return: 无
+        /// </summary>
+        public override void OnUnbind(BuildingRuntime runtime)
+        {
+            GameDebug.Log($"[TestCounter] 解绑成功！ID: {BuildingLocalId}, 总计数: {_counter}");
+        }
+
+        /// <summary>
+        /// summary: Tick 时推进计数并输出节拍。
         /// param: ticks Tick 数量
         /// return: 无
         /// </summary>
-        public void Tick(int ticks)
+        protected override void OnTick(int ticks)
         {
-            if (ticks <= 0) return;
-
-            UpdatePortContext();
-
             for (int i = 0; i < ticks; i++)
             {
                 _tickAccumulator++;
@@ -167,33 +167,20 @@ namespace Kernel.Building
                 {
                     _tickAccumulator -= _interval;
                     _counter++;
-                    GameDebug.Log($"⏰ [TestCounter] Building {_buildingId} | Tick: {_counter * _interval} | Count: {_counter}");
+                    GameDebug.Log($"⏰ [TestCounter] Building {BuildingLocalId} | Tick: {_counter * _interval} | Count: {_counter}");
                 }
             }
         }
 
         /// <summary>
-        /// summary: 提供测试计数器的端口声明列表。
+        /// summary: 提供计数器端口声明列表。
         /// param: 无
         /// return: 端口声明列表
         /// </summary>
-        public IEnumerable<PortDescriptor> GetPorts()
+        protected override IEnumerable<PortDescriptor> BuildPorts()
         {
-            var ui = (_inputPortCount < 0 || _outputPortCount < 0) ? FindInteriorUI() : null;
-            int inputCount = _inputPortCount;
-            int outputCount = _outputPortCount;
-
-            if (inputCount < 0)
-            {
-                inputCount = ui != null ? (ui.InputButtons?.Count ?? 0) : 1;
-                if (ui != null) _inputPortCount = inputCount;
-            }
-
-            if (outputCount < 0)
-            {
-                outputCount = ui != null ? (ui.OutputButtons?.Count ?? 0) : 1;
-                if (ui != null) _outputPortCount = outputCount;
-            }
+            int inputCount = InputPortCount < 0 ? 1 : InputPortCount;
+            int outputCount = OutputPortCount < 0 ? 1 : OutputPortCount;
 
             int capacity = Math.Max(0, inputCount) + Math.Max(0, outputCount);
             if (capacity == 0) return Array.Empty<PortDescriptor>();
@@ -227,136 +214,27 @@ namespace Kernel.Building
             return ports;
         }
 
-        private Kernel.UI.IInteriorBuildingUI FindInteriorUI()
-        {
-            var uis = UnityEngine.Object.FindObjectsByType<Kernel.UI.IInteriorBuildingUI>(UnityEngine.FindObjectsSortMode.None);
-            if (uis == null || uis.Length == 0) return null;
-
-            for (int i = 0; i < uis.Length; i++)
-            {
-                var ui = uis[i];
-                if (ui == null) continue;
-                if (_buildingId > 0 && ui.BuildingLocalId == _buildingId)
-                {
-                    return ui;
-                }
-            }
-
-            return null;
-        }
-
         /// <summary>
-        /// summary: 收集内部输出数据包（每 Tick 一个）。
-        /// param: 无
-        /// return: 数据包集合
-        /// </summary>
-        public IEnumerable<InteriorDataPacket> CollectOutputs()
-        {
-            if (_pendingOutputs.Count == 0) return Array.Empty<InteriorDataPacket>();
-
-            UpdatePortContext();
-            var outputPortId = ResolveOutputPortId();
-            if (_factoryId <= 0 || string.IsNullOrEmpty(outputPortId))
-            {
-                return Array.Empty<InteriorDataPacket>();
-            }
-
-            var key = new PortKey(_factoryId, _buildingId, outputPortId);
-            var packets = new List<InteriorDataPacket>(_pendingOutputs.Count);
-            while (_pendingOutputs.Count > 0)
-            {
-                int payload = _pendingOutputs.Dequeue();
-                packets.Add(new InteriorDataPacket(key, ConnectionChannel.Item, payload));
-            }
-
-            return packets;
-        }
-
-        /// <summary>
-        /// summary: 接收内部输入数据包并累加/记录。
+        /// summary: 接收输入数据包并进行累计。
         /// param: packet 输入数据包
         /// return: 无
         /// </summary>
-        public void ReceiveInput(InteriorDataPacket packet)
+        protected override void OnReceiveInput(InteriorDataPacket packet)
         {
-            if (packet == null) return;
-            if (!IsMatchingInputPort(packet.PortId)) return;
-
             int value = ExtractPayloadValue(packet.Payload);
             _receivedSum += value;
-            GameDebug.Log($"📥 [TestCounter] Building {_buildingId} 接收: {value} | 累计: {_receivedSum} | Port: {packet.PortId}");
+            GameDebug.Log($"📥 [TestCounter] Building {BuildingLocalId} 接收: {value} | 累计: {_receivedSum} | Port: {packet.PortId}");
         }
+        
+        /// <summary>
+        /// summary: 输入端口父ID。
+        /// </summary>
+        protected override string InputPortIdParent => InputPortID_Parent;
 
         /// <summary>
-        /// summary: 将输出值加入缓冲队列。
-        /// param: value 输出值
-        /// return: 无
+        /// summary: 输出端口父ID。
         /// </summary>
-        private void EnqueueOutput(int value)
-        {
-            _pendingOutputs.Enqueue(value);
-        }
-
-        /// <summary>
-        /// summary: 更新端口上下文信息（父工厂ID、端口数量）。
-        /// param: 无
-        /// return: 无
-        /// </summary>
-        private void UpdatePortContext()
-        {
-            if (_factoryId > 0 && _inputPortCount >= 0 && _outputPortCount >= 0) return;
-
-            var ui = FindInteriorUI();
-            if (ui == null) return;
-
-            if (_factoryId <= 0)
-            {
-                _factoryId = ui.BuildingParentId;
-            }
-
-            if (_inputPortCount < 0)
-            {
-                _inputPortCount = ui.InputButtons?.Count ?? 0;
-            }
-
-            if (_outputPortCount < 0)
-            {
-                _outputPortCount = ui.OutputButtons?.Count ?? 0;
-            }
-        }
-
-        /// <summary>
-        /// summary: 解析主输出端口ID。
-        /// param: 无
-        /// return: 输出端口ID
-        /// </summary>
-        private string ResolveOutputPortId()
-        {
-            if (_outputPortCount > 1)
-            {
-                return $"{OutputPortID_Parent}_0";
-            }
-
-            return OutputPortID_Parent;
-        }
-
-        /// <summary>
-        /// summary: 判断输入端口是否匹配当前行为关注的端口。
-        /// param: portId 端口ID
-        /// return: 是否匹配
-        /// </summary>
-        private bool IsMatchingInputPort(string portId)
-        {
-            if (string.IsNullOrEmpty(portId)) return false;
-
-            if (_inputPortCount > 1)
-            {
-                return portId.StartsWith($"{InputPortID_Parent}_", StringComparison.Ordinal)
-                       || string.Equals(portId, InputPortID_Parent, StringComparison.Ordinal);
-            }
-
-            return string.Equals(portId, InputPortID_Parent, StringComparison.Ordinal);
-        }
+        protected override string OutputPortIdParent => OutputPortID_Parent;
 
         /// <summary>
         /// summary: 提取数据包负载中的整数值。
