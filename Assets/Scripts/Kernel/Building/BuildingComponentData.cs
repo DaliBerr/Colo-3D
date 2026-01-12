@@ -137,6 +137,11 @@ namespace Kernel.Building
             _tickAccumulator = 0;
             _tickCounter = 0;
             _receivedSum = 0;
+            if (!EnableOutputSelection)
+            {
+                SelectionMode = OutputSelectionMode.Default;
+                PreferredOutputIndex = 0;
+            }
             GameDebug.Log($"[TestCounter] 绑定成功！ID: {BuildingLocalId}, 间隔: {_interval}");
         }
 
