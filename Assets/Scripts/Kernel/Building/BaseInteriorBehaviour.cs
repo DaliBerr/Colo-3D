@@ -7,6 +7,25 @@ using UnityEngine;
 namespace Kernel.Building
 {
     /// <summary>
+    /// summary: 输出端口选择策略模式。
+    /// </summary>
+    public enum OutputSelectionMode
+    {
+        /// <summary>
+        /// summary: 默认模式（不开启策略时使用）。
+        /// </summary>
+        Default,
+        /// <summary>
+        /// summary: 轮询选择输出端口。
+        /// </summary>
+        RoundRobin,
+        /// <summary>
+        /// summary: 使用指定索引的输出端口。
+        /// </summary>
+        PreferredPort
+    }
+
+    /// <summary>
     /// summary: 工厂内部建筑行为基类，统一端口与数据流逻辑。
     /// </summary>
     public abstract class BaseInteriorBehaviour : IBuildingBehaviour, IInteriorPortProvider, IInteriorDataOutput, IInteriorDataInput
@@ -18,6 +37,29 @@ namespace Kernel.Building
         private readonly List<string> _defaultInputPortIds = new();
         private readonly HashSet<string> _inactivePorts = new(StringComparer.Ordinal);
         private bool _portsActive = true;
+        /// <summary>
+        /// summary: 是否启用输出端口选择策略，默认 false。
+        /// return: 当前是否启用策略
+        /// </summary>
+        public bool EnableOutputSelection { get; set; } = false;
+
+        /// <summary>
+        /// summary: 输出端口选择模式，默认 Default。
+        /// return: 当前输出端口选择模式
+        /// </summary>
+        public OutputSelectionMode SelectionMode { get; set; } = OutputSelectionMode.Default;
+
+        /// <summary>
+        /// summary: 首选输出端口索引，默认 0。
+        /// return: 首选输出端口索引
+        /// </summary>
+        public int PreferredOutputIndex { get; set; } = 0;
+
+        /// <summary>
+        /// summary: 轮询输出端口的游标，默认 0。
+        /// return: 当前轮询游标
+        /// </summary>
+        private int _roundRobinCursor = 0;
 
         /// <summary>
         /// summary: 当前所属工厂ID。
