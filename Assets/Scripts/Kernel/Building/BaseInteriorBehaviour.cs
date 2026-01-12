@@ -290,6 +290,7 @@ namespace Kernel.Building
 
             _defaultInputPortIds.Add(DefaultPowerPortId);
             _defaultInputPortIds.Add(DefaultComputePortId);
+        }
         /// summary: 子类处理预 Tick 逻辑。
         /// param: ticks Tick 数量
         /// return: 无
