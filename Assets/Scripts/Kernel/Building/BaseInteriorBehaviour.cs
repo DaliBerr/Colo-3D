@@ -406,12 +406,89 @@ namespace Kernel.Building
         {
             if (string.IsNullOrEmpty(OutputPortIdParent)) return string.Empty;
 
-            if (OutputPortCount > 1)
+            if (!EnableOutputSelection || OutputPortCount <= 1)
             {
-                return $"{OutputPortIdParent}_0";
+                return ResolveOutputPortId(0);
             }
 
-            return OutputPortIdParent;
+            var index = ResolveOutputIndex();
+            return ResolveOutputPortId(index);
+        }
+
+        /// <summary>
+        /// summary: 根据策略解析输出端口索引。
+        /// param: 无
+        /// return: 输出端口索引
+        /// </summary>
+        private int ResolveOutputIndex()
+        {
+            if (OutputPortCount <= 0) return 0;
+
+            switch (SelectionMode)
+            {
+                case OutputSelectionMode.RoundRobin:
+                    return ConsumeRoundRobinIndex();
+                case OutputSelectionMode.PreferredPort:
+                    if (PreferredOutputIndex >= 0 && PreferredOutputIndex < OutputPortCount)
+                    {
+                        return PreferredOutputIndex;
+                    }
+
+                    if (OutputPortCount <= 1)
+                    {
+                        return 0;
+                    }
+
+                    return ConsumeRoundRobinIndex();
+                default:
+                    return 0;
+            }
+        }
+
+        /// <summary>
+        /// summary: 消费并推进轮询输出端口索引。
+        /// param: 无
+        /// return: 轮询选择的输出端口索引
+        /// </summary>
+        private int ConsumeRoundRobinIndex()
+        {
+            if (OutputPortCount <= 0) return 0;
+
+            if (_roundRobinCursor < 0)
+            {
+                _roundRobinCursor = 0;
+            }
+
+            var index = _roundRobinCursor % OutputPortCount;
+            if (index < 0)
+            {
+                index += OutputPortCount;
+            }
+
+            _roundRobinCursor = (index + 1) % OutputPortCount;
+            return index;
+        }
+
+        /// <summary>
+        /// summary: 根据索引解析输出端口ID。
+        /// param: index 输出端口索引
+        /// return: 输出端口ID
+        /// </summary>
+        protected string ResolveOutputPortId(int index)
+        {
+            if (string.IsNullOrEmpty(OutputPortIdParent)) return string.Empty;
+
+            if (OutputPortCount <= 1)
+            {
+                return OutputPortIdParent;
+            }
+
+            if (index < 0 || index >= OutputPortCount)
+            {
+                index = 0;
+            }
+
+            return $"{OutputPortIdParent}_{index}";
         }
 
         /// <summary>
