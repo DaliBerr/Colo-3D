@@ -40,6 +40,20 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 更新容器允许的标签过滤（空=全收）。
+        /// param: tags 允许标签列表
+        /// return: 无
+        /// </summary>
+        public void UpdateAllowTags(List<string> tags)
+        {
+            _allowTags.Clear();
+            if (tags == null || tags.Count == 0)
+                return;
+
+            _allowTags.AddRange(tags);
+        }
+
+        /// <summary>
         /// summary: 当前已使用容量（总数量）。
         /// return: used
         /// </summary>
