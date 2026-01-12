@@ -38,7 +38,7 @@ namespace Kernel.Building
         private readonly HashSet<string> _inactivePorts = new(StringComparer.Ordinal);
         private bool _portsActive = true;
         /// <summary>
-        /// summary: 是否启用输出端口选择策略，默认 false。
+        /// summary: 是否启用输出端口选择策略，默认不开启以兼容现有行为。
         /// return: 当前是否启用策略
         /// </summary>
         public bool EnableOutputSelection { get; set; } = false;
@@ -230,6 +230,10 @@ namespace Kernel.Building
             if (_pendingOutputs.Count == 0) return Array.Empty<InteriorDataPacket>();
 
             UpdatePortContext();
+            if (OutputPortCount == 0)
+            {
+                return Array.Empty<InteriorDataPacket>();
+            }
             var outputPortId = ResolveOutputPortId();
             if (FactoryId <= 0 || BuildingLocalId <= 0 || string.IsNullOrEmpty(outputPortId))
             {
@@ -449,13 +453,25 @@ namespace Kernel.Building
 
                     if (OutputPortCount <= 1)
                     {
+                        LogOutputSelectionFallback("PreferredOutputIndex 超出范围，回退到 0 号端口。");
                         return 0;
                     }
 
+                    LogOutputSelectionFallback("PreferredOutputIndex 超出范围，回退到轮询策略。");
                     return ConsumeRoundRobinIndex();
                 default:
                     return 0;
             }
+        }
+
+        /// <summary>
+        /// summary: 记录输出端口选择回退日志。
+        /// param: message 日志内容
+        /// return: 无
+        /// </summary>
+        private void LogOutputSelectionFallback(string message)
+        {
+            Debug.LogWarning($"[OutputSelection] Building {BuildingLocalId}: {message}");
         }
 
         /// <summary>
