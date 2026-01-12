@@ -285,16 +285,6 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 将输出负载加入缓冲队列。
-        /// param: payload 输出负载
-        /// return: 无
-        /// </summary>
-        protected void EnqueueOutput(object payload)
-        {
-            _pendingOutputs.Enqueue(payload);
-        }
-
-        /// <summary>
         /// summary: 追加默认输入端口（电力/算力）。
         /// param: ports 端口列表
         /// return: 无
@@ -355,14 +345,6 @@ namespace Kernel.Building
         /// return: 无
         /// </summary>
         protected virtual void OnPreTick(int ticks)
-        {
-        }
-        /// <summary>
-        /// summary: 子类处理 Tick 逻辑。
-        /// param: ticks Tick 数量
-        /// return: 无
-        /// </summary>
-        protected virtual void OnTick(int ticks)
         {
         }
 

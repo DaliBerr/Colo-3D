@@ -4,7 +4,7 @@ namespace Kernel.Factory.Connections
     /// <summary>
     /// summary: 物品负载数据结构。
     /// </summary>
-    public static struct ItemPayload
+    public struct ItemPayload
     {
         public string ItemId { get; }
         public int Quantity { get; }
@@ -23,7 +23,7 @@ namespace Kernel.Factory.Connections
     /// <summary>
     /// summary: 流体负载数据结构。
     /// </summary>
-    public static struct FluidPayload
+    public struct FluidPayload
     {
         public string FluidId { get; }
         public float Temperature { get; }

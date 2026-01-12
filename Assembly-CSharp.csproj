@@ -42,7 +42,7 @@
     <UnityVersion>6000.2.11f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Users\15933\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.0\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\15933\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.11f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.11f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.11f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -131,6 +131,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\LoadingModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Flow\Connect.cs" />
     <Compile Include="Assets\InputSystem\CameraControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\BaseInteriorBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingValidation.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingView.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingFactoryController.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingSaveRuntime.cs" />
     <Compile Include="Assets\Scripts\Lonize\Flow\FlowSystem.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIPrefabAttribute.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\Graph\InteriorDataPacket.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\ScrobePolymorph.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\test.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\OptionConfirmPopupModal.cs" />
@@ -171,6 +173,7 @@
     <Compile Include="Assets\Scripts\Colo\Animation\Instantiate.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\InputSystem\SpeedControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\Graph\InteriorPayloads.cs" />
     <Compile Include="Assets\Scripts\Kernel\TickControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Audio\MainAudioPlayer.cs" />
     <Compile Include="Assets\Scripts\Kernel\MainSceneStartUp.cs" />
