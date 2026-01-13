@@ -37,6 +37,7 @@ namespace Kernel.Building
         private readonly List<string> _defaultInputPortIds = new();
         private readonly HashSet<string> _inactivePorts = new(StringComparer.Ordinal);
         private bool _portsActive = true;
+
         /// <summary>
         /// summary: 是否启用输出端口选择策略，默认不开启以兼容现有行为。
         /// return: 当前是否启用策略

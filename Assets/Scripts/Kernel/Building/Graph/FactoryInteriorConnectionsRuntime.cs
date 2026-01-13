@@ -50,6 +50,24 @@ namespace Kernel.Factory.Connections
     }
 
     /// <summary>
+    /// summary: 工厂内部接口过滤提供者（用于收集允许标签并联动储物过滤）。
+    /// </summary>
+    public interface IInteriorIOFilterProvider
+    {
+        /// <summary>
+        /// summary: 接口过滤参数变化事件（过滤条件变化时触发）。
+        /// </summary>
+        event Action<IInteriorIOFilterProvider> OnIOFilterChanged;
+
+        /// <summary>
+        /// summary: 获取当前接口允许的标签列表。
+        /// param: 无
+        /// return: 允许标签列表（空=全收）
+        /// </summary>
+        IReadOnlyList<string> GetIOAllowTags();
+    }
+
+    /// <summary>
     /// summary: 每个工厂内部的连接运行时（持有 Graph，负责 bind/unbind 端口与维护连线）。
     /// </summary>
     [Serializable]
