@@ -19,6 +19,7 @@ namespace Kernel.Building
         [SerializeField]public BuildingRuntime Runtime;
         public List<IBuildingBehaviour> Behaviours = new();
         private readonly HashSet<IInteriorIOFilterProvider> _ioFilterProviders = new();
+        private readonly FactoryFilterResolver _factoryFilterResolver = new();
 
         /// <summary>
         /// summary: 判断一个运行时 StatKey 是否为库存编码键（以 __inv__ 前缀存储）。
@@ -601,7 +602,7 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 汇总接口允许标签并刷新工厂容器过滤。
+        /// summary: 汇总接口允许标签并刷新工厂容器过滤（并集策略，空集合表示全收）。
         /// param: 无
         /// return: 无
         /// </summary>
@@ -612,28 +613,8 @@ namespace Kernel.Building
                 return;
             }
 
-            var mergedTags = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var provider in _ioFilterProviders)
-            {
-                var tags = provider?.GetIOAllowTags();
-                if (tags == null)
-                {
-                    continue;
-                }
-
-                foreach (var tag in tags)
-                {
-                    if (string.IsNullOrWhiteSpace(tag))
-                    {
-                        continue;
-                    }
-
-                    mergedTags.Add(tag);
-                }
-            }
-
-            // 合并策略：并集。任一接口允许的标签都会进入总集合；空集合=全收，用于避免接口未配置时误拦截。
-            StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, new List<string>(mergedTags));
+            var resolvedTags = _factoryFilterResolver.ResolveAllowTags(_ioFilterProviders);
+            StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, resolvedTags);
         }
     }
 }
