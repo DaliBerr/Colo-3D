@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Kernel.World;
 using Lonize.Logging;
 using static Kernel.Storage.BuildingRuntimeStatsCodeC;
 using Kernel.Storage;
+using Kernel.Factory.Connections;
 using Lonize;
 using Lonize.Tick;
 
@@ -16,6 +18,7 @@ namespace Kernel.Building
     {
         [SerializeField]public BuildingRuntime Runtime;
         public List<IBuildingBehaviour> Behaviours = new();
+        private readonly HashSet<IInteriorIOFilterProvider> _ioFilterProviders = new();
 
         /// <summary>
         /// summary: 判断一个运行时 StatKey 是否为库存编码键（以 __inv__ 前缀存储）。
@@ -76,6 +79,7 @@ namespace Kernel.Building
                 return;
             }
 
+            UnsubscribeFactoryInterfaceFilters();
             bool compositeInList = ContainsBehaviour(Behaviours, Runtime.CompositeBehaviour);
             UnbindBehaviours(Behaviours, Runtime);
             Behaviours?.Clear();
@@ -504,8 +508,132 @@ namespace Kernel.Building
                 }
             }
 
+            InitializeFactoryInterfaceFilters();
+
             // 写入 placement（保证读档后再次保存一致）
             SetPlacement(new Vector3Int(data.CellX, data.CellY, 0), data.RotSteps);
+        }
+
+        /// <summary>
+        /// summary: 初始化工厂内部接口过滤订阅并刷新容器过滤。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        public void InitializeFactoryInterfaceFilters()
+        {
+            if (Runtime?.Def == null || Runtime.Def.Category != BuildingCategory.Factory)
+            {
+                return;
+            }
+
+            UnsubscribeFactoryInterfaceFilters();
+            SubscribeFactoryInterfaceFilters();
+            UpdateFactoryContainerFilter();
+        }
+
+        /// <summary>
+        /// summary: 订阅所有内部接口过滤变更事件。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void SubscribeFactoryInterfaceFilters()
+        {
+            if (Runtime?.FactoryInterior?.Children == null)
+            {
+                return;
+            }
+
+            foreach (var child in Runtime.FactoryInterior.Children)
+            {
+                if (child?.Behaviours == null)
+                {
+                    continue;
+                }
+
+                foreach (var behaviour in child.Behaviours)
+                {
+                    if (behaviour is not IInteriorIOFilterProvider provider)
+                    {
+                        continue;
+                    }
+
+                    if (_ioFilterProviders.Add(provider))
+                    {
+                        provider.OnIOFilterChanged += HandleFactoryIOFilterChanged;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// summary: 取消订阅内部接口过滤变更事件。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void UnsubscribeFactoryInterfaceFilters()
+        {
+            if (_ioFilterProviders.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var provider in _ioFilterProviders)
+            {
+                if (provider == null)
+                {
+                    continue;
+                }
+
+                provider.OnIOFilterChanged -= HandleFactoryIOFilterChanged;
+            }
+
+            _ioFilterProviders.Clear();
+        }
+
+        /// <summary>
+        /// summary: 处理接口过滤变化并更新容器过滤。
+        /// param: provider 触发事件的接口提供者
+        /// return: 无
+        /// </summary>
+        private void HandleFactoryIOFilterChanged(IInteriorIOFilterProvider provider)
+        {
+            UpdateFactoryContainerFilter();
+        }
+
+        /// <summary>
+        /// summary: 汇总接口允许标签并刷新工厂容器过滤。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void UpdateFactoryContainerFilter()
+        {
+            if (Runtime == null || Runtime.BuildingID <= 0)
+            {
+                return;
+            }
+
+            var mergedTags = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var provider in _ioFilterProviders)
+            {
+                var tags = provider?.GetIOAllowTags();
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                foreach (var tag in tags)
+                {
+                    if (string.IsNullOrWhiteSpace(tag))
+                    {
+                        continue;
+                    }
+
+                    mergedTags.Add(tag);
+                }
+            }
+
+            // 合并策略：并集。任一接口允许的标签都会进入总集合；空集合=全收，用于避免接口未配置时误拦截。
+            StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, new List<string>(mergedTags));
         }
     }
 }

@@ -70,6 +70,11 @@ namespace Kernel.Building
                 }
             }
 
+            if (def.Category == BuildingCategory.Factory)
+            {
+                host.InitializeFactoryInterfaceFilters();
+            }
+
             var colliderInit = go.GetComponent<BuildingColliderInit>();
             if (colliderInit != null)
             {
