@@ -144,6 +144,34 @@ namespace Kernel.Factory.Connections
                 }
             }
 
+            var systemPorts = CollectSystemPorts(child);
+            if (systemPorts == null) return count;
+
+            foreach (var port in systemPorts)
+            {
+                var desc = port.Descriptor;
+                GameDebug.Log($"[Connections] Bind System PortId={desc.PortId} Provider={port.ProviderName} Direction={desc.Direction} Channel={desc.Channel} MaxLinks={desc.MaxLinks}");
+                if (string.IsNullOrEmpty(desc.PortId)) continue;
+
+                var key = new PortKey(child.BuildingParentID, child.BuildingLocalID, desc.PortId);
+
+                if (Graph.TryGetPort(key, out _))
+                {
+                    continue;
+                }
+
+                var info = new PortInfo(key, desc.Direction, desc.Channel, desc.MaxLinks, desc.Required);
+
+                if (Graph.TryBindPort(info, out var error))
+                {
+                    count++;
+                }
+                else
+                {
+                    GameDebug.LogWarning($"[Connections] BindPort 失败: {error}");
+                }
+            }
+
             return count;
         }
 
@@ -364,6 +392,31 @@ namespace Kernel.Factory.Connections
                     foreach (var p in ports) list.Add(new PortDescriptorContext(p, providerName));
                 }
             }
+            return list;
+        }
+
+        /// <summary>
+        /// summary: 收集某内部建筑的系统端口声明（电力/算力）。
+        /// param: child 内部建筑运行时
+        /// return: 系统端口声明列表（可能为空）
+        /// </summary>
+        private static List<PortDescriptorContext> CollectSystemPorts(FactoryChildRuntime child)
+        {
+            var list = new List<PortDescriptorContext>();
+            if (child.Behaviours == null) return list;
+
+            for (int i = 0; i < child.Behaviours.Count; i++)
+            {
+                var bh = child.Behaviours[i];
+                if (bh is BaseInteriorBehaviour interiorBehaviour)
+                {
+                    var ports = interiorBehaviour.GetSystemPorts();
+                    if (ports == null) continue;
+                    var providerName = bh.GetType().Name;
+                    foreach (var p in ports) list.Add(new PortDescriptorContext(p, providerName));
+                }
+            }
+
             return list;
         }
 
