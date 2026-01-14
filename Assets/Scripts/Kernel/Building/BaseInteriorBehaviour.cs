@@ -39,6 +39,16 @@ namespace Kernel.Building
         private bool _portsActive = true;
 
         /// <summary>
+        /// summary: UI 端口与系统端口是两套列表，System 端口默认不参与 UI 连接。
+        /// </summary>
+        public List<PortDescriptor> SystemPowerPorts { get; } = new();
+
+        /// <summary>
+        /// summary: UI 端口与系统端口是两套列表，System 端口默认不参与 UI 连接。
+        /// </summary>
+        public List<PortDescriptor> SystemComputePorts { get; } = new();
+
+        /// <summary>
         /// summary: 是否启用输出端口选择策略，默认不开启以兼容现有行为。
         /// return: 当前是否启用策略
         /// </summary>
@@ -151,7 +161,7 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 获取端口声明列表。
+        /// summary: 获取 UI 可连线的端口声明列表（不包含系统端口）。
         /// param: 无
         /// return: 端口声明集合
         /// </summary>
@@ -163,12 +173,10 @@ namespace Kernel.Building
                 return Array.Empty<PortDescriptor>();
             }
 
-            var ports = new List<PortDescriptor>();
-            AppendDefaultPorts(ports);
-
             var customPorts = BuildPorts();
             if (customPorts != null)
             {
+                var ports = new List<PortDescriptor>();
                 foreach (var port in customPorts)
                 {
                     if (IsPortActive(port.PortId))
@@ -176,9 +184,62 @@ namespace Kernel.Building
                         ports.Add(port);
                     }
                 }
+
+                return ports;
             }
 
+            return Array.Empty<PortDescriptor>();
+        }
+
+        /// <summary>
+        /// summary: 获取系统端口声明列表（电力/算力）。
+        /// param: 无
+        /// return: 系统端口声明集合
+        /// </summary>
+        public IEnumerable<PortDescriptor> GetSystemPorts()
+        {
+            UpdatePortContext();
+            if (!_portsActive)
+            {
+                return Array.Empty<PortDescriptor>();
+            }
+
+            var ports = new List<PortDescriptor>(SystemPowerPorts.Count + SystemComputePorts.Count);
+            AppendActivePorts(SystemPowerPorts, ports);
+            AppendActivePorts(SystemComputePorts, ports);
             return ports;
+        }
+
+        /// <summary>
+        /// summary: 获取系统电力端口声明列表。
+        /// param: 无
+        /// return: 系统电力端口声明集合
+        /// </summary>
+        public IEnumerable<PortDescriptor> GetSystemPowerPorts()
+        {
+            UpdatePortContext();
+            if (!_portsActive)
+            {
+                return Array.Empty<PortDescriptor>();
+            }
+
+            return FilterActivePorts(SystemPowerPorts);
+        }
+
+        /// <summary>
+        /// summary: 获取系统算力端口声明列表。
+        /// param: 无
+        /// return: 系统算力端口声明集合
+        /// </summary>
+        public IEnumerable<PortDescriptor> GetSystemComputePorts()
+        {
+            UpdatePortContext();
+            if (!_portsActive)
+            {
+                return Array.Empty<PortDescriptor>();
+            }
+
+            return FilterActivePorts(SystemComputePorts);
         }
 
         /// <summary>
@@ -286,32 +347,6 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 追加默认输入端口（电力/算力）。
-        /// param: ports 端口列表
-        /// return: 无
-        /// </summary>
-        private void AppendDefaultPorts(List<PortDescriptor> ports)
-        {
-            if (ports == null) return;
-            if (_defaultInputPortIds.Count == 0) return;
-
-            for (int i = 0; i < _defaultInputPortIds.Count; i++)
-            {
-                var portId = _defaultInputPortIds[i];
-                if (!IsPortActive(portId)) continue;
-
-                if (portId.StartsWith(DefaultPowerPortId, StringComparison.Ordinal))
-                {
-                    ports.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Power, 1));
-                }
-                else if (portId.StartsWith(DefaultComputePortId, StringComparison.Ordinal))
-                {
-                    ports.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Compute, 1));
-                }
-            }
-        }
-
-        /// <summary>
         /// summary: 判断端口是否启用。
         /// param: portId 端口ID
         /// return: 是否启用
@@ -335,11 +370,70 @@ namespace Kernel.Building
             {
                 _defaultInputPortIds.Add($"{DefaultPowerPortId}_0");
                 _defaultInputPortIds.Add($"{DefaultComputePortId}_1");
+                RefreshSystemPortDescriptors();
                 return;
             }
 
             _defaultInputPortIds.Add(DefaultPowerPortId);
             _defaultInputPortIds.Add(DefaultComputePortId);
+
+            RefreshSystemPortDescriptors();
+        }
+
+        /// <summary>
+        /// summary: 刷新系统端口描述列表（电力/算力）。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RefreshSystemPortDescriptors()
+        {
+            SystemPowerPorts.Clear();
+            SystemComputePorts.Clear();
+
+            for (int i = 0; i < _defaultInputPortIds.Count; i++)
+            {
+                var portId = _defaultInputPortIds[i];
+                if (portId.StartsWith(DefaultPowerPortId, StringComparison.Ordinal))
+                {
+                    SystemPowerPorts.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Power, 1));
+                }
+                else if (portId.StartsWith(DefaultComputePortId, StringComparison.Ordinal))
+                {
+                    SystemComputePorts.Add(new PortDescriptor(portId, PortDirection.Input, ConnectionChannel.Compute, 1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// summary: 追加启用状态的端口到列表。
+        /// param: source 源端口列表
+        /// param: target 目标端口列表
+        /// return: 无
+        /// </summary>
+        private void AppendActivePorts(List<PortDescriptor> source, List<PortDescriptor> target)
+        {
+            if (source == null || target == null) return;
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                var port = source[i];
+                if (!IsPortActive(port.PortId)) continue;
+                target.Add(port);
+            }
+        }
+
+        /// <summary>
+        /// summary: 获取启用状态的端口列表。
+        /// param: source 源端口列表
+        /// return: 过滤后的端口列表
+        /// </summary>
+        private List<PortDescriptor> FilterActivePorts(List<PortDescriptor> source)
+        {
+            if (source == null || source.Count == 0) return new List<PortDescriptor>();
+
+            var result = new List<PortDescriptor>(source.Count);
+            AppendActivePorts(source, result);
+            return result;
         }
         /// summary: 子类处理预 Tick 逻辑。
         /// param: ticks Tick 数量
