@@ -559,6 +559,11 @@ namespace Kernel.Building
                         continue;
                     }
 
+                    if (provider is IInteriorCacheStorage)
+                    {
+                        continue;
+                    }
+
                     if (_ioFilterProviders.Add(provider))
                     {
                         provider.OnIOFilterChanged += HandleFactoryIOFilterChanged;
@@ -641,6 +646,11 @@ namespace Kernel.Building
                 {
                     if (behaviour is InteriorStorageBehaviour storageBehaviour)
                     {
+                        if (storageBehaviour is IInteriorCacheStorage)
+                        {
+                            continue;
+                        }
+
                         storageBehaviour.RestoreExternalInterfaceState(child.IsExternalInterface, true);
                     }
                 }

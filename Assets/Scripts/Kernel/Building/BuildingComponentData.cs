@@ -418,6 +418,12 @@ namespace Kernel.Building
                     var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
                     return new InteriorInterfaceBoxBehaviour(tags);
                 }
+                case "interior_cache_box":
+                {
+                    int cap = data.Params?["capacity"]?.Value<int>() ?? 0;
+                    var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
+                    return new InteriorCacheStorageBehaviour(cap, tags);
+                }
                 default:
                     GameDebug.LogWarning($"[Building] 未知组件类型: {data.Type}");
                     return null;
