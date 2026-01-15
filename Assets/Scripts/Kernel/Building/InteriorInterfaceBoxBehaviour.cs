@@ -68,12 +68,17 @@ namespace Kernel.Building
         public bool TryAdd(string itemId, int count, out int added)
         {
             added = 0;
+            var tags = ResolveItemTags(itemId);
+            if (TryGetFactoryDispatcher(out var dispatcher))
+            {
+                return dispatcher.TryRequestAdd(BuildingLocalId, itemId, count, tags, out added);
+            }
+
             if (!TryGetFactoryContainer(out var container))
             {
                 return false;
             }
 
-            var tags = ResolveItemTags(itemId);
             if (!container.TryAdd(itemId, count, tags, out added))
             {
                 return false;
@@ -92,6 +97,11 @@ namespace Kernel.Building
         public bool TryRemove(string itemId, int count, out int removed)
         {
             removed = 0;
+            if (TryGetFactoryDispatcher(out var dispatcher))
+            {
+                return dispatcher.TryRequestRemove(BuildingLocalId, itemId, count, out removed);
+            }
+
             if (!TryGetFactoryContainer(out var container))
             {
                 return false;
@@ -179,6 +189,29 @@ namespace Kernel.Building
             }
 
             return StorageSystem.Instance != null && StorageSystem.Instance.TryGet(FactoryId, out container);
+        }
+
+        /// <summary>
+        /// summary: 尝试获取工厂分发器（用于访问配额）。
+        /// param: dispatcher 输出分发器
+        /// return: 是否成功获取
+        /// </summary>
+        private bool TryGetFactoryDispatcher(out FactoryCompositeBehaviour dispatcher)
+        {
+            dispatcher = null;
+            if (FactoryId <= 0 || BuildingManager.Instance == null)
+            {
+                return false;
+            }
+
+            BuildingManager.Instance.getBuildingById(FactoryId, out var runtime);
+            if (runtime?.CompositeBehaviour == null)
+            {
+                return false;
+            }
+
+            dispatcher = runtime.CompositeBehaviour;
+            return true;
         }
 
         /// <summary>

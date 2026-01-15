@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Kernel.Factory.Connections;
+using Kernel.Storage;
 using Lonize.Logging;
 using Lonize.Tick;
+using UnityEngine;
 
 namespace Kernel.Building
 {
@@ -97,11 +99,26 @@ namespace Kernel.Building
     /// </summary>
     public sealed class FactoryCompositeBehaviour : IBuildingBehaviour, ITickable
     {
+        private sealed class InterfaceBoxQuota
+        {
+            public int RemainingAdd;
+            public int RemainingRemove;
+
+            public InterfaceBoxQuota(int remainingAdd, int remainingRemove)
+            {
+                RemainingAdd = remainingAdd;
+                RemainingRemove = remainingRemove;
+            }
+        }
+
+        private BuildingRuntime _runtime;
         private FactoryInteriorConnectionsRuntime _connections;
         private readonly List<FactoryNodeRuntime> _nodes = new();
         private readonly Dictionary<long, FactoryNodeRuntime> _nodeByLocalId = new();
         private List<InteriorDataPacket> _incomingBuffer = new();
         private List<InteriorDataPacket> _outgoingBuffer = new();
+        private readonly List<long> _interfaceBoxLocalIds = new();
+        private readonly Dictionary<long, InterfaceBoxQuota> _interfaceBoxQuotas = new();
 
         public IReadOnlyList<FactoryNodeRuntime> Nodes => _nodes;
 
@@ -112,6 +129,7 @@ namespace Kernel.Building
         /// </summary>
         public void OnBind(BuildingRuntime runtime)
         {
+            _runtime = runtime;
             var interior = runtime?.FactoryInterior;
             _connections = interior?.Connections;
             RebuildNodes(interior?.Children);
@@ -124,11 +142,14 @@ namespace Kernel.Building
         /// </summary>
         public void OnUnbind(BuildingRuntime runtime)
         {
+            _runtime = null;
             _connections = null;
             _nodes.Clear();
             _nodeByLocalId.Clear();
             _incomingBuffer.Clear();
             _outgoingBuffer.Clear();
+            _interfaceBoxLocalIds.Clear();
+            _interfaceBoxQuotas.Clear();
         }
 
         /// <summary>
@@ -139,6 +160,8 @@ namespace Kernel.Building
         public void Tick(int ticks)
         {
             if (_nodes.Count == 0) return;
+
+            RefreshInterfaceBoxQuotas();
 
             var orderedNodes = BuildTraversalOrder();
             if (orderedNodes.Count == 0) return;
@@ -178,6 +201,170 @@ namespace Kernel.Building
                 _nodes.Add(node);
                 _nodeByLocalId[child.BuildingLocalID] = node;
             }
+
+            RebuildInterfaceBoxCache(children);
+        }
+
+        /// <summary>
+        /// summary: 重新扫描对外接口箱并建立本地ID缓存。
+        /// param: children 内部建筑列表
+        /// return: 无
+        /// </summary>
+        private void RebuildInterfaceBoxCache(IReadOnlyList<FactoryChildRuntime> children)
+        {
+            _interfaceBoxLocalIds.Clear();
+            _interfaceBoxQuotas.Clear();
+
+            if (children == null) return;
+
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child?.Behaviours == null) continue;
+
+                foreach (var behaviour in child.Behaviours)
+                {
+                    if (behaviour is InteriorInterfaceBoxBehaviour)
+                    {
+                        _interfaceBoxLocalIds.Add(child.BuildingLocalID);
+                        break;
+                    }
+                }
+            }
+
+            _interfaceBoxLocalIds.Sort();
+        }
+
+        /// <summary>
+        /// summary: 刷新对外接口箱配额（每 Tick 更新）。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RefreshInterfaceBoxQuotas()
+        {
+            _interfaceBoxQuotas.Clear();
+
+            if (_interfaceBoxLocalIds.Count == 0)
+            {
+                return;
+            }
+
+            if (!TryGetFactoryContainer(out var container))
+            {
+                return;
+            }
+
+            int totalFree = Mathf.Max(0, container.GetFree());
+            int totalUsed = Mathf.Max(0, container.GetUsed());
+            int count = _interfaceBoxLocalIds.Count;
+
+            int baseAdd = totalFree / count;
+            int extraAdd = totalFree % count;
+            int baseRemove = totalUsed / count;
+            int extraRemove = totalUsed % count;
+
+            for (int i = 0; i < count; i++)
+            {
+                long localId = _interfaceBoxLocalIds[i];
+                int addQuota = baseAdd + (i < extraAdd ? 1 : 0);
+                int removeQuota = baseRemove + (i < extraRemove ? 1 : 0);
+                _interfaceBoxQuotas[localId] = new InterfaceBoxQuota(addQuota, removeQuota);
+            }
+        }
+
+        /// <summary>
+        /// summary: 对外接口箱请求向工厂容器存入物品。
+        /// param: localId 接口箱本地ID
+        /// param: itemId 物品ID
+        /// param: count 请求数量
+        /// param: itemTags 物品标签
+        /// param: added 实际存入数量
+        /// return: 是否存入成功
+        /// </summary>
+        public bool TryRequestAdd(long localId, string itemId, int count, IReadOnlyList<string> itemTags, out int added)
+        {
+            added = 0;
+            if (count <= 0 || string.IsNullOrEmpty(itemId)) return false;
+
+            if (!_interfaceBoxQuotas.TryGetValue(localId, out var quota))
+            {
+                RefreshInterfaceBoxQuotas();
+                if (!_interfaceBoxQuotas.TryGetValue(localId, out quota))
+                {
+                    return false;
+                }
+            }
+
+            int allowed = Mathf.Min(count, quota.RemainingAdd);
+            if (allowed <= 0) return false;
+
+            if (!TryGetFactoryContainer(out var container))
+            {
+                return false;
+            }
+
+            if (!container.TryAdd(itemId, allowed, itemTags, out added))
+            {
+                return false;
+            }
+
+            quota.RemainingAdd = Mathf.Max(0, quota.RemainingAdd - added);
+            return added > 0;
+        }
+
+        /// <summary>
+        /// summary: 对外接口箱请求从工厂容器取出物品。
+        /// param: localId 接口箱本地ID
+        /// param: itemId 物品ID
+        /// param: count 请求数量
+        /// param: removed 实际取出数量
+        /// return: 是否取出成功
+        /// </summary>
+        public bool TryRequestRemove(long localId, string itemId, int count, out int removed)
+        {
+            removed = 0;
+            if (count <= 0 || string.IsNullOrEmpty(itemId)) return false;
+
+            if (!_interfaceBoxQuotas.TryGetValue(localId, out var quota))
+            {
+                RefreshInterfaceBoxQuotas();
+                if (!_interfaceBoxQuotas.TryGetValue(localId, out quota))
+                {
+                    return false;
+                }
+            }
+
+            int allowed = Mathf.Min(count, quota.RemainingRemove);
+            if (allowed <= 0) return false;
+
+            if (!TryGetFactoryContainer(out var container))
+            {
+                return false;
+            }
+
+            if (!container.TryRemove(itemId, allowed, out removed))
+            {
+                return false;
+            }
+
+            quota.RemainingRemove = Mathf.Max(0, quota.RemainingRemove - removed);
+            return removed > 0;
+        }
+
+        /// <summary>
+        /// summary: 尝试获取工厂容器引用。
+        /// param: container 输出工厂容器
+        /// return: 是否成功获取
+        /// </summary>
+        private bool TryGetFactoryContainer(out StorageContainer container)
+        {
+            container = null;
+            if (_runtime == null || _runtime.BuildingID <= 0)
+            {
+                return false;
+            }
+
+            return StorageSystem.Instance != null && StorageSystem.Instance.TryGet(_runtime.BuildingID, out container);
         }
 
         private List<FactoryNodeRuntime> BuildTraversalOrder()
