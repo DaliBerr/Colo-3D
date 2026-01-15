@@ -82,7 +82,7 @@ namespace Kernel.Building
         {
             bool changed = _isExternalInterface != enabled;
             _isExternalInterface = enabled;
-            if (changed || forceNotify)
+            if (_isExternalInterface && (changed || forceNotify))
             {
                 OnIOFilterChanged?.Invoke(this);
             }
