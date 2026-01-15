@@ -295,6 +295,7 @@ namespace Kernel.Building
 
             RuntimeId = r.BuildingID;
             Container = StorageSystem.Instance.Register(RuntimeId, r.CellPosition, Capacity, AllowTags, Priority);
+            Container?.SetRejectAll(true);
         }
 
         /// <summary>
