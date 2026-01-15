@@ -10,11 +10,19 @@ namespace Kernel.Building
     public abstract class InteriorStorageBehaviour : BaseInteriorBehaviour, IInteriorIOFilterProvider
     {
         private readonly List<string> _ioAllowTags = new();
+        private bool _isExternalInterface = true;
 
         /// <summary>
         /// summary: 接口过滤参数变化事件（过滤条件变化时触发）。
         /// </summary>
         public event Action<IInteriorIOFilterProvider> OnIOFilterChanged;
+
+        /// <summary>
+        /// summary: 获取当前是否作为外部接口参与过滤汇总。
+        /// param: 无
+        /// return: 是否启用外部接口
+        /// </summary>
+        public bool IsExternalInterface => _isExternalInterface;
 
         /// <summary>
         /// summary: 获取当前接口允许的标签列表。
@@ -23,6 +31,11 @@ namespace Kernel.Building
         /// </summary>
         public IReadOnlyList<string> GetIOAllowTags()
         {
+            if (!_isExternalInterface)
+            {
+                return Array.Empty<string>();
+            }
+
             return _ioAllowTags;
         }
 
@@ -41,6 +54,27 @@ namespace Kernel.Building
 
             _ioAllowTags.Clear();
             _ioAllowTags.AddRange(normalized);
+            if (!_isExternalInterface)
+            {
+                return;
+            }
+
+            OnIOFilterChanged?.Invoke(this);
+        }
+
+        /// <summary>
+        /// summary: 设置外部接口启用状态并通知过滤变更。
+        /// param: enabled 是否启用外部接口
+        /// return: 无
+        /// </summary>
+        public void SetExternalInterfaceEnabled(bool enabled)
+        {
+            if (_isExternalInterface == enabled)
+            {
+                return;
+            }
+
+            _isExternalInterface = enabled;
             OnIOFilterChanged?.Invoke(this);
         }
 
