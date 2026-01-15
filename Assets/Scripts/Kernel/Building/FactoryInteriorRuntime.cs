@@ -16,6 +16,7 @@ namespace Kernel.Building
         public Vector2Int CellPosition;
         public Dictionary<string, float> RuntimeStats = new();
         public BuildingCategory Category = BuildingCategory.Internal;
+        public bool IsExternalInterface = true;
 
         public List<IBuildingBehaviour> Behaviours = new();
         public BuildingRuntime ProxyRuntime;
@@ -99,6 +100,7 @@ namespace Kernel.Building
                     localId = child.BuildingLocalID,
                     CellX = child.CellPosition.x,
                     CellY = child.CellPosition.y,
+                    IsExternalInterface = ResolveExternalInterfaceState(child)
                 };
 
                 ExportRuntimeStats(child.RuntimeStats, out data.StatKeys, out data.StatValues);
@@ -146,7 +148,8 @@ namespace Kernel.Building
                     BuildingParentID = data.ParentId,
                     BuildingLocalID = data.localId,
                     Category = def.Category,
-                    CellPosition = new Vector2Int(data.CellX, data.CellY)
+                    CellPosition = new Vector2Int(data.CellX, data.CellY),
+                    IsExternalInterface = data.IsExternalInterface
                 };
 
                 ImportRuntimeStats(child.RuntimeStats, data.StatKeys, data.StatValues);
@@ -213,6 +216,27 @@ namespace Kernel.Building
                 values[i] = kv.Value;
                 i++;
             }
+        }
+
+        /// <summary>
+        /// summary: 解析子建筑当前外部接口启用状态。
+        /// param: child 子建筑运行时数据
+        /// return: 是否启用外部接口
+        /// </summary>
+        private static bool ResolveExternalInterfaceState(FactoryChildRuntime child)
+        {
+            if (child?.Behaviours != null)
+            {
+                foreach (var behaviour in child.Behaviours)
+                {
+                    if (behaviour is IInteriorIOFilterProvider provider)
+                    {
+                        return provider.IsExternalInterface;
+                    }
+                }
+            }
+
+            return child?.IsExternalInterface ?? true;
         }
 
         /// <summary>
