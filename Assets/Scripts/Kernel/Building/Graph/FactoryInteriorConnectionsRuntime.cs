@@ -60,6 +60,13 @@ namespace Kernel.Factory.Connections
         event Action<IInteriorIOFilterProvider> OnIOFilterChanged;
 
         /// <summary>
+        /// summary: 是否作为外部接口参与过滤汇总。
+        /// param: 无
+        /// return: 是否启用外部接口
+        /// </summary>
+        bool IsExternalInterface { get; }
+
+        /// <summary>
         /// summary: 获取当前接口允许的标签列表。
         /// param: 无
         /// return: 允许标签列表（空=全收）
