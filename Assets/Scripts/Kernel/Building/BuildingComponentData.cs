@@ -413,6 +413,11 @@ namespace Kernel.Building
                     // TODO:
                     return null;
                 }
+                case "interior_interface_box":
+                {
+                    var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
+                    return new InteriorInterfaceBoxBehaviour(tags);
+                }
                 default:
                     GameDebug.LogWarning($"[Building] 未知组件类型: {data.Type}");
                     return null;
