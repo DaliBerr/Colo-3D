@@ -40,6 +40,7 @@ namespace Kernel.Building
         public int CellX;
         public int CellY;
 
+        public bool IsExternalInterface = true;
 
         public string[] StatKeys;
         public float[] StatValues;

@@ -510,6 +510,7 @@ namespace Kernel.Building
             }
 
             InitializeFactoryInterfaceFilters();
+            RestoreFactoryInteriorInterfaceState();
 
             // 写入 placement（保证读档后再次保存一致）
             SetPlacement(new Vector3Int(data.CellX, data.CellY, 0), data.RotSteps);
@@ -615,6 +616,35 @@ namespace Kernel.Building
 
             var resolvedTags = _factoryFilterResolver.ResolveAllowTags(_ioFilterProviders);
             StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, resolvedTags);
+        }
+
+        /// <summary>
+        /// summary: 恢复内部建筑外部接口状态并触发过滤刷新。
+        /// param: 无
+        /// return: 无
+        /// </summary>
+        private void RestoreFactoryInteriorInterfaceState()
+        {
+            if (Runtime?.FactoryInterior?.Children == null || _ioFilterProviders.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var child in Runtime.FactoryInterior.Children)
+            {
+                if (child?.Behaviours == null)
+                {
+                    continue;
+                }
+
+                foreach (var behaviour in child.Behaviours)
+                {
+                    if (behaviour is InteriorStorageBehaviour storageBehaviour)
+                    {
+                        storageBehaviour.RestoreExternalInterfaceState(child.IsExternalInterface, true);
+                    }
+                }
+            }
         }
     }
 }

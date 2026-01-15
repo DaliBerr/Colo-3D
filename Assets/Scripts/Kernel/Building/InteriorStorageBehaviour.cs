@@ -69,13 +69,23 @@ namespace Kernel.Building
         /// </summary>
         public void SetExternalInterfaceEnabled(bool enabled)
         {
-            if (_isExternalInterface == enabled)
-            {
-                return;
-            }
+            RestoreExternalInterfaceState(enabled, false);
+        }
 
+        /// <summary>
+        /// summary: 恢复外部接口启用状态并可强制触发过滤变更。
+        /// param: enabled 是否启用外部接口
+        /// param: forceNotify 是否强制触发变更事件
+        /// return: 无
+        /// </summary>
+        public void RestoreExternalInterfaceState(bool enabled, bool forceNotify)
+        {
+            bool changed = _isExternalInterface != enabled;
             _isExternalInterface = enabled;
-            OnIOFilterChanged?.Invoke(this);
+            if (changed || forceNotify)
+            {
+                OnIOFilterChanged?.Invoke(this);
+            }
         }
 
         /// <summary>
