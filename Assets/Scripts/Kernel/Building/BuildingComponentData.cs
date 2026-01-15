@@ -294,6 +294,12 @@ namespace Kernel.Building
             if (r == null) return;
 
             RuntimeId = r.BuildingID;
+            if (!CanRegisterContainer(r))
+            {
+                Container = null;
+                return;
+            }
+
             Container = StorageSystem.Instance.Register(RuntimeId, r.CellPosition, Capacity, AllowTags, Priority);
             Container?.SetRejectAll(true);
         }
@@ -305,7 +311,7 @@ namespace Kernel.Building
         /// </summary>
         public void OnUnbind(BuildingRuntime r)
         {
-            if (RuntimeId > 0)
+            if (RuntimeId > 0 && Container != null)
                 StorageSystem.Instance.Unregister(RuntimeId);
 
             Container = null;
@@ -314,6 +320,21 @@ namespace Kernel.Building
         public void Tick(int ticks)
         {
             // throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// summary: 判断是否允许注册到全局库存系统（内部接口箱禁用容器注册）。
+        /// param: runtime 建筑运行时
+        /// return: 是否允许注册
+        /// </summary>
+        private static bool CanRegisterContainer(BuildingRuntime runtime)
+        {
+            if (runtime == null)
+            {
+                return false;
+            }
+
+            return runtime.Category != BuildingCategory.Internal;
         }
     }
 
