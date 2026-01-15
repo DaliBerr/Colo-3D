@@ -222,6 +222,11 @@ namespace Kernel.Building
                 var child = children[i];
                 if (child?.Behaviours == null) continue;
 
+                if (ContainsCacheStorage(child.Behaviours))
+                {
+                    continue;
+                }
+
                 foreach (var behaviour in child.Behaviours)
                 {
                     if (behaviour is InteriorInterfaceBoxBehaviour)
@@ -233,6 +238,29 @@ namespace Kernel.Building
             }
 
             _interfaceBoxLocalIds.Sort();
+        }
+
+        /// <summary>
+        /// summary: 判断内部建筑是否包含缓存箱行为。
+        /// param: behaviours 行为列表
+        /// return: 是否包含缓存箱
+        /// </summary>
+        private static bool ContainsCacheStorage(List<IBuildingBehaviour> behaviours)
+        {
+            if (behaviours == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < behaviours.Count; i++)
+            {
+                if (behaviours[i] is IInteriorCacheStorage)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace Kernel.Building
 
             foreach (var provider in providers)
             {
-                if (provider == null || !provider.IsExternalInterface)
+                if (provider == null || provider is IInteriorCacheStorage || !provider.IsExternalInterface)
                 {
                     continue;
                 }
