@@ -14,6 +14,7 @@ namespace Kernel.Storage
         public int Capacity { get; private set; }
         public int Priority { get; private set; }
         public IReadOnlyList<string> AllowTags => _allowTags;
+        public bool RejectAll { get; private set; }
 
         private readonly List<string> _allowTags;
         private readonly Dictionary<string, int> _items = new();
@@ -37,6 +38,7 @@ namespace Kernel.Storage
 
             _allowTags = allowTags != null ? new List<string>(allowTags) : new List<string>();
             _used = 0;
+            RejectAll = false;
         }
 
         /// <summary>
@@ -46,11 +48,22 @@ namespace Kernel.Storage
         /// </summary>
         public void UpdateAllowTags(List<string> tags)
         {
+            RejectAll = false;
             _allowTags.Clear();
             if (tags == null || tags.Count == 0)
                 return;
 
             _allowTags.AddRange(tags);
+        }
+
+        /// <summary>
+        /// summary: 设置容器是否拒绝全部物品。
+        /// param: rejectAll 是否拒绝全部
+        /// return: 无
+        /// </summary>
+        public void SetRejectAll(bool rejectAll)
+        {
+            RejectAll = rejectAll;
         }
 
         /// <summary>
@@ -72,6 +85,9 @@ namespace Kernel.Storage
         /// </summary>
         public bool CanAccept(IReadOnlyList<string> itemTags)
         {
+            if (RejectAll)
+                return false;
+
             if (_allowTags == null || _allowTags.Count == 0)
                 return true;
 
