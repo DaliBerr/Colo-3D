@@ -285,7 +285,7 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 绑定时创建并注册容器。
+        /// summary: 绑定时创建并注册容器（仅工厂类建筑默认拒收全部物品）。
         /// param: r 建筑运行时
         /// return: 无
         /// </summary>
@@ -301,7 +301,10 @@ namespace Kernel.Building
             }
 
             Container = StorageSystem.Instance.Register(RuntimeId, r.CellPosition, Capacity, AllowTags, Priority);
-            Container?.SetRejectAll(true);
+            if (r.Category == BuildingCategory.Factory)
+            {
+                Container?.SetRejectAll(true);
+            }
         }
 
         /// <summary>
