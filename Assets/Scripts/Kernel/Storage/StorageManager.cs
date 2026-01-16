@@ -99,6 +99,21 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 设置容器拒绝全部标记并触发变化事件。
+        /// param: runtimeId 建筑运行时ID
+        /// param: rejectAll 是否拒绝全部
+        /// return: 是否成功更新
+        /// </summary>
+        public bool SetContainerRejectAll(long runtimeId, bool rejectAll)
+        {
+            if (!TryGet(runtimeId, out var c)) return false;
+
+            c.SetRejectAll(rejectAll);
+            OnContainerChanged?.Invoke(runtimeId);
+            return true;
+        }
+
+        /// <summary>
         /// summary: 选择最佳存入容器（优先级高优先，其次距离近）。
         /// param: itemId 物品ID
         /// param: fromCell 起点格子

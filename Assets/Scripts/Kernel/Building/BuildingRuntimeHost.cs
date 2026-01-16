@@ -608,7 +608,7 @@ namespace Kernel.Building
         }
 
         /// <summary>
-        /// summary: 汇总接口允许标签并刷新工厂容器过滤（并集策略，空集合表示全收）。
+        /// summary: 汇总外部接口过滤并刷新工厂容器过滤（无外部接口或无标签则拒绝全部）。
         /// param: 无
         /// return: 无
         /// </summary>
@@ -619,7 +619,32 @@ namespace Kernel.Building
                 return;
             }
 
+            if (!StorageSystem.Instance.TryGet(Runtime.BuildingID, out _))
+            {
+                return;
+            }
+
+            bool hasExternalInterface = false;
+            foreach (var provider in _ioFilterProviders)
+            {
+                if (provider == null || provider is IInteriorCacheStorage || !provider.IsExternalInterface)
+                {
+                    continue;
+                }
+
+                hasExternalInterface = true;
+                break;
+            }
+
             var resolvedTags = _factoryFilterResolver.ResolveAllowTags(_ioFilterProviders);
+            bool hasValidTags = resolvedTags != null && resolvedTags.Count > 0;
+
+            if (!hasExternalInterface || !hasValidTags)
+            {
+                StorageSystem.Instance.SetContainerRejectAll(Runtime.BuildingID, true);
+                return;
+            }
+
             StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, resolvedTags);
         }
 
