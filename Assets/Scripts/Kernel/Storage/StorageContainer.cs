@@ -129,31 +129,8 @@ namespace Kernel.Storage
             if (RejectAll)
                 return false;
 
-            bool tagAllowed = _allowTags == null || _allowTags.Count == 0;
-            if (!tagAllowed)
-            {
-                if (itemTags == null || itemTags.Count == 0)
-                {
-                    tagAllowed = false;
-                }
-                else
-                {
-                    for (int i = 0; i < itemTags.Count; i++)
-                    {
-                        if (_allowTags.Contains(itemTags[i]))
-                        {
-                            tagAllowed = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            bool idAllowed = _allowItemIds == null || _allowItemIds.Count == 0;
-            if (!idAllowed)
-            {
-                idAllowed = !string.IsNullOrEmpty(itemId) && _allowItemIds.Contains(itemId);
-            }
+            bool tagAllowed = IsTagAllowed(itemTags);
+            bool idAllowed = IsIdAllowed(itemId);
 
             switch (FilterMode)
             {
@@ -168,6 +145,41 @@ namespace Kernel.Storage
                 default:
                     return tagAllowed;
             }
+        }
+
+        /// <summary>
+        /// summary: 检查标签是否允许。
+        /// param: itemTags 物品标签
+        /// return: 是否允许
+        /// </summary>
+        private bool IsTagAllowed(IReadOnlyList<string> itemTags)
+        {
+            if (_allowTags == null || _allowTags.Count == 0)
+                return true;
+
+            if (itemTags == null || itemTags.Count == 0)
+                return false;
+
+            for (int i = 0; i < itemTags.Count; i++)
+            {
+                if (_allowTags.Contains(itemTags[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// summary: 检查物品ID是否允许。
+        /// param: itemId 物品ID
+        /// return: 是否允许
+        /// </summary>
+        private bool IsIdAllowed(string itemId)
+        {
+            if (_allowItemIds == null || _allowItemIds.Count == 0)
+                return true;
+
+            return !string.IsNullOrEmpty(itemId) && _allowItemIds.Contains(itemId);
         }
 
         /// <summary>
