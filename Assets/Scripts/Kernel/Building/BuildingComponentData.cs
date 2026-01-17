@@ -424,8 +424,8 @@ namespace Kernel.Building
                 {
                     int cap = data.Params?["capacity"]?.Value<int>() ?? 0;
                     int pr = data.Params?["priority"]?.Value<int>() ?? 0;
-                    var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
-                    var itemIds = data.Params?["allowItemIds"]?.ToObject<List<string>>() ?? new List<string>();
+                    var tags = ResolveStringList(data.Params?["allowTags"]);
+                    var itemIds = ResolveStringList(data.Params?["allowItemIds"]);
                     StorageFilterMode filterMode = ResolveStorageFilterMode(data.Params?["filterMode"]);
                     return new StorageBehaviour(cap, tags, itemIds, filterMode, pr);
                 }
@@ -479,27 +479,75 @@ namespace Kernel.Building
         /// </summary>
         private static StorageFilterMode ResolveStorageFilterMode(JToken token)
         {
+            const StorageFilterMode defaultMode = StorageFilterMode.TagOnly;
             if (token == null)
             {
-                return StorageFilterMode.TagOnly;
+                return defaultMode;
             }
 
-            if (token.Type == JTokenType.Integer)
+            try
             {
-                int modeValue = token.Value<int>();
-                if (Enum.IsDefined(typeof(StorageFilterMode), modeValue))
+                if (token.Type == JTokenType.Integer)
                 {
-                    return (StorageFilterMode)modeValue;
+                    int modeValue = token.Value<int>();
+                    if (Enum.IsDefined(typeof(StorageFilterMode), modeValue))
+                    {
+                        return (StorageFilterMode)modeValue;
+                    }
+                }
+
+                string modeText = token.Value<string>();
+                if (string.IsNullOrWhiteSpace(modeText))
+                {
+                    return defaultMode;
+                }
+
+                string normalized = modeText.Trim().ToLowerInvariant().Replace("-", "_");
+                switch (normalized)
+                {
+                    case "tag_only":
+                        return StorageFilterMode.TagOnly;
+                    case "id_only":
+                        return StorageFilterMode.IdOnly;
+                    case "tag_and_id":
+                        return StorageFilterMode.TagAndId;
+                    case "tag_or_id":
+                        return StorageFilterMode.TagOrId;
+                }
+
+                if (Enum.TryParse(modeText, true, out StorageFilterMode parsed))
+                {
+                    return parsed;
                 }
             }
-
-            string modeText = token.Value<string>();
-            if (!string.IsNullOrEmpty(modeText) && Enum.TryParse(modeText, true, out StorageFilterMode parsed))
+            catch (Exception)
             {
-                return parsed;
+                return defaultMode;
             }
 
-            return StorageFilterMode.TagOnly;
+            return defaultMode;
+        }
+
+        /// <summary>
+        /// summary: 解析字符串数组参数（解析失败返回空列表）。
+        /// param: token 参数节点
+        /// return: 解析后的字符串列表
+        /// </summary>
+        private static List<string> ResolveStringList(JToken token)
+        {
+            if (token == null || token.Type != JTokenType.Array)
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                return token.ToObject<List<string>>() ?? new List<string>();
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
         }
     }
 
