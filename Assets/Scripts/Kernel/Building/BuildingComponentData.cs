@@ -438,7 +438,7 @@ namespace Kernel.Building
                 }
                 case "factory":
                 {
-                    // TODO:
+                    // TODO: 补充完整
                     return null;
                 }
                 case "test_counter":
@@ -452,7 +452,7 @@ namespace Kernel.Building
                 }
                 case "factory_interior":
                 {
-                    // TODO:
+                    // TODO: 补充完整
                     return null;
                 }
                 case "interior_interface_box":

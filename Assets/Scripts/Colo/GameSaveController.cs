@@ -60,7 +60,7 @@ namespace Colo
 
             // Debug.Log($"Collected {allBuildings.Length} buildings for saving.");
             // 添加状态数据保存项
-            //TODO: 修
+            //TODO: 修,不要用new
             saveMgr.AddItem(new Kernel.Building.SaveAllBuildings());
             saveMgr.AddItem(new Kernel.GameState.SaveStatus());
             saveMgr.AddItem(new SaveMapInfo());

@@ -115,12 +115,13 @@ namespace Kernel
             // 2) 加载所有 Def（建筑 / 物品）
             yield return StartCoroutine(LoadAllDefsCoroutine());
 
+            // 3) 设置物品标签目录
             if (Storage.StorageSystem.Instance.ItemCatalog == null)
             {
                 Storage.StorageSystem.Instance.ItemCatalog = new ItemDefCatalog();
             }
 
-            // 3) 预留位置：例如音乐系统、按键绑定等后续全局初始化内容
+            // 4) 预留位置：例如音乐系统、按键绑定等后续全局初始化内容
         }
 
         /// <summary>

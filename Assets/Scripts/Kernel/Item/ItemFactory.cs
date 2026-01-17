@@ -17,31 +17,32 @@ namespace Kernel.Item
         public static ItemInstance CreateData(string id, int stack = 1)
             => ItemDatabase.CreateInstance(id, stack);
 
-        // 实例化到场景（如掉落物/装备展示）
-        public static async Task<GameObject> SpawnToWorldAsync(string id, Vector3 pos, Quaternion rot)
-        {
-            if (!ItemDatabase.TryGet(id, out var def)) return null;
+        
+        // 实例化到场景（如掉落物/装备展示）已弃用，物品不允许直接生成到场景中
+        // public static async Task<GameObject> SpawnToWorldAsync(string id, Vector3 pos, Quaternion rot)
+        // {
+        //     if (!ItemDatabase.TryGet(id, out var def)) return null;
 
-            var prefab = await ItemDatabase.LoadPrefabAsync(def);
-            GameObject go = prefab ? Object.Instantiate(prefab, pos, rot)
-                                   : new GameObject($"Item_{id}");
+        //     var prefab = await ItemDatabase.LoadPrefabAsync(def);
+        //     GameObject go = prefab ? Object.Instantiate(prefab, pos, rot)
+        //                            : new GameObject($"Item_{id}");
 
-            var host = go.GetComponent<ItemRuntimeBehaviourHost>();
-            if (!host) host = go.AddComponent<ItemRuntimeBehaviourHost>();
-            host.Instance = ItemDatabase.CreateInstance(id);
+        //     var host = go.GetComponent<ItemRuntimeBehaviourHost>();
+        //     if (!host) host = go.AddComponent<ItemRuntimeBehaviourHost>();
+        //     host.Instance = ItemDatabase.CreateInstance(id);
 
-            // 解析并构造行为
-            host.Behaviours.Clear();
-            foreach (var c in def.Components)
-            {
-                var bh = ItemBehaviourFactory.Create(c);
-                if (bh != null)
-                {
-                    bh.OnBind(host.Instance);
-                    host.Behaviours.Add(bh);
-                }
-            }
-            return go;
-        }
+        //     // 解析并构造行为
+        //     host.Behaviours.Clear();
+        //     foreach (var c in def.Components)
+        //     {
+        //         var bh = ItemBehaviourFactory.Create(c);
+        //         if (bh != null)
+        //         {
+        //             bh.OnBind(host.Instance);
+        //             host.Behaviours.Add(bh);
+        //         }
+        //     }
+        //     return go;
+        // }
     }
 }

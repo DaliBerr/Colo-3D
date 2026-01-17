@@ -84,10 +84,12 @@
     <Compile Include="Assets\Scripts\Kernel\Audio\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Lonize\Event\Events.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\PopupModal.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\InteriorCacheStorageBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\StorageContainer.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\FactoryCompositeBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\UIInputRouter.cs" />
     <Compile Include="Assets\InputSystem\AnimationControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\FactoryFilterResolver.cs" />
     <Compile Include="Assets\Scripts\Kernel\Pool\PoolMember.cs" />
     <Compile Include="Assets\Scripts\Kernel\Map\GridOverlay.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\MiniMapInputHandle.cs" />
@@ -102,6 +104,7 @@
     <Compile Include="Assets\Scripts\Lonize\UI\UIScale.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\GridScaleFix.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\InteriorInterfaceBoxBehaviour.cs" />
     <Compile Include="Assets\SceneChoice.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\LogConsoleUI.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CameraMiniMapControl.cs" />
@@ -189,6 +192,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\SliderHolder.cs" />
     <Compile Include="Assets\Scripts\Kernel\Save\GlobalSeeting\OptionManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CameraMainControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\InteriorStorageBehaviour.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\LocalizationJsonUtility.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\UIRopeGraphic.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CamraStartPageControl.cs" />
@@ -204,6 +208,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\SoundEffectSlider.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\ResolutionDropDown.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\MasterVolumeSlider.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Storage\ItemDefCatalog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
