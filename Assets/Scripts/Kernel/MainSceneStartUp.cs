@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using Kernel.Inventory;
 using Kernel.Item;
 using Kernel.UI;
 using Lonize.EventSystem;
@@ -79,6 +80,10 @@ namespace Kernel
         private async Task InitAll()
         {
             await InitItems();
+            if (Storage.StorageSystem.Instance.ItemCatalog == null)
+            {
+                Storage.StorageSystem.Instance.ItemCatalog = new ItemDefCatalog();
+            }
             await InitBuildings();
             await InitInput();
         }
