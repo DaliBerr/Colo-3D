@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kernel.Item;
 
@@ -23,6 +24,24 @@ namespace Kernel.Inventory
             }
 
             tags = def.Tags;
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 尝试获取物品的储存占用值。
+        /// param: itemId 物品定义ID
+        /// param: occupation 输出占用值
+        /// return: 是否成功
+        /// </summary>
+        public bool TryGetStorageOccupation(string itemId, out int occupation)
+        {
+            occupation = 1;
+            if (!ItemDatabase.TryGet(itemId, out var def) || def == null)
+            {
+                return false;
+            }
+
+            occupation = Math.Max(1, def.StorageOccupation);
             return true;
         }
     }

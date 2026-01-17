@@ -16,7 +16,7 @@ namespace Kernel.Storage
     }
 
     /// <summary>
-    /// summary: 储物容器（按总数量容量，支持标签筛选与基础存取）。
+    /// summary: 储物容器（按总占用容量，支持标签筛选与基础存取）。
     /// </summary>
     public sealed class StorageContainer
     {
@@ -38,7 +38,7 @@ namespace Kernel.Storage
         /// summary: 构造一个储物容器。
         /// param: runtimeId 建筑运行时ID
         /// param: cell 容器所在格子
-        /// param: capacity 容量（总数量）
+        /// param: capacity 容量（总占用）
         /// param: allowTags 允许标签（空=全收）
         /// param: allowItemIds 允许物品ID（空=全收）
         /// param: filterMode 过滤模式
@@ -117,13 +117,13 @@ namespace Kernel.Storage
         }
 
         /// <summary>
-        /// summary: 当前已使用容量（总数量）。
+        /// summary: 当前已使用容量（占用总量）。
         /// return: used
         /// </summary>
         public int GetUsed() => _used;
 
         /// <summary>
-        /// summary: 当前剩余容量（总数量）。
+        /// summary: 当前剩余容量（占用总量）。
         /// return: free
         /// </summary>
         public int GetFree() => Mathf.Max(0, Capacity - _used);
@@ -207,11 +207,12 @@ namespace Kernel.Storage
         /// summary: 尝试存入物品（受容量与标签限制）。
         /// param: itemId 物品ID
         /// param: count 请求数量
+        /// param: occupation 单件占用值
         /// param: itemTags 物品标签
         /// param: added 实际存入数量
         /// return: 是否存入成功（added>0）
         /// </summary>
-        public bool TryAdd(string itemId, int count, IReadOnlyList<string> itemTags, out int added)
+        public bool TryAdd(string itemId, int count, int occupation, IReadOnlyList<string> itemTags, out int added)
         {
             added = 0;
             if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
@@ -220,11 +221,15 @@ namespace Kernel.Storage
             int free = GetFree();
             if (free <= 0) return false;
 
-            added = Mathf.Min(count, free);
+            int per = Mathf.Max(1, occupation);
+            int maxByFree = free / per;
+            if (maxByFree <= 0) return false;
+
+            added = Mathf.Min(count, maxByFree);
 
             _items.TryGetValue(itemId, out var old);
             _items[itemId] = old + added;
-            _used += added;
+            _used += added * per;
 
             return added > 0;
         }
@@ -233,10 +238,11 @@ namespace Kernel.Storage
         /// summary: 尝试取出物品。
         /// param: itemId 物品ID
         /// param: count 请求数量
+        /// param: occupation 单件占用值
         /// param: removed 实际取出数量
         /// return: 是否取出成功（removed>0）
         /// </summary>
-        public bool TryRemove(string itemId, int count, out int removed)
+        public bool TryRemove(string itemId, int count, int occupation, out int removed)
         {
             removed = 0;
             if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
@@ -250,7 +256,8 @@ namespace Kernel.Storage
             if (left <= 0) _items.Remove(itemId);
             else _items[itemId] = left;
 
-            _used = Mathf.Max(0, _used - removed);
+            int per = Mathf.Max(1, occupation);
+            _used = Mathf.Max(0, _used - removed * per);
             return removed > 0;
         }
 
@@ -279,9 +286,10 @@ namespace Kernel.Storage
         /// summary: 用数组覆盖容器内容（用于读档回填）。
         /// param: itemIds 物品ID数组
         /// param: counts 数量数组
+        /// param: occupations 占用值数组
         /// return: 无
         /// </summary>
-        public void Import(string[] itemIds, int[] counts)
+        public void Import(string[] itemIds, int[] counts, int[] occupations)
         {
             _items.Clear();
             _used = 0;
@@ -296,7 +304,12 @@ namespace Kernel.Storage
                 if (string.IsNullOrEmpty(id) || c <= 0) continue;
 
                 _items[id] = c;
-                _used += c;
+                int per = 1;
+                if (occupations != null && i < occupations.Length)
+                {
+                    per = Mathf.Max(1, occupations[i]);
+                }
+                _used += c * per;
             }
 
             // 防御性：如果存档数据超过容量，保持 used 不溢出但不强行丢弃（由上层决定是否裁剪）
