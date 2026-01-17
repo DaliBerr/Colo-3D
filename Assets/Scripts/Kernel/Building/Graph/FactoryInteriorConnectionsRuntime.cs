@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Kernel.Building;
 using Kernel.Factory.Connections; // 这里引用你 Graph 所在的 namespace
+using Kernel.Storage;
 using Lonize.Logging;
 
 namespace Kernel.Factory.Connections
@@ -72,6 +73,20 @@ namespace Kernel.Factory.Connections
         /// return: 允许标签列表（空=全收）
         /// </summary>
         IReadOnlyList<string> GetIOAllowTags();
+
+        /// <summary>
+        /// summary: 获取当前接口允许的物品ID列表。
+        /// param: 无
+        /// return: 允许物品ID列表（空=全收）
+        /// </summary>
+        IReadOnlyList<string> GetIOAllowItemIds();
+
+        /// <summary>
+        /// summary: 获取当前接口过滤模式。
+        /// param: 无
+        /// return: 过滤模式
+        /// </summary>
+        StorageFilterMode GetIOFilterMode();
     }
 
     /// <summary>

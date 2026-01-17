@@ -636,16 +636,41 @@ namespace Kernel.Building
                 break;
             }
 
-            var resolvedTags = _factoryFilterResolver.ResolveAllowTags(_ioFilterProviders);
-            bool hasValidTags = resolvedTags != null && resolvedTags.Count > 0;
+            var resolvedFilter = _factoryFilterResolver.ResolveFilters(_ioFilterProviders);
+            bool hasValidFilters = HasValidFactoryFilters(resolvedFilter.FilterMode, resolvedFilter.AllowTags, resolvedFilter.AllowItemIds);
 
-            if (!hasExternalInterface || !hasValidTags)
+            if (!hasExternalInterface || !hasValidFilters)
             {
                 StorageSystem.Instance.SetContainerRejectAll(Runtime.BuildingID, true);
                 return;
             }
 
-            StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, resolvedTags);
+            StorageSystem.Instance.UpdateContainerFilter(Runtime.BuildingID, resolvedFilter.AllowTags, resolvedFilter.AllowItemIds, resolvedFilter.FilterMode);
+        }
+
+        /// <summary>
+        /// summary: 判断工厂过滤结果是否包含有效条件。
+        /// param: filterMode 过滤模式
+        /// param: allowTags 允许标签列表
+        /// param: allowItemIds 允许物品ID列表
+        /// return: 是否包含有效过滤条件
+        /// </summary>
+        private static bool HasValidFactoryFilters(StorageFilterMode filterMode, IReadOnlyList<string> allowTags, IReadOnlyList<string> allowItemIds)
+        {
+            int tagCount = allowTags?.Count ?? 0;
+            int idCount = allowItemIds?.Count ?? 0;
+            switch (filterMode)
+            {
+                case StorageFilterMode.IdOnly:
+                    return idCount > 0;
+                case StorageFilterMode.TagAndId:
+                    return tagCount > 0 && idCount > 0;
+                case StorageFilterMode.TagOrId:
+                    return tagCount > 0 || idCount > 0;
+                case StorageFilterMode.TagOnly:
+                default:
+                    return tagCount > 0;
+            }
         }
 
         /// <summary>

@@ -97,6 +97,16 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 更新容器过滤模式。
+        /// param: filterMode 过滤模式
+        /// return: 无
+        /// </summary>
+        public void UpdateFilterMode(StorageFilterMode filterMode)
+        {
+            FilterMode = filterMode;
+        }
+
+        /// <summary>
         /// summary: 设置容器是否拒绝全部物品。
         /// param: rejectAll 是否拒绝全部
         /// return: 无
