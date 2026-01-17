@@ -45,7 +45,14 @@ namespace Kernel.Building
             base.OnBind(runtime);
             SetExternalInterfaceEnabled(false);
             _container = runtime != null
-                ? new StorageContainer(runtime.BuildingID, runtime.CellPosition, _capacity, _allowTags, 0)
+                ? new StorageContainer(
+                    runtime.BuildingID,
+                    runtime.CellPosition,
+                    _capacity,
+                    _allowTags,
+                    null,
+                    StorageFilterMode.TagOnly,
+                    0)
                 : null;
         }
 

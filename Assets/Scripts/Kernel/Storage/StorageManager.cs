@@ -41,15 +41,24 @@ namespace Kernel.Storage
         /// param: cell 容器所在格
         /// param: capacity 容量
         /// param: allowTags 允许标签
+        /// param: allowItemIds 允许物品ID
+        /// param: filterMode 过滤模式
         /// param: priority 优先级（越大越优先）
         /// return: 注册后的容器实例
         /// </summary>
-        public StorageContainer Register(long runtimeId, Vector2Int cell, int capacity, List<string> allowTags, int priority)
+        public StorageContainer Register(
+            long runtimeId,
+            Vector2Int cell,
+            int capacity,
+            List<string> allowTags,
+            List<string> allowItemIds,
+            StorageFilterMode filterMode,
+            int priority)
         {
             if (runtimeId <= 0)
                 throw new ArgumentException("runtimeId must be > 0");
 
-            var c = new StorageContainer(runtimeId, cell, capacity, allowTags, priority);
+            var c = new StorageContainer(runtimeId, cell, capacity, allowTags, allowItemIds, filterMode, priority);
             _containers[runtimeId] = c;
 
             if (_pendingImports.TryGetValue(runtimeId, out var pending))
@@ -132,7 +141,7 @@ namespace Kernel.Storage
             {
                 var c = kv.Value;
                 if (c.GetFree() <= 0) continue;
-                if (!c.CanAccept(tags)) continue;
+                if (!c.CanAccept(itemId, tags)) continue;
 
                 int pr = c.Priority;
                 int dist2 = (c.Cell.x - fromCell.x) * (c.Cell.x - fromCell.x) + (c.Cell.y - fromCell.y) * (c.Cell.y - fromCell.y);

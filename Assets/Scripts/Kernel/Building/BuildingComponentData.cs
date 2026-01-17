@@ -300,7 +300,14 @@ namespace Kernel.Building
                 return;
             }
 
-            Container = StorageSystem.Instance.Register(RuntimeId, r.CellPosition, Capacity, AllowTags, Priority);
+            Container = StorageSystem.Instance.Register(
+                RuntimeId,
+                r.CellPosition,
+                Capacity,
+                AllowTags,
+                null,
+                StorageFilterMode.TagOnly,
+                Priority);
             if (r.Category == BuildingCategory.Factory)
             {
                 Container?.SetRejectAll(true);
