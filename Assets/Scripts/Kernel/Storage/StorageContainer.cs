@@ -5,6 +5,17 @@ using UnityEngine;
 namespace Kernel.Storage
 {
     /// <summary>
+    /// summary: 储物容器过滤模式（按标签/ID/组合规则）。
+    /// </summary>
+    public enum StorageFilterMode
+    {
+        TagOnly,
+        IdOnly,
+        TagAndId,
+        TagOrId
+    }
+
+    /// <summary>
     /// summary: 储物容器（按总数量容量，支持标签筛选与基础存取）。
     /// </summary>
     public sealed class StorageContainer
@@ -14,9 +25,12 @@ namespace Kernel.Storage
         public int Capacity { get; private set; }
         public int Priority { get; private set; }
         public IReadOnlyList<string> AllowTags => _allowTags;
+        public IReadOnlyList<string> AllowItemIds => _allowItemIds;
+        public StorageFilterMode FilterMode { get; private set; }
         public bool RejectAll { get; private set; }
 
         private readonly List<string> _allowTags;
+        private readonly List<string> _allowItemIds;
         private readonly Dictionary<string, int> _items = new();
         private int _used;
 
@@ -26,17 +40,28 @@ namespace Kernel.Storage
         /// param: cell 容器所在格子
         /// param: capacity 容量（总数量）
         /// param: allowTags 允许标签（空=全收）
+        /// param: allowItemIds 允许物品ID（空=全收）
+        /// param: filterMode 过滤模式
         /// param: priority 优先级（越大越优先）
         /// return: 无
         /// </summary>
-        public StorageContainer(long runtimeId, Vector2Int cell, int capacity, List<string> allowTags, int priority)
+        public StorageContainer(
+            long runtimeId,
+            Vector2Int cell,
+            int capacity,
+            List<string> allowTags,
+            List<string> allowItemIds,
+            StorageFilterMode filterMode,
+            int priority)
         {
             RuntimeId = runtimeId;
             Cell = cell;
             Capacity = Mathf.Max(0, capacity);
             Priority = priority;
+            FilterMode = filterMode;
 
             _allowTags = allowTags != null ? new List<string>(allowTags) : new List<string>();
+            _allowItemIds = allowItemIds != null ? new List<string>(allowItemIds) : new List<string>();
             _used = 0;
             RejectAll = false;
         }
@@ -54,6 +79,21 @@ namespace Kernel.Storage
                 return;
 
             _allowTags.AddRange(tags);
+        }
+
+        /// <summary>
+        /// summary: 更新容器允许的物品ID过滤（空=全收）。
+        /// param: itemIds 允许物品ID列表
+        /// return: 无
+        /// </summary>
+        public void UpdateAllowItemIds(List<string> itemIds)
+        {
+            RejectAll = false;
+            _allowItemIds.Clear();
+            if (itemIds == null || itemIds.Count == 0)
+                return;
+
+            _allowItemIds.AddRange(itemIds);
         }
 
         /// <summary>
@@ -79,27 +119,55 @@ namespace Kernel.Storage
         public int GetFree() => Mathf.Max(0, Capacity - _used);
 
         /// <summary>
-        /// summary: 判断容器是否能接收该物品（按标签过滤）。
+        /// summary: 判断容器是否能接收该物品（按过滤模式）。
+        /// param: itemId 物品ID
         /// param: itemTags 物品标签（可为空）
         /// return: 是否允许
         /// </summary>
-        public bool CanAccept(IReadOnlyList<string> itemTags)
+        public bool CanAccept(string itemId, IReadOnlyList<string> itemTags)
         {
             if (RejectAll)
                 return false;
 
-            if (_allowTags == null || _allowTags.Count == 0)
-                return true;
-
-            if (itemTags == null || itemTags.Count == 0)
-                return false;
-
-            for (int i = 0; i < itemTags.Count; i++)
+            bool tagAllowed = _allowTags == null || _allowTags.Count == 0;
+            if (!tagAllowed)
             {
-                if (_allowTags.Contains(itemTags[i]))
-                    return true;
+                if (itemTags == null || itemTags.Count == 0)
+                {
+                    tagAllowed = false;
+                }
+                else
+                {
+                    for (int i = 0; i < itemTags.Count; i++)
+                    {
+                        if (_allowTags.Contains(itemTags[i]))
+                        {
+                            tagAllowed = true;
+                            break;
+                        }
+                    }
+                }
             }
-            return false;
+
+            bool idAllowed = _allowItemIds == null || _allowItemIds.Count == 0;
+            if (!idAllowed)
+            {
+                idAllowed = !string.IsNullOrEmpty(itemId) && _allowItemIds.Contains(itemId);
+            }
+
+            switch (FilterMode)
+            {
+                case StorageFilterMode.TagOnly:
+                    return tagAllowed;
+                case StorageFilterMode.IdOnly:
+                    return idAllowed;
+                case StorageFilterMode.TagAndId:
+                    return tagAllowed && idAllowed;
+                case StorageFilterMode.TagOrId:
+                    return tagAllowed || idAllowed;
+                default:
+                    return tagAllowed;
+            }
         }
 
         /// <summary>
@@ -125,7 +193,7 @@ namespace Kernel.Storage
         {
             added = 0;
             if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
-            if (!CanAccept(itemTags)) return false;
+            if (!CanAccept(itemId, itemTags)) return false;
 
             int free = GetFree();
             if (free <= 0) return false;
