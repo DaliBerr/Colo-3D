@@ -14,5 +14,13 @@ namespace Kernel.Inventory
         /// return: 是否成功
         /// </summary>
         bool TryGetTags(string itemId, out IReadOnlyList<string> tags);
+
+        /// <summary>
+        /// summary: 尝试获取物品的储存占用值。
+        /// param: itemId 物品定义ID
+        /// param: occupation 输出占用值
+        /// return: 是否成功
+        /// </summary>
+        bool TryGetStorageOccupation(string itemId, out int occupation);
     }
 }

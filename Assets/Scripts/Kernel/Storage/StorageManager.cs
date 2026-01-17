@@ -63,7 +63,8 @@ namespace Kernel.Storage
 
             if (_pendingImports.TryGetValue(runtimeId, out var pending))
             {
-                c.Import(pending.itemIds, pending.counts);
+                var occupations = BuildOccupations(pending.itemIds);
+                c.Import(pending.itemIds, pending.counts, occupations);
                 _pendingImports.Remove(runtimeId);
                 OnContainerChanged?.Invoke(runtimeId);
             }
@@ -152,6 +153,7 @@ namespace Kernel.Storage
         {
             best = null;
             var tags = ResolveTags(itemId);
+            int occupation = ResolveOccupation(itemId);
 
             int bestPriority = int.MinValue;
             int bestDist2 = int.MaxValue;
@@ -159,7 +161,7 @@ namespace Kernel.Storage
             foreach (var kv in _containers)
             {
                 var c = kv.Value;
-                if (c.GetFree() <= 0) continue;
+                if (c.GetFree() < occupation) continue;
                 if (!c.CanAccept(itemId, tags)) continue;
 
                 int pr = c.Priority;
@@ -194,7 +196,8 @@ namespace Kernel.Storage
                 return false;
 
             var tags = ResolveTags(itemId);
-            if (!c.TryAdd(itemId, count, tags, out stored))
+            int occupation = ResolveOccupation(itemId);
+            if (!c.TryAdd(itemId, count, occupation, tags, out stored))
                 return false;
 
             containerId = c.RuntimeId;
@@ -215,7 +218,8 @@ namespace Kernel.Storage
             removed = 0;
             if (!TryGet(containerId, out var c)) return false;
 
-            if (!c.TryRemove(itemId, count, out removed))
+            int occupation = ResolveOccupation(itemId);
+            if (!c.TryRemove(itemId, count, occupation, out removed))
                 return false;
 
             OnContainerChanged?.Invoke(containerId);
@@ -235,7 +239,8 @@ namespace Kernel.Storage
 
             if (_containers.TryGetValue(runtimeId, out var c))
             {
-                c.Import(itemIds, counts);
+                var occupations = BuildOccupations(itemIds);
+                c.Import(itemIds, counts, occupations);
                 OnContainerChanged?.Invoke(runtimeId);
                 return;
             }
@@ -267,6 +272,34 @@ namespace Kernel.Storage
         {
             if (ItemCatalog == null) return null;
             return ItemCatalog.TryGetTags(itemId, out var tags) ? tags : null;
+        }
+
+        /// <summary>
+        /// summary: 解析物品占用值（无 Catalog 时默认 1）。
+        /// param: itemId 物品ID
+        /// return: 占用值
+        /// </summary>
+        private int ResolveOccupation(string itemId)
+        {
+            if (ItemCatalog == null) return 1;
+            return ItemCatalog.TryGetStorageOccupation(itemId, out var occupation) && occupation > 0 ? occupation : 1;
+        }
+
+        /// <summary>
+        /// summary: 构建占用值数组（与 itemIds 对齐）。
+        /// param: itemIds 物品ID数组
+        /// return: 占用值数组
+        /// </summary>
+        private int[] BuildOccupations(string[] itemIds)
+        {
+            if (itemIds == null) return null;
+
+            var occupations = new int[itemIds.Length];
+            for (int i = 0; i < itemIds.Length; i++)
+            {
+                occupations[i] = ResolveOccupation(itemIds[i]);
+            }
+            return occupations;
         }
     }
 }
