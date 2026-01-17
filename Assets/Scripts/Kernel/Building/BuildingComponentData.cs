@@ -458,7 +458,9 @@ namespace Kernel.Building
                 case "interior_interface_box":
                 {
                     var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
-                    return new InteriorInterfaceBoxBehaviour(tags);
+                    var itemIds = data.Params?["allowItemIds"]?.ToObject<List<string>>() ?? new List<string>();
+                    StorageFilterMode filterMode = ResolveStorageFilterMode(data.Params?["filterMode"]);
+                    return new InteriorInterfaceBoxBehaviour(tags, itemIds, filterMode);
                 }
                 case "interior_cache_box":
                 {

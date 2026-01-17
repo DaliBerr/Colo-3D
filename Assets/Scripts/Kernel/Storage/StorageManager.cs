@@ -108,6 +108,25 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 更新指定容器的过滤参数并触发变化事件。
+        /// param: runtimeId 建筑运行时ID
+        /// param: tags 允许标签列表（空=全收）
+        /// param: itemIds 允许物品ID列表（空=全收）
+        /// param: filterMode 过滤模式
+        /// return: 是否成功更新
+        /// </summary>
+        public bool UpdateContainerFilter(long runtimeId, List<string> tags, List<string> itemIds, StorageFilterMode filterMode)
+        {
+            if (!TryGet(runtimeId, out var c)) return false;
+
+            c.UpdateAllowTags(tags);
+            c.UpdateAllowItemIds(itemIds);
+            c.UpdateFilterMode(filterMode);
+            OnContainerChanged?.Invoke(runtimeId);
+            return true;
+        }
+
+        /// <summary>
         /// summary: 设置容器拒绝全部标记并触发变化事件。
         /// param: runtimeId 建筑运行时ID
         /// param: rejectAll 是否拒绝全部

@@ -12,15 +12,21 @@ namespace Kernel.Building
         private const string InputPortId = "interface_in";
         private const string OutputPortId = "interface_out";
         private readonly List<string> _allowTags;
+        private readonly List<string> _allowItemIds;
+        private readonly StorageFilterMode _filterMode;
 
         /// <summary>
         /// summary: 创建内部接口箱行为实例。
         /// param: allowTags 允许标签列表
+        /// param: allowItemIds 允许物品ID列表
+        /// param: filterMode 过滤模式
         /// return: 无
         /// </summary>
-        public InteriorInterfaceBoxBehaviour(List<string> allowTags)
+        public InteriorInterfaceBoxBehaviour(List<string> allowTags, List<string> allowItemIds, StorageFilterMode filterMode)
         {
             _allowTags = allowTags != null ? new List<string>(allowTags) : new List<string>();
+            _allowItemIds = allowItemIds != null ? new List<string>(allowItemIds) : new List<string>();
+            _filterMode = filterMode;
         }
 
         /// <summary>
@@ -32,6 +38,8 @@ namespace Kernel.Building
         {
             base.OnBind(runtime);
             SetIOAllowTags(_allowTags);
+            SetIOAllowItemIds(_allowItemIds);
+            SetIOFilterMode(_filterMode);
         }
 
         /// <summary>
