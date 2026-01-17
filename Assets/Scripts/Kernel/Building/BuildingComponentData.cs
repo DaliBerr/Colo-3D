@@ -273,15 +273,45 @@ namespace Kernel.Building
         public int Capacity;
         public int Priority;
         public List<string> AllowTags = new();
+        public List<string> AllowItemIds = new();
+        public StorageFilterMode FilterMode = StorageFilterMode.TagOnly;
 
         public long RuntimeId { get; private set; }
         public StorageContainer Container { get; private set; }
 
+        /// <summary>
+        /// summary: 创建储物行为（仅标签过滤模式）。
+        /// param: capacity 容量
+        /// param: allowTags 允许标签列表
+        /// param: priority 优先级
+        /// return: 无
+        /// </summary>
         public StorageBehaviour(int capacity, List<string> allowTags, int priority = 0)
+            : this(capacity, allowTags, null, StorageFilterMode.TagOnly, priority)
+        {
+        }
+
+        /// <summary>
+        /// summary: 创建储物行为并配置过滤规则。
+        /// param: capacity 容量
+        /// param: allowTags 允许标签列表
+        /// param: allowItemIds 允许物品ID列表
+        /// param: filterMode 过滤模式
+        /// param: priority 优先级
+        /// return: 无
+        /// </summary>
+        public StorageBehaviour(
+            int capacity,
+            List<string> allowTags,
+            List<string> allowItemIds,
+            StorageFilterMode filterMode,
+            int priority = 0)
         {
             Capacity = Mathf.Max(0, capacity);
             Priority = priority;
             if (allowTags != null) AllowTags = allowTags;
+            if (allowItemIds != null) AllowItemIds = allowItemIds;
+            FilterMode = filterMode;
         }
 
         /// <summary>
@@ -305,8 +335,8 @@ namespace Kernel.Building
                 r.CellPosition,
                 Capacity,
                 AllowTags,
-                null,
-                StorageFilterMode.TagOnly,
+                AllowItemIds,
+                FilterMode,
                 Priority);
             if (r.Category == BuildingCategory.Factory)
             {
@@ -395,7 +425,9 @@ namespace Kernel.Building
                     int cap = data.Params?["capacity"]?.Value<int>() ?? 0;
                     int pr = data.Params?["priority"]?.Value<int>() ?? 0;
                     var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
-                    return new StorageBehaviour(cap, tags, pr);
+                    var itemIds = data.Params?["allowItemIds"]?.ToObject<List<string>>() ?? new List<string>();
+                    StorageFilterMode filterMode = ResolveStorageFilterMode(data.Params?["filterMode"]);
+                    return new StorageBehaviour(cap, tags, itemIds, filterMode, pr);
                 }
                 case "producer":
                 {
@@ -438,6 +470,36 @@ namespace Kernel.Building
                     GameDebug.LogWarning($"[Building] 未知组件类型: {data.Type}");
                     return null;
             }
+        }
+
+        /// <summary>
+        /// summary: 解析储物过滤模式（默认 TagOnly）。
+        /// param: token 过滤模式参数
+        /// return: 解析后的过滤模式
+        /// </summary>
+        private static StorageFilterMode ResolveStorageFilterMode(JToken token)
+        {
+            if (token == null)
+            {
+                return StorageFilterMode.TagOnly;
+            }
+
+            if (token.Type == JTokenType.Integer)
+            {
+                int modeValue = token.Value<int>();
+                if (Enum.IsDefined(typeof(StorageFilterMode), modeValue))
+                {
+                    return (StorageFilterMode)modeValue;
+                }
+            }
+
+            string modeText = token.Value<string>();
+            if (!string.IsNullOrEmpty(modeText) && Enum.TryParse(modeText, true, out StorageFilterMode parsed))
+            {
+                return parsed;
+            }
+
+            return StorageFilterMode.TagOnly;
         }
     }
 
