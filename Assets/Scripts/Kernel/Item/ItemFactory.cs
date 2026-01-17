@@ -13,9 +13,13 @@ namespace Kernel.Item
 
     public static class ItemFactory
     {
-        // 仅创建数据实例
-        public static ItemInstance CreateData(string id, int stack = 1)
-            => ItemDatabase.CreateInstance(id, stack);
+        /// <summary>
+        /// 创建物品数据实例。
+        /// </summary>
+        /// <param name="id">物品 ID。</param>
+        /// <returns>物品实例。</returns>
+        public static ItemInstance CreateData(string id)
+            => ItemDatabase.CreateInstance(id);
 
         // 实例化到场景（如掉落物/装备展示）
         public static async Task<GameObject> SpawnToWorldAsync(string id, Vector3 pos, Quaternion rot)

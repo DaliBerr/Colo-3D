@@ -10,7 +10,7 @@ namespace Kernel.Item
             if (ItemDatabase.TryGet("generator_small", out var def))
             {
                 Log.Info(def.Name);       // 从 JSON 来的 name
-                Log.Info(def.MaxStack.ToString());      // from json
+                Log.Info(def.StorageOccupation.ToString());      // from json
                 Log.Info(def.Description); // from json
             }
         }
