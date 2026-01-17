@@ -126,7 +126,12 @@ namespace Kernel.Item
         }
         public static bool TryGet(string id, out ItemDef def) => Defs.TryGetValue(id, out def);
 
-        public static ItemInstance CreateInstance(string id, int stack = 1)
+        /// <summary>
+        /// 创建物品实例。
+        /// </summary>
+        /// <param name="id">物品 ID。</param>
+        /// <returns>物品实例。</returns>
+        public static ItemInstance CreateInstance(string id)
         {
             if (!Defs.TryGetValue(id, out var def))
             {
@@ -134,7 +139,7 @@ namespace Kernel.Item
                 Log.Error($"[Items] 未找到物品ID：{id}");
                 return null;
             }
-            var inst = new ItemInstance { Def = def, Stack = Mathf.Clamp(stack, 1, def.MaxStack) };
+            var inst = new ItemInstance { Def = def, Stack = 1 };
             // 绑定行为（如果需要把IItemBehaviour挂在物品实例上，可在ItemFactory中继续处理）
             return inst;
         }

@@ -28,20 +28,13 @@ namespace Kernel.Item
         public string PrefabAddress;
 
         // 基本属性
-        [JsonProperty("maxStack", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public int MaxStack = 1;
-
-        [JsonProperty("rarity", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public string Rarity = "common";
+        [JsonProperty("storageOccupation", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public int StorageOccupation = 1;
 
         // 自由扩展的数值属性（如重量、价格、耐久等）
         [JsonProperty("stats")]
         public Dictionary<string, float> Stats = new();
 
-        // 可分离（是否可以变成掉落物）
-        [JsonProperty("detachable")]
-        public bool Detachable = false;
-        
         // 标签/过滤
         [JsonProperty("tags")]
         public List<string> Tags = new();
