@@ -279,7 +279,7 @@ namespace Kernel.Storage
         /// param: itemId 物品ID
         /// return: 占用值
         /// </summary>
-        private int ResolveOccupation(string itemId)
+        public int ResolveOccupation(string itemId)
         {
             if (ItemCatalog == null) return 1;
             return ItemCatalog.TryGetStorageOccupation(itemId, out var occupation) && occupation > 0 ? occupation : 1;

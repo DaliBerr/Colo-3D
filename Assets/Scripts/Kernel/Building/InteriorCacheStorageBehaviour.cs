@@ -106,8 +106,8 @@ namespace Kernel.Building
             {
                 return false;
             }
-
-            return _container.TryAdd(itemId, count, itemTags, out added);
+            int storageOccupation = StorageSystem.Instance.ResolveOccupation(itemId);
+            return _container.TryAdd(itemId, count, storageOccupation, itemTags, out added);
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace Kernel.Building
             {
                 return false;
             }
-
-            return _container.TryRemove(itemId, count, out removed);
+            int storageOccupation = StorageSystem.Instance.ResolveOccupation(itemId);
+            return _container.TryRemove(itemId, count, storageOccupation, out removed);
         }
 
         /// <summary>

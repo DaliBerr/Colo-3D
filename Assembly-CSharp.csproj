@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Factory\SampleInteriorBuildingUI.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIScale.cs" />
     <Compile Include="Assets\Scripts\Lonize\UI\UIManager.cs" />
+    <Compile Include="Assets\Scripts\Kernel\World\ChunkMineralInfo.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\GridScaleFix.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\InteriorInterfaceBoxBehaviour.cs" />
     <Compile Include="Assets\SceneChoice.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Assets\Scripts\Colo\GameSaveController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Nav\PathfindingManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingManager.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Item\ItemMineralHelper.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\QuitConfirmPopupModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\SaveStorageInventory.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\DisplayModeDropDown.cs" />

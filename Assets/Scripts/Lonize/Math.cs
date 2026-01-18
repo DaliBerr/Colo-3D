@@ -36,23 +36,38 @@ namespace Lonize.Math
         }
 
         /// <summary>
-        /// 获取区块矿物用的确定性种子哈希。
+        /// 基于世界种子、区块坐标与矿物类型生成稳定的 Hash128（字节流方式，减少分配）。
         /// </summary>
         /// <param name="worldSeed">世界种子。</param>
-        /// <param name="chunkX">区块 X 坐标。</param>
-        /// <param name="chunkY">区块 Y 坐标。</param>
-        /// <param name="chunkZ">区块 Z 坐标。</param>
-        /// <param name="salt">额外盐值。</param>
-        /// <returns>Hash128 种子。</returns>
-        public static Hash128 GetChunkMineralSeed(int worldSeed, int chunkX, int chunkY, int chunkZ, string salt = "Mineral")
+        /// <param name="chunkX">区块X坐标。</param>
+        /// <param name="chunkY">区块Y坐标。</param>
+        /// <param name="mineralType">矿物类型字符串（建议使用稳定ID或DefName）。</param>
+        /// <returns>稳定的 Hash128（极低概率碰撞，但不保证数学唯一）。</returns>
+        public static Hash128 GetChunkMineralSeed(int worldSeed, int chunkX, int chunkY, string mineralType)
         {
-            return Hash128.Compute($"{worldSeed}_{chunkX}_{chunkY}_{chunkZ}_{salt}");
+            mineralType ??= string.Empty;
+
+            byte[] typeBytes = Encoding.UTF8.GetBytes(mineralType);
+            byte[] data = new byte[12 + typeBytes.Length];
+
+            WriteInt32LE(data, 0, worldSeed);
+            WriteInt32LE(data, 4, chunkX);
+            WriteInt32LE(data, 8, chunkY);
+            Buffer.BlockCopy(typeBytes, 0, data, 12, typeBytes.Length);
+
+            return Hash128.Compute(data);
         }
 
-        // public static int GenerateBuildingID(string BuildingID = "")
-        // {
-        //     return Hash128.Compute(System.Guid.NewGuid().ToString()).GetHashCode();
-        // }
+        private static void WriteInt32LE(byte[] buffer, int offset, int value)
+        {
+            unchecked
+            {
+                buffer[offset + 0] = (byte)(value);
+                buffer[offset + 1] = (byte)(value >> 8);
+                buffer[offset + 2] = (byte)(value >> 16);
+                buffer[offset + 3] = (byte)(value >> 24);
+            }
+        }
 
         public static class BezierRopeMath
         {
@@ -106,8 +121,9 @@ namespace Lonize.Math
 
                 return outPoints.Count;
             }
-
-            /// <summary>根据距离得到合理的采样段数。</summary>
+        
+        
+                    /// <summary>根据距离得到合理的采样段数。</summary>
             /// <param name="distance">两端点距离。</param>
             /// <param name="step">每多少距离增加一段。</param>
             /// <param name="min">最小段数。</param>
@@ -120,45 +136,8 @@ namespace Lonize.Math
                 if (seg > max) seg = max;
                 return seg;
             }
-
-            /// <summary>
-            /// 基于世界种子、区块坐标与矿物类型生成稳定的 Hash128（字节流方式，减少分配）。
-            /// </summary>
-            /// <param name="worldSeed">世界种子。</param>
-            /// <param name="chunkX">区块X坐标。</param>
-            /// <param name="chunkY">区块Y坐标。</param>
-            /// <param name="mineralType">矿物类型字符串（建议使用稳定ID或DefName）。</param>
-            /// <returns>稳定的 Hash128（极低概率碰撞，但不保证数学唯一）。</returns>
-            public static Hash128 GetMineralSeed(int worldSeed, int chunkX, int chunkY, string mineralType)
-            {
-                mineralType ??= string.Empty;
-
-                byte[] typeBytes = Encoding.UTF8.GetBytes(mineralType);
-                byte[] data = new byte[12 + typeBytes.Length];
-
-                WriteInt32LE(data, 0, worldSeed);
-                WriteInt32LE(data, 4, chunkX);
-                WriteInt32LE(data, 8, chunkY);
-                Buffer.BlockCopy(typeBytes, 0, data, 12, typeBytes.Length);
-
-                return Hash128.Compute(data);
-            }
-
-            private static void WriteInt32LE(byte[] buffer, int offset, int value)
-            {
-                unchecked
-                {
-                    buffer[offset + 0] = (byte)(value);
-                    buffer[offset + 1] = (byte)(value >> 8);
-                    buffer[offset + 2] = (byte)(value >> 16);
-                    buffer[offset + 3] = (byte)(value >> 24);
-                }
-            }
-        
-            
-        
         }
-        
+
     }
 
 

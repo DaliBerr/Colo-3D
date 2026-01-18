@@ -330,8 +330,9 @@ namespace Kernel.Building
             {
                 return false;
             }
-
-            if (!container.TryAdd(itemId, allowed, itemTags, out added))
+            int storageOccupation = StorageSystem.Instance.ResolveOccupation(itemId);
+            // allowed = Math.Min(allowed, container.GetFree() / storageOccupation);
+            if (!container.TryAdd(itemId, allowed, storageOccupation, itemTags, out added))
             {
                 return false;
             }
@@ -369,8 +370,8 @@ namespace Kernel.Building
             {
                 return false;
             }
-
-            if (!container.TryRemove(itemId, allowed, out removed))
+            int storageOccupation = StorageSystem.Instance.ResolveOccupation(itemId);
+            if (!container.TryRemove(itemId, allowed, storageOccupation, out removed))
             {
                 return false;
             }

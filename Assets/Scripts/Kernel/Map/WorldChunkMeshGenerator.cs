@@ -298,7 +298,7 @@ namespace Kernel.World
                 }
 
                 Vector2Int chunkCoord = new Vector2Int(cx, ry);
-                Hash128 mineralSeed = MathUtils.GetChunkMineralSeed(worldSeed, cx, ry, 0, "Mineral");
+                Hash128 mineralSeed = MathUtils.GetChunkMineralSeed(worldSeed, cx, ry, "Mineral");
                 ChunkMineralInfo mineralInfo = BuildChunkMineralInfo(chunkCoord, mineralSeed);
                 _chunkMineralInfos[chunkCoord] = mineralInfo;
 
@@ -492,8 +492,8 @@ namespace Kernel.World
             foreach (var t in list)
             {
 #if UNITY_EDITOR
-                if (!Application.isPlaying) Object.DestroyImmediate(t.gameObject);
-                else Object.Destroy(t.gameObject);
+                if (!Application.isPlaying) UnityEngine.Object.DestroyImmediate(t.gameObject);
+                else Destroy(t.gameObject);
 #else
                 Object.Destroy(t.gameObject);
 #endif
