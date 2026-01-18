@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
+using Kernel.Item;
 using Lonize;
 using Lonize.EventSystem;
 using Lonize.Logging;
+using Lonize.Math;
 using Lonize.Scribe;
 using UnityEngine;
 
@@ -82,6 +86,7 @@ namespace Kernel.World
         private static bool _pendingRegenerate;
 
         private static MapInfo _pendingMapInfo;
+        private readonly Dictionary<Vector2Int, ChunkMineralInfo> _chunkMineralInfos = new();
         private void OnEnable()
         {
             // 订阅一次主场景初始化事件
@@ -226,6 +231,7 @@ namespace Kernel.World
                 worldSeed = System.Environment.TickCount;
 
             ClearWorld();
+            _chunkMineralInfos.Clear();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -291,6 +297,11 @@ namespace Kernel.World
                     ApplyBiomeOverrides(gen, isMountain ? mountain : plain);
                 }
 
+                Vector2Int chunkCoord = new Vector2Int(cx, ry);
+                Hash128 mineralSeed = MathUtils.GetChunkMineralSeed(worldSeed, cx, ry, 0, "Mineral");
+                ChunkMineralInfo mineralInfo = BuildChunkMineralInfo(chunkCoord, mineralSeed);
+                _chunkMineralInfos[chunkCoord] = mineralInfo;
+
                 gen.GenerateChunk();
             }
             // var chunks = GetComponentsInChildren<GameObject>();
@@ -304,6 +315,136 @@ namespace Kernel.World
             
             Lonize.EventSystem.EventManager.eventBus.Publish(new EventList.MapReady(true));
             return true;
+        }
+
+        /// <summary>
+        /// 获取区块矿物信息。
+        /// </summary>
+        /// <param name="chunkCoord">区块坐标。</param>
+        /// <param name="info">矿物信息。</param>
+        /// <returns>是否存在。</returns>
+        public bool TryGetChunkMineralInfo(Vector2Int chunkCoord, out ChunkMineralInfo info)
+        {
+            return _chunkMineralInfos.TryGetValue(chunkCoord, out info);
+        }
+
+        /// <summary>
+        /// 构建区块矿物信息。
+        /// </summary>
+        /// <param name="chunkCoord">区块坐标。</param>
+        /// <param name="seed">区块矿物种子。</param>
+        /// <returns>矿物信息。</returns>
+        private static ChunkMineralInfo BuildChunkMineralInfo(Vector2Int chunkCoord, Hash128 seed)
+        {
+            string mineralItemId = GetChunkMineralItemId(chunkCoord, "sulfide");
+            var info = new ChunkMineralInfo
+            {
+                ChunkCoord = chunkCoord,
+                MineralComposition = new Dictionary<string, float>(),
+                ProcessingInfo = new MineralProcessingData()
+            };
+
+            if (!ItemDatabase.TryGet(mineralItemId, out var def) || def == null)
+            {
+                return info;
+            }
+
+            var rng = CreateDeterministicRandom(seed);
+            info.MineralComposition = BuildMineralComposition(def.MineralComposition, rng);
+            info.ProcessingInfo = BuildProcessingInfo(def.ProcessingInfo, rng);
+            return info;
+        }
+
+        /// <summary>
+        /// 获取区块对应矿物物品ID。
+        /// </summary>
+        /// <param name="chunkCoord">区块坐标。</param>
+        /// <param name="mineralType">矿物类型。</param>
+        /// <returns>矿物物品ID。</returns>
+        private static string GetChunkMineralItemId(Vector2Int chunkCoord, string mineralType)
+        {
+            return "raw_ore";
+        }
+
+        /// <summary>
+        /// 基于范围生成矿物成分。
+        /// </summary>
+        /// <param name="ranges">成分范围。</param>
+        /// <param name="rng">随机源。</param>
+        /// <returns>成分结果。</returns>
+        private static Dictionary<string, float> BuildMineralComposition(
+            Dictionary<string, FloatRange> ranges,
+            System.Random rng)
+        {
+            var result = new Dictionary<string, float>();
+            if (ranges == null || ranges.Count == 0)
+            {
+                result["Stone"] = 1f;
+                return result;
+            }
+
+            float sum = 0f;
+            foreach (var entry in ranges)
+            {
+                if (string.Equals(entry.Key, "Stone", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                float value = SampleRange(entry.Value, rng);
+                result[entry.Key] = value;
+                sum += value;
+            }
+
+            float stone = Mathf.Clamp01(1f - sum);
+            result["Stone"] = stone;
+            return result;
+        }
+
+        /// <summary>
+        /// 基于范围生成加工属性。
+        /// </summary>
+        /// <param name="info">加工属性范围。</param>
+        /// <param name="rng">随机源。</param>
+        /// <returns>加工属性数据。</returns>
+        private static MineralProcessingData BuildProcessingInfo(MineralProcessingInfo info, System.Random rng)
+        {
+            if (info == null)
+            {
+                return new MineralProcessingData();
+            }
+
+            return new MineralProcessingData
+            {
+                Magnetism = SampleRange(info.Magnetism, rng),
+                MineralType = info.MineralType,
+                ParticleSize = SampleRange(info.ParticleSize, rng),
+                Floatability = SampleRange(info.Floatability, rng),
+                Leachability = SampleRange(info.Leachability, rng),
+                AssociatedMineralId = info.AssociatedMineralId
+            };
+        }
+
+        /// <summary>
+        /// 生成确定性随机源。
+        /// </summary>
+        /// <param name="seed">Hash128 种子。</param>
+        /// <returns>随机源。</returns>
+        private static System.Random CreateDeterministicRandom(Hash128 seed)
+        {
+            return new System.Random(seed.GetHashCode());
+        }
+
+        /// <summary>
+        /// 根据范围采样随机值。
+        /// </summary>
+        /// <param name="range">范围数据。</param>
+        /// <param name="rng">随机源。</param>
+        /// <returns>采样值。</returns>
+        private static float SampleRange(FloatRange range, System.Random rng)
+        {
+            double t = rng.NextDouble();
+            return (float)(range.Min + (range.Max - range.Min) * t);
         }
         /// <summary>
         /// 将 World 的 BiomeOverrides 转换为 ChunkMeshGenerator.BiomeParam。

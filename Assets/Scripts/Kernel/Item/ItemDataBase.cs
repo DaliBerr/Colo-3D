@@ -123,6 +123,15 @@ namespace Kernel.Item
                     }
                 }
             }
+
+            foreach (var def in Defs.Values)
+            {
+                if (!ItemValidation.Validate(def, out var msg, true))
+                {
+                    GameDebug.LogError($"[Items] 伴生矿物校验失败（物品ID：{def.Id}）：\n{msg}");
+                    Log.Error($"[Items] 伴生矿物校验失败（物品ID：{def.Id}）：\n{msg}");
+                }
+            }
         }
         public static bool TryGet(string id, out ItemDef def) => Defs.TryGetValue(id, out def);
 

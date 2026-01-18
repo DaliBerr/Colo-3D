@@ -33,6 +33,20 @@ namespace Lonize.Math
             return (norm > 0f) ? sum / norm : 0f;
         }
 
+        /// <summary>
+        /// 获取区块矿物用的确定性种子哈希。
+        /// </summary>
+        /// <param name="worldSeed">世界种子。</param>
+        /// <param name="chunkX">区块 X 坐标。</param>
+        /// <param name="chunkY">区块 Y 坐标。</param>
+        /// <param name="chunkZ">区块 Z 坐标。</param>
+        /// <param name="salt">额外盐值。</param>
+        /// <returns>Hash128 种子。</returns>
+        public static Hash128 GetChunkMineralSeed(int worldSeed, int chunkX, int chunkY, int chunkZ, string salt = "Mineral")
+        {
+            return Hash128.Compute($"{worldSeed}_{chunkX}_{chunkY}_{chunkZ}_{salt}");
+        }
+
         // public static int GenerateBuildingID(string BuildingID = "")
         // {
         //     return Hash128.Compute(System.Guid.NewGuid().ToString()).GetHashCode();
