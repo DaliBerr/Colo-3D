@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Lonize;
 using Lonize.Logging;
 using UnityEngine;
 
@@ -45,14 +46,14 @@ namespace Kernel.Audio
         /// <summary>
         /// 内部随机数生成器，用于随机播放模式。
         /// </summary>
-        private System.Random _random;
+        private Random _random;
 
         /// <summary>
         /// Awake生命周期回调，初始化随机数生成器。
         /// </summary>
         private void Awake()
         {
-            _random = new System.Random();
+            _random = new Random();
             DontDestroyOnLoad(gameObject);
         }
 

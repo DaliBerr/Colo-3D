@@ -6,7 +6,7 @@ namespace Lonize
     {
         /// <summary>
         /// 稳定的伪随机数生成器（PCG32）。
-        /// 用于替代 System.Random，以获得跨版本/跨后端更可控的确定性输出。
+        /// 用于替代标准库随机数，以获得跨版本/跨后端更可控的确定性输出。
         /// </summary>
 
         private ulong _state;
