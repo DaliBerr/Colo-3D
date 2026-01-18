@@ -1,0 +1,19 @@
+{
+    "id": "raw_ore",
+    "name": "矿物原矿",
+    "description": "未经处理的矿物原料。",
+    "icon": "icons/raw_ore",
+    "prefab": "prefabs/raw_ore",
+    "storageOccupation": 5,
+    "mineralComposition": {
+        "Zinc": { "min": 0.08, "max": 0.12 }
+    },
+    "processingInfo": {
+        "magnetism": { "min": 0.15, "max": 0.25 },
+        "mineralType": "sulfide",
+        "particleSize": { "min": 0.55, "max": 0.65 },
+        "floatability": { "min": 0.35, "max": 0.45 },
+        "leachability": { "min": 0.25, "max": 0.35 },
+        "associatedMineralId": "sulfur_ore"
+    }
+}
