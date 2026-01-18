@@ -178,13 +178,13 @@
 
 //         private void PrepareOffsets()
 //         {
-//             var rng = new System.Random(seed);
+//             var rng = new Lonize.Random(seed);
 //             _offElev = new Vector2(RandLarge(rng), RandLarge(rng));
 //             _offRough = new Vector2(RandLarge(rng), RandLarge(rng));
 //             _offWarp = new Vector2(RandLarge(rng), RandLarge(rng));
 //         }
 
-//         private static float RandLarge(System.Random rng)
+//         private static float RandLarge(Lonize.Random rng)
 //         {
 //             // 在较大的坐标偏移空间里采样，避免与原点相关的 Perlin 伪周期
 //             return (float)(rng.NextDouble() * 100000.0);

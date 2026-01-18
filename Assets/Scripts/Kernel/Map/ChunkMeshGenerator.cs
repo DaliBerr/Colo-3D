@@ -795,7 +795,7 @@ namespace Kernel.World
         /// <returns>无。</returns>
         private void PrepareOffsetsFromLocalSeed()
         {
-            var rng = new System.Random(seed);
+            var rng = new Lonize.Random(seed);
             _offElev = new Vector2(RandLarge(rng), RandLarge(rng));
             _offRough = new Vector2(RandLarge(rng), RandLarge(rng));
             _offWarp = new Vector2(RandLarge(rng), RandLarge(rng));
@@ -806,7 +806,7 @@ namespace Kernel.World
         /// </summary>
         /// <param name="rng">随机源。</param>
         /// <returns>偏移值。</returns>
-        private static float RandLarge(System.Random rng)
+        private static float RandLarge(Lonize.Random rng)
         {
             return (float)(rng.NextDouble() * 100000.0);
         }

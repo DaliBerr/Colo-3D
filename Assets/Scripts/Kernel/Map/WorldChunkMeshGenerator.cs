@@ -379,7 +379,7 @@ namespace Kernel.World
         /// <returns>成分结果。</returns>
         private static Dictionary<string, float> BuildMineralComposition(
             Dictionary<string, FloatRange> ranges,
-            System.Random rng)
+            Lonize.Random rng)
         {
             var result = new Dictionary<string, float>();
             if (ranges == null || ranges.Count == 0)
@@ -412,7 +412,7 @@ namespace Kernel.World
         /// <param name="info">加工属性范围。</param>
         /// <param name="rng">随机源。</param>
         /// <returns>加工属性数据。</returns>
-        private static MineralProcessingData BuildProcessingInfo(MineralProcessingInfo info, System.Random rng)
+        private static MineralProcessingData BuildProcessingInfo(MineralProcessingInfo info, Lonize.Random rng)
         {
             if (info == null)
             {
@@ -435,9 +435,9 @@ namespace Kernel.World
         /// </summary>
         /// <param name="seed">Hash128 种子。</param>
         /// <returns>随机源。</returns>
-        private static System.Random CreateDeterministicRandom(int seed)
+        private static Lonize.Random CreateDeterministicRandom(int seed)
         {
-            return new System.Random(seed);
+            return new Lonize.Random(seed);
         }
 
         /// <summary>
@@ -446,7 +446,7 @@ namespace Kernel.World
         /// <param name="range">范围数据。</param>
         /// <param name="rng">随机源。</param>
         /// <returns>采样值。</returns>
-        private static float SampleRange(FloatRange range, System.Random rng)
+        private static float SampleRange(FloatRange range, Lonize.Random rng)
         {
             double t = rng.NextDouble();
             return (float)(range.Min + (range.Max - range.Min) * t);
@@ -514,7 +514,7 @@ namespace Kernel.World
         /// <returns>三个 offset。</returns>
         private static (Vector2 offElev, Vector2 offRough, Vector2 offWarp) BuildGlobalOffsets(int seed)
         {
-            var rng = new System.Random(seed);
+            var rng = new Lonize.Random(seed);
             Vector2 offElev = new Vector2(RandLarge(rng), RandLarge(rng));
             Vector2 offRough = new Vector2(RandLarge(rng), RandLarge(rng));
             Vector2 offWarp = new Vector2(RandLarge(rng), RandLarge(rng));
@@ -526,7 +526,7 @@ namespace Kernel.World
         /// </summary>
         /// <param name="rng">随机源。</param>
         /// <returns>偏移值。</returns>
-        private static float RandLarge(System.Random rng) => (float)(rng.NextDouble() * 100000.0);
+        private static float RandLarge(Lonize.Random rng) => (float)(rng.NextDouble() * 100000.0);
 
         /// <summary>
         /// 判断该 chunk 是否山地（仅用于 per-chunk 覆写）。
