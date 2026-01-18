@@ -213,6 +213,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\ResolutionDropDown.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Slider\MasterVolumeSlider.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\ItemDefCatalog.cs" />
+    <Compile Include="Assets\Scripts\Lonize\Random.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
