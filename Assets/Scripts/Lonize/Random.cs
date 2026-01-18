@@ -2,7 +2,7 @@ using System;
 
 namespace Lonize
 {
-    public sealed class Random
+    public class Random
     {
         /// <summary>
         /// 稳定的伪随机数生成器（PCG32）。
