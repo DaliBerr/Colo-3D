@@ -71,13 +71,17 @@ namespace Lonize
         /// <summary>
         /// 生成一个随机整数（范围：[0, exclusiveMax)）。
         /// </summary>
-        /// <param name="exclusiveMax">上界（不包含），必须大于 0。</param>
+        /// <param name="exclusiveMax">上界（不包含），必须大于或等于 0。</param>
         /// <returns>随机 int。</returns>
+        /// <exception cref="ArgumentOutOfRangeException">当 <paramref name="exclusiveMax"/> 小于 0 时抛出。</exception>
         public int Next(int exclusiveMax)
         {
             unchecked
             {
-                if (exclusiveMax <= 0) return 0;
+                if (exclusiveMax < 0)
+                    throw new ArgumentOutOfRangeException(nameof(exclusiveMax), "上界必须大于或等于 0。");
+                if (exclusiveMax == 0)
+                    return 0;
 
                 uint bound = (uint)exclusiveMax;
 
@@ -95,14 +99,18 @@ namespace Lonize
         /// <summary>
         /// 生成一个随机整数（范围：[minInclusive, maxExclusive)）。
         /// </summary>
-        /// <param name="minInclusive">下界（包含）。</param>
-        /// <param name="maxExclusive">上界（不包含）。</param>
+        /// <param name="minInclusive">下界（包含），必须小于或等于 <paramref name="maxExclusive"/>。</param>
+        /// <param name="maxExclusive">上界（不包含），必须大于或等于 <paramref name="minInclusive"/>。</param>
         /// <returns>随机 int。</returns>
+        /// <exception cref="ArgumentOutOfRangeException">当 <paramref name="minInclusive"/> 大于 <paramref name="maxExclusive"/> 时抛出。</exception>
         public int Next(int minInclusive, int maxExclusive)
         {
             unchecked
             {
-                if (maxExclusive <= minInclusive) return minInclusive;
+                if (minInclusive > maxExclusive)
+                    throw new ArgumentOutOfRangeException(nameof(minInclusive), "下界不能大于上界。");
+                if (minInclusive == maxExclusive)
+                    return minInclusive;
                 int range = maxExclusive - minInclusive;
                 return minInclusive + Next(range);
             }
