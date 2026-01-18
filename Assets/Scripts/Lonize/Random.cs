@@ -111,8 +111,15 @@ namespace Lonize
                     throw new ArgumentOutOfRangeException(nameof(minInclusive), "下界不能大于上界。");
                 if (minInclusive == maxExclusive)
                     return minInclusive;
-                int range = maxExclusive - minInclusive;
-                return minInclusive + Next(range);
+                // 使用 long 计算范围，避免 min/max 差值在 int 内溢出。
+                long range = (long)maxExclusive - minInclusive;
+                if (range <= int.MaxValue)
+                {
+                    return minInclusive + Next((int)range);
+                }
+
+                // 范围超出 int 时改用 Sample/NextDouble，避免 int 溢出造成的偏差。
+                return (int)((long)(Sample() * range) + minInclusive);
             }
         }
 
