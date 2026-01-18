@@ -298,7 +298,7 @@ namespace Kernel.World
                 }
 
                 Vector2Int chunkCoord = new Vector2Int(cx, ry);
-                Hash128 mineralSeed = MathUtils.GetChunkMineralSeed(worldSeed, cx, ry, "Mineral");
+                int mineralSeed = MathUtils.GetChunkMineralSeed(worldSeed, cx, ry, GetChunkMineralItemId(chunkCoord, "sulfide"));
                 ChunkMineralInfo mineralInfo = BuildChunkMineralInfo(chunkCoord, mineralSeed);
                 _chunkMineralInfos[chunkCoord] = mineralInfo;
 
@@ -334,9 +334,9 @@ namespace Kernel.World
         /// <param name="chunkCoord">区块坐标。</param>
         /// <param name="seed">区块矿物种子。</param>
         /// <returns>矿物信息。</returns>
-        private static ChunkMineralInfo BuildChunkMineralInfo(Vector2Int chunkCoord, Hash128 seed)
+        private static ChunkMineralInfo BuildChunkMineralInfo(Vector2Int chunkCoord, int seed)
         {
-            string mineralItemId = GetChunkMineralItemId(chunkCoord, "sulfide");
+            string mineralItemId = GetChunkMineralItemDefId(chunkCoord, "sulfide");
             var info = new ChunkMineralInfo
             {
                 ChunkCoord = chunkCoord,
@@ -361,9 +361,14 @@ namespace Kernel.World
         /// <param name="chunkCoord">区块坐标。</param>
         /// <param name="mineralType">矿物类型。</param>
         /// <returns>矿物物品ID。</returns>
-        private static string GetChunkMineralItemId(Vector2Int chunkCoord, string mineralType)
+        private static int GetChunkMineralItemId(Vector2Int chunkCoord, string mineralType)
         {
-            return "raw_ore";
+            return Minerals.GetMineralItemId(MineralType.raw_ore);
+        }
+
+        private static string GetChunkMineralItemDefId(Vector2Int chunkCoord, string mineralType)
+        {
+            return Minerals.GetMineralDefName(MineralType.raw_ore);
         }
 
         /// <summary>
@@ -430,9 +435,9 @@ namespace Kernel.World
         /// </summary>
         /// <param name="seed">Hash128 种子。</param>
         /// <returns>随机源。</returns>
-        private static System.Random CreateDeterministicRandom(Hash128 seed)
+        private static System.Random CreateDeterministicRandom(int seed)
         {
-            return new System.Random(seed.GetHashCode());
+            return new System.Random(seed);
         }
 
         /// <summary>

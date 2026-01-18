@@ -36,38 +36,34 @@ namespace Lonize.Math
         }
 
         /// <summary>
-        /// 基于世界种子、区块坐标与矿物类型生成稳定的 Hash128（字节流方式，减少分配）。
+        /// 基于世界种子、区块坐标与矿物类型生成Seed。
         /// </summary>
         /// <param name="worldSeed">世界种子。</param>
         /// <param name="chunkX">区块X坐标。</param>
         /// <param name="chunkY">区块Y坐标。</param>
         /// <param name="mineralType">矿物类型字符串（建议使用稳定ID或DefName）。</param>
-        /// <returns>稳定的 Hash128（极低概率碰撞，但不保证数学唯一）。</returns>
-        public static Hash128 GetChunkMineralSeed(int worldSeed, int chunkX, int chunkY, string mineralType)
-        {
-            mineralType ??= string.Empty;
-
-            byte[] typeBytes = Encoding.UTF8.GetBytes(mineralType);
-            byte[] data = new byte[12 + typeBytes.Length];
-
-            WriteInt32LE(data, 0, worldSeed);
-            WriteInt32LE(data, 4, chunkX);
-            WriteInt32LE(data, 8, chunkY);
-            Buffer.BlockCopy(typeBytes, 0, data, 12, typeBytes.Length);
-
-            return Hash128.Compute(data);
-        }
-
-        private static void WriteInt32LE(byte[] buffer, int offset, int value)
+        /// <returns> 随机数seed </returns>
+        public static int GetChunkMineralSeed(int worldSeed, int chunkX, int chunkY, int mineralId)
         {
             unchecked
             {
-                buffer[offset + 0] = (byte)(value);
-                buffer[offset + 1] = (byte)(value >> 8);
-                buffer[offset + 2] = (byte)(value >> 16);
-                buffer[offset + 3] = (byte)(value >> 24);
+                // 先拼一个 32-bit 状态
+                uint x = (uint)worldSeed;
+                x ^= (uint)chunkX * 0x85EBCA6Bu;
+                x ^= (uint)chunkY * 0xC2B2AE35u;
+                x ^= (uint)mineralId * 0x27D4EB2Fu;
+
+                // avalanche 混合（类似 Murmur finalizer）
+                x ^= x >> 16;
+                x *= 0x7FEB352Du;
+                x ^= x >> 15;
+                x *= 0x846CA68Bu;
+                x ^= x >> 16;
+
+                return (int)x;
             }
         }
+
 
         public static class BezierRopeMath
         {

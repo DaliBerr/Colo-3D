@@ -82,6 +82,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\FactoryUI.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingDestroyingController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Audio\AudioManager.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Item\Minerals.cs" />
     <Compile Include="Assets\Scripts\Lonize\Event\Events.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\PopupModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\InteriorCacheStorageBehaviour.cs" />

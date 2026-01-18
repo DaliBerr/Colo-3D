@@ -102,6 +102,11 @@ namespace Kernel.World
             {
                 GameDebug.Log($"[ChunkSelection] Click cell=({cellCoord.x},{cellCoord.y}) chunk=({chunkCoord.x},{chunkCoord.y}) mineralCount={mineralInfo.MineralComposition?.Count ?? 0}");
                 Log.Info($"[ChunkSelectionController] Click cell=({cellCoord.x},{cellCoord.y}) chunk=({chunkCoord.x},{chunkCoord.y}) mineralCount={mineralInfo.MineralComposition?.Count ?? 0}");
+                foreach (var kvp in mineralInfo.MineralComposition)
+                {
+                    GameDebug.Log($"    Mineral '{kvp.Key}': {kvp.Value}");
+                    // Log.Info($"    Mineral '{kvp.Key}': {kvp.Value}");
+                }
                 return;
             }
 
