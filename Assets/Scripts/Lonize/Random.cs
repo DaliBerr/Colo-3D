@@ -114,8 +114,7 @@ namespace Lonize
         /// <returns>随机 float。</returns>
         public float NextFloat01()
         {
-            // 用 24 位尾数生成 float，分布足够细
-            return (NextUInt() >> 8) * (1.0f / 16777216.0f);
+            return (float)Sample();
         }
 
         /// <summary>
@@ -123,6 +122,49 @@ namespace Lonize
         /// </summary>
         /// <returns>随机 double。</returns>
         public double NextDouble01()
+        {
+            return Sample();
+        }
+
+        /// <summary>
+        /// 填充随机字节到指定数组中。
+        /// </summary>
+        /// <param name="buffer">接收随机字节的数组。</param>
+        public virtual void NextBytes(byte[] buffer)
+        {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+            FillBytes(buffer.AsSpan());
+#else
+            FillBytes(buffer, 0, buffer.Length);
+#endif
+        }
+
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+        /// <summary>
+        /// 填充随机字节到指定缓冲区中。
+        /// </summary>
+        /// <param name="buffer">接收随机字节的缓冲区。</param>
+        public virtual void NextBytes(Span<byte> buffer)
+        {
+            FillBytes(buffer);
+        }
+#endif
+
+        /// <summary>
+        /// 生成一个随机双精度数（范围：[0, 1)）。
+        /// </summary>
+        /// <returns>随机 double。</returns>
+        public virtual double NextDouble()
+        {
+            return Sample();
+        }
+
+        /// <summary>
+        /// 生成一个随机双精度采样值（范围：[0, 1)）。
+        /// </summary>
+        /// <returns>采样 double。</returns>
+        protected virtual double Sample()
         {
             unchecked
             {
@@ -134,6 +176,37 @@ namespace Lonize
                 return r * (1.0 / (1UL << 53));
             }
         }
+
+        private void FillBytes(byte[] buffer, int offset, int count)
+        {
+            int index = offset;
+            int end = offset + count;
+            while (index < end)
+            {
+                uint value = NextUInt();
+                for (int i = 0; i < 4 && index < end; i++)
+                {
+                    buffer[index++] = (byte)value;
+                    value >>= 8;
+                }
+            }
+        }
+
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+        private void FillBytes(Span<byte> buffer)
+        {
+            int index = 0;
+            while (index < buffer.Length)
+            {
+                uint value = NextUInt();
+                for (int i = 0; i < 4 && index < buffer.Length; i++)
+                {
+                    buffer[index++] = (byte)value;
+                    value >>= 8;
+                }
+            }
+        }
+#endif
 
         /// <summary>
         /// 生成一个随机布尔值。
