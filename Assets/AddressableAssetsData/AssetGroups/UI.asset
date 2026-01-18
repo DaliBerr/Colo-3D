@@ -84,7 +84,8 @@ MonoBehaviour:
   - m_GUID: bca90bd2772e9a040b181c5924f3230c
     m_Address: Prefabs/UI/PopupPrefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c6fe48fa90f8e64439b5d4ab3458f881
     m_Address: Prefabs/UI/PauseMenuUI

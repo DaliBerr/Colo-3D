@@ -195,6 +195,7 @@
     <Compile Include="Assets\Scripts\Kernel\Save\GlobalSeeting\OptionManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CameraMainControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\InteriorStorageBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Map\ChunkSelectionController.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\LocalizationJsonUtility.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\UIRopeGraphic.cs" />
     <Compile Include="Assets\Scripts\Kernel\Camera\CamraStartPageControl.cs" />

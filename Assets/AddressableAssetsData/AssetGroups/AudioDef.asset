@@ -15,14 +15,14 @@ MonoBehaviour:
   m_GroupName: AudioDef
   m_GUID: acf730d75ab406445bbc3313c4ce2218
   m_SerializeEntries:
-  - m_GUID: 505aa45ee17840b40b01160549179b30
+  - m_GUID: 06369fa4e6afdd74c8cf1600f1ed922b
     m_Address: Defs/Audio/bgm_test
     m_ReadOnly: 0
     m_SerializedLabels:
     - AudioDef
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d230be531b1f6ff41baed74c83dc7f51
-    m_Address: Assets/Defs/Audio/bgm_main.json
+  - m_GUID: 42ce2b8c6f18cbf478f49b4582773817
+    m_Address: Defs/Audio/bgm_main
     m_ReadOnly: 0
     m_SerializedLabels:
     - AudioDef

@@ -15,8 +15,8 @@ MonoBehaviour:
   m_GroupName: ItemDef
   m_GUID: 289495f3c9023a54fab7812c8df21b4c
   m_SerializeEntries:
-  - m_GUID: 9ef1011c7cc40014088db276e3db72c0
-    m_Address: Defs/Items/iorn_sword
+  - m_GUID: 67ab98c91d9d4155b144dab0f0d099b7
+    m_Address: Defs/Items/raw_ore
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemDef
