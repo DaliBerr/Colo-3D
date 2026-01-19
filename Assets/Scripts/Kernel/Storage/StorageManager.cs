@@ -301,7 +301,7 @@ namespace Kernel.Storage
             if (!TryGet(reservation.ContainerId, out var c))
                 return false;
 
-            if (!c.CancelReserved(reservation.Count, reservation.Occupation))
+            if (!c.CancelReserved(reservation.ItemId, reservation.Count, reservation.Occupation))
                 return false;
 
             _reservations.Remove(reservationId);
