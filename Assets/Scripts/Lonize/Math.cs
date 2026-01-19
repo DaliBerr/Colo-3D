@@ -63,8 +63,14 @@ namespace Lonize.Math
                 return (int)x;
             }
         }
-
-
+// #if RSP_WORKS
+// #error RSP_WORKS is defined (rsp loaded)
+// #endif
+        // public static int test()
+        // {
+        //     var a = new System.Random();
+        //     return a.Next();
+        // }
         public static class BezierRopeMath
         {
             /// <summary>计算二次贝塞尔曲线上 t 点坐标。</summary>
