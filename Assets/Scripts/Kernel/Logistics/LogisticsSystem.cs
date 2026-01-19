@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Kernel.Pool;
 using Kernel.Storage;
 using Lonize.Tick;
 
@@ -8,18 +9,18 @@ namespace Kernel.Logistics
     /// <summary>
     /// summary: 运输指令。
     /// </summary>
-    public struct TransitOrder
+    public sealed class TransitOrder
     {
-        public long ReservationId { get; }
-        public long ContainerId { get; }
-        public string ItemId { get; }
-        public int Count { get; }
-        public Vector2Int FromCell { get; }
-        public float EtaSeconds { get; }
+        public long ReservationId { get; private set; }
+        public long ContainerId { get; private set; }
+        public string ItemId { get; private set; }
+        public int Count { get; private set; }
+        public Vector2Int FromCell { get; private set; }
+        public float EtaSeconds { get; private set; }
         public float RemainingSeconds { get; set; }
 
         /// <summary>
-        /// summary: 构造运输指令。
+        /// summary: 初始化运输指令。
         /// param: reservationId 预占ID
         /// param: containerId 容器ID
         /// param: itemId 物品ID
@@ -29,7 +30,7 @@ namespace Kernel.Logistics
         /// param: remainingSeconds 剩余秒数
         /// return: 无
         /// </summary>
-        public TransitOrder(
+        public void Initialize(
             long reservationId,
             long containerId,
             string itemId,
@@ -46,6 +47,21 @@ namespace Kernel.Logistics
             EtaSeconds = etaSeconds;
             RemainingSeconds = remainingSeconds;
         }
+
+        /// <summary>
+        /// summary: 重置运输指令。
+        /// return: 无
+        /// </summary>
+        public void Reset()
+        {
+            ReservationId = 0;
+            ContainerId = 0;
+            ItemId = null;
+            Count = 0;
+            FromCell = default;
+            EtaSeconds = 0f;
+            RemainingSeconds = 0f;
+        }
     }
 
     /// <summary>
@@ -56,6 +72,7 @@ namespace Kernel.Logistics
         private static readonly LogisticsSystem _instance = new LogisticsSystem();
         public static LogisticsSystem Instance => _instance;
 
+        private readonly DataPool<TransitOrder> _orderPool = new(() => new TransitOrder(), order => order.Reset());
         private readonly List<TransitOrder> _queue = new();
 
         private LogisticsSystem() { }
@@ -76,7 +93,8 @@ namespace Kernel.Logistics
                 return false;
             }
 
-            var order = new TransitOrder(
+            var order = _orderPool.Get();
+            order.Initialize(
                 reservation.ReservationId,
                 reservation.ContainerId,
                 reservation.ItemId,
@@ -119,6 +137,7 @@ namespace Kernel.Logistics
                 }
 
                 _queue.RemoveAt(i);
+                _orderPool.Release(order);
             }
         }
 
