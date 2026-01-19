@@ -468,6 +468,13 @@ namespace Kernel.Building
                     var tags = data.Params?["allowTags"]?.ToObject<List<string>>() ?? new List<string>();
                     return new InteriorCacheStorageBehaviour(cap, tags);
                 }
+                case "miner":
+                {
+                    string outputItemId = data.Params?["outputItemId"]?.Value<string>() ?? "raw_ore";
+                    int outputCount = data.Params?["outputCount"]?.Value<int>() ?? 1;
+                    int tickInterval = data.Params?["tickInterval"]?.Value<int>() ?? 60;
+                    return new MinerBehaviour(outputItemId, outputCount, tickInterval);
+                }
                 default:
                     GameDebug.LogWarning($"[Building] 未知组件类型: {data.Type}");
                     return null;

@@ -44,6 +44,8 @@ namespace Kernel.Building
             
             { "Factory", typeof(Colo.Def.Building.FactoryDef) },
 
+            { "Miner", typeof(Colo.Def.Building.MinerDef) },
+
             // { "Conveyor", typeof(Colo.Def.Building.ConveyorDef) },
 
             // { "Assembler", typeof(Colo.Def.Building.AssemblerDef) },

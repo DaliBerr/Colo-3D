@@ -1,0 +1,26 @@
+{
+  "id": "miner_small",
+  "name": "小型矿机",
+  "description": "自动开采所在区块的矿物并输出。",
+  "icon": "icons/building_miner_small",
+  "defType": "Miner",
+  "prefab": "Prefabs/Building/Runtime",
+  "buildingCategory": "Single",
+  "width": 2,
+  "height": 2,
+  "allowRotate": true,
+  "buildTime": 4.0,
+  "outputItemId": "raw_ore",
+  "outputCount": 1,
+  "tickInterval": 60,
+  "components": [
+    {
+      "type": "miner",
+      "params": {
+        "outputItemId": "raw_ore",
+        "outputCount": 1,
+        "tickInterval": 60
+      }
+    }
+  ]
+}
