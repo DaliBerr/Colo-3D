@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingDestroyingController.cs" />
     <Compile Include="Assets\Scripts\Kernel\Audio\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\Minerals.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\Behaviour\MinerBehaviour.cs" />
     <Compile Include="Assets\Scripts\Lonize\Event\Events.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\PopupModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\InteriorCacheStorageBehaviour.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="Assets\Scripts\Kernel\Nav\PathfindingManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\BuildingManager.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemMineralHelper.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\Behaviour\ProducerBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\Popup\QuitConfirmPopupModal.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\SaveStorageInventory.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\DisplayModeDropDown.cs" />
@@ -176,6 +178,7 @@
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\MaxFrameDropDown.cs" />
     <Compile Include="Assets\Scripts\Lonize\Event\EventBus.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\FactoryInteriorRuntime.cs" />
+    <Compile Include="Assets\Scripts\Colo\Def\Building\Miner.cs" />
     <Compile Include="Assets\Scripts\Colo\Animation\Instantiate.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\InputSystem\SpeedControl.cs" />
@@ -186,6 +189,7 @@
     <Compile Include="Assets\Scripts\Kernel\Item\Sample.cs" />
     <Compile Include="Assets\Scripts\Lonize\Tick\TickDriver.cs" />
     <Compile Include="Assets\InputSystem\BuildingControl.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Building\Behaviour\StorageBehaviour.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\LogEntry.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\LoadMenuUI.cs" />
     <Compile Include="Assets\Scripts\Colo\Animation\CubeRotate.cs" />
