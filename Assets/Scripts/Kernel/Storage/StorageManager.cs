@@ -6,6 +6,36 @@ using Kernel.Inventory;
 namespace Kernel.Storage
 {
     /// <summary>
+    /// summary: 储物预占信息。
+    /// </summary>
+    public readonly struct StorageReservation
+    {
+        public long ReservationId { get; }
+        public long ContainerId { get; }
+        public string ItemId { get; }
+        public int Count { get; }
+        public int Occupation { get; }
+
+        /// <summary>
+        /// summary: 构造预占信息。
+        /// param: reservationId 预占ID
+        /// param: containerId 容器ID
+        /// param: itemId 物品ID
+        /// param: count 数量
+        /// param: occupation 单件占用值
+        /// return: 无
+        /// </summary>
+        public StorageReservation(long reservationId, long containerId, string itemId, int count, int occupation)
+        {
+            ReservationId = reservationId;
+            ContainerId = containerId;
+            ItemId = itemId;
+            Count = count;
+            Occupation = occupation;
+        }
+    }
+
+    /// <summary>
     /// summary: 全局储物系统（注册/注销容器，查找最佳容器，存取操作，存档回填）。
     /// </summary>
     public sealed class StorageSystem
@@ -22,6 +52,8 @@ namespace Kernel.Storage
 
         private readonly Dictionary<long, StorageContainer> _containers = new();
         private readonly Dictionary<long, (string[] itemIds, int[] counts)> _pendingImports = new();
+        private readonly Dictionary<long, StorageReservation> _reservations = new();
+        private long _nextReservationId = 1;
 
         private StorageSystem() { }
 
@@ -203,6 +235,78 @@ namespace Kernel.Storage
             containerId = c.RuntimeId;
             OnContainerChanged?.Invoke(containerId);
             return stored > 0;
+        }
+
+        /// <summary>
+        /// summary: 尝试为存入预占最佳容器。
+        /// param: itemId 物品ID
+        /// param: count 请求数量
+        /// param: fromCell 起点格子
+        /// param: reservation 输出预占信息
+        /// return: 是否成功预占
+        /// </summary>
+        public bool TryReserveBest(string itemId, int count, Vector2Int fromCell, out StorageReservation reservation)
+        {
+            reservation = default;
+
+            if (!TryFindBestForStore(itemId, fromCell, out var c))
+                return false;
+
+            var tags = ResolveTags(itemId);
+            int occupation = ResolveOccupation(itemId);
+            if (!c.TryReserve(itemId, count, occupation, tags, out var reserved))
+                return false;
+
+            if (reserved <= 0)
+                return false;
+
+            var id = _nextReservationId++;
+            reservation = new StorageReservation(id, c.RuntimeId, itemId, reserved, occupation);
+            _reservations[id] = reservation;
+            OnContainerChanged?.Invoke(c.RuntimeId);
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 确认预占并实际存入。
+        /// param: reservationId 预占ID
+        /// return: 是否确认成功
+        /// </summary>
+        public bool ConfirmReservedStore(long reservationId)
+        {
+            if (!_reservations.TryGetValue(reservationId, out var reservation))
+                return false;
+
+            if (!TryGet(reservation.ContainerId, out var c))
+                return false;
+
+            if (!c.ConfirmReserved(reservation.ItemId, reservation.Count, reservation.Occupation))
+                return false;
+
+            _reservations.Remove(reservationId);
+            OnContainerChanged?.Invoke(reservation.ContainerId);
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 取消预占并释放容量。
+        /// param: reservationId 预占ID
+        /// return: 是否取消成功
+        /// </summary>
+        public bool CancelReservation(long reservationId)
+        {
+            if (!_reservations.TryGetValue(reservationId, out var reservation))
+                return false;
+
+            if (!TryGet(reservation.ContainerId, out var c))
+                return false;
+
+            if (!c.CancelReserved(reservation.Count, reservation.Occupation))
+                return false;
+
+            _reservations.Remove(reservationId);
+            OnContainerChanged?.Invoke(reservation.ContainerId);
+            return true;
         }
 
         /// <summary>
