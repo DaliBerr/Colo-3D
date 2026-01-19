@@ -33,6 +33,7 @@ namespace Kernel.Storage
         private readonly List<string> _allowItemIds;
         private readonly Dictionary<string, int> _items = new();
         private int _used;
+        private int _reserved;
 
         /// <summary>
         /// summary: 构造一个储物容器。
@@ -63,6 +64,7 @@ namespace Kernel.Storage
             _allowTags = allowTags != null ? new List<string>(allowTags) : new List<string>();
             _allowItemIds = allowItemIds != null ? new List<string>(allowItemIds) : new List<string>();
             _used = 0;
+            _reserved = 0;
             RejectAll = false;
         }
 
@@ -126,7 +128,13 @@ namespace Kernel.Storage
         /// summary: 当前剩余容量（占用总量）。
         /// return: free
         /// </summary>
-        public int GetFree() => Mathf.Max(0, Capacity - _used);
+        public int GetFree() => Mathf.Max(0, Capacity - _used - _reserved);
+
+        /// <summary>
+        /// summary: 当前已预占容量（占用总量）。
+        /// return: reserved
+        /// </summary>
+        public int GetReserved() => _reserved;
 
         /// <summary>
         /// summary: 判断容器是否能接收该物品（按过滤模式）。
@@ -235,6 +243,75 @@ namespace Kernel.Storage
         }
 
         /// <summary>
+        /// summary: 尝试预占存储容量（不直接入库）。
+        /// param: itemId 物品ID
+        /// param: count 请求数量
+        /// param: occupation 单件占用值
+        /// param: itemTags 物品标签
+        /// param: reserved 实际预占数量
+        /// return: 是否预占成功（reserved>0）
+        /// </summary>
+        public bool TryReserve(string itemId, int count, int occupation, IReadOnlyList<string> itemTags, out int reserved)
+        {
+            reserved = 0;
+            if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
+            if (!CanAccept(itemId, itemTags)) return false;
+
+            int free = GetFree();
+            if (free <= 0) return false;
+
+            int per = Mathf.Max(1, occupation);
+            int maxByFree = free / per;
+            if (maxByFree <= 0) return false;
+
+            reserved = Mathf.Min(count, maxByFree);
+            _reserved += reserved * per;
+
+            return reserved > 0;
+        }
+
+        /// <summary>
+        /// summary: 将预占转为实际存入。
+        /// param: itemId 物品ID
+        /// param: count 数量
+        /// param: occupation 单件占用值
+        /// return: 是否成功转存
+        /// </summary>
+        public bool ConfirmReserved(string itemId, int count, int occupation)
+        {
+            if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
+
+            int per = Mathf.Max(1, occupation);
+            int total = count * per;
+            if (total <= 0 || total > _reserved) return false;
+
+            _reserved -= total;
+            _items.TryGetValue(itemId, out var old);
+            _items[itemId] = old + count;
+            _used += total;
+
+            return true;
+        }
+
+        /// <summary>
+        /// summary: 释放预占容量。
+        /// param: count 数量
+        /// param: occupation 单件占用值
+        /// return: 是否成功释放
+        /// </summary>
+        public bool CancelReserved(int count, int occupation)
+        {
+            if (count <= 0) return false;
+
+            int per = Mathf.Max(1, occupation);
+            int total = count * per;
+            if (total <= 0 || total > _reserved) return false;
+
+            _reserved -= total;
+            return true;
+        }
+
+        /// <summary>
         /// summary: 尝试取出物品。
         /// param: itemId 物品ID
         /// param: count 请求数量
@@ -293,6 +370,7 @@ namespace Kernel.Storage
         {
             _items.Clear();
             _used = 0;
+            _reserved = 0;
 
             if (itemIds == null || counts == null) return;
 
