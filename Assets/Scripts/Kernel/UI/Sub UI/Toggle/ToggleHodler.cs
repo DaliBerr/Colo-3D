@@ -39,7 +39,7 @@ public abstract class ToggleHolder : MonoBehaviour
     {
         if (toggle == null)
         {
-            Debug.LogWarning($"[{nameof(ToggleHolder)}] toggle 为空：{name}", this);
+            GameDebug.LogWarning($"[{nameof(ToggleHolder)}] toggle 为空：{name}");
             return;
         }
 

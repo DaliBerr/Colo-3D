@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -61,7 +62,7 @@ public class UIScale : MonoBehaviour
         var scalers = GetTargetCanvasScalers();
         if (scalers == null || scalers.Count == 0)
         {
-            Debug.LogWarning("[ApplyUIScale] 未找到任何 CanvasScaler（请检查是否使用了 uGUI Canvas）");
+            GameDebug.LogWarning("[ApplyUIScale] 未找到任何 CanvasScaler（请检查是否使用了 uGUI Canvas）");
             return;
         }
 

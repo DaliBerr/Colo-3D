@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using Lonize.Scribe;
 using System.Collections.Generic;
+using Lonize.Logging;
 
 namespace Kernel.Building
 {
@@ -38,7 +39,7 @@ namespace Kernel.Building
             }
 
             EnsureInitialized();
-            Debug.Log($"Generating Building ID: {_nextBuildingID}");
+            GameDebug.Log($"Generating Building ID: {_nextBuildingID}");
 
             long id = _nextBuildingID++;
             if (_saveItem != null)
@@ -59,7 +60,7 @@ namespace Kernel.Building
         {
             if (parentBuildingId <= 0)
             {
-                Debug.LogError($"[BuildingIDManager] GenerateLocalBuildingID: parentBuildingId 非法: {parentBuildingId}");
+                GameDebug.LogError($"[BuildingIDManager] GenerateLocalBuildingID: parentBuildingId 非法: {parentBuildingId}");
                 return -1;
             }
 
@@ -90,7 +91,7 @@ namespace Kernel.Building
         {
             if (parentBuildingId <= 0)
             {
-                Debug.LogError($"[BuildingIDManager] SetNextLocalBuildingID: parentBuildingId 非法: {parentBuildingId}");
+                GameDebug.LogError($"[BuildingIDManager] SetNextLocalBuildingID: parentBuildingId 非法: {parentBuildingId}");
                 return;
             }
 
@@ -160,7 +161,7 @@ namespace Kernel.Building
         /// </summary>
         public static void InitializeFromSave(long _savedNextId = -1)
         {
-            Debug.Log("BuildingIdGenerator.InitializeFromSave called." + _savedNextId);
+            GameDebug.Log("BuildingIdGenerator.InitializeFromSave called." + _savedNextId);
             if (_savedNextId > 0)
             {
                 _nextBuildingID = Math.Max(_savedNextId, 1L);

@@ -33,6 +33,7 @@ namespace SystemCallBlocker
             "/Logs/",
             "/Assets/Plugins/",
             "/Assets/ThirdParty/",
+            "/Assets/InputSystem/",
         };
 
         /// <summary>
@@ -97,10 +98,10 @@ namespace SystemCallBlocker
                     new Regex(@"\bSystem\.Random\b", RegexOptions.Compiled),
                 },
                 // 规则专属排除：比如你允许某些目录里继续用 System.Random（示例，按需改/删）
-                excludedPathContains: new[]
-                {
-                    // "/Assets/Scripts/LegacyAllowRandom/",
-                },
+                // excludedPathContains: new[]
+                // {
+                //     // "/Assets/Scripts/LegacyAllowRandom/",
+                // },
                 // 快速过滤关键词：不包含这些就不跑正则（提高速度）
                 quickContainsAny: new[]
                 {
@@ -179,7 +180,7 @@ namespace SystemCallBlocker
             // ),
         };
 
-        static SystemRandomBlocker()
+        static SystemCallBlocker()
         {
             // 脚本编译完成后扫描一次
             CompilationPipeline.compilationFinished += OnCompilationFinished;

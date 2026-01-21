@@ -40,7 +40,7 @@ public abstract class DropdownHolder : MonoBehaviour
     {
         if (dropdown == null)
         {
-            Debug.LogWarning($"[{nameof(DropdownHolder)}] dropdown 为空：{name}", this);
+            GameDebug.LogWarning($"[{nameof(DropdownHolder)}] dropdown 为空：{name}");
             return;
         }
 

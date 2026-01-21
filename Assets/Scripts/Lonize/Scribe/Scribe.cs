@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Lonize.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -115,7 +116,7 @@ namespace Lonize.Scribe
                 fileVersion = legacyDoc.Version;
                 _frameStack.Clear();
                 _frameStack.Push(legacyDoc.Root ?? new NodeFrame());
-                UnityEngine.Debug.LogWarning("[Scribe] Loaded legacy TLV save. Consider resaving to JSON.");
+                GameDebug.LogWarning("[Scribe] Loaded legacy TLV save. Consider resaving to JSON.");
             }
             else
             {

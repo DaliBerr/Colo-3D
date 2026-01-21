@@ -1,5 +1,6 @@
 using System;
 using Lonize.Flow;
+using Lonize.Logging;
 using UnityEngine;
 
 namespace Kernel.Flow
@@ -47,7 +48,7 @@ namespace Kernel.Flow
 
             if (_adapter == null)
             {
-                Debug.LogError($"[FlowEndpointComponent] {name} 初始化失败：未找到有效的 IFlowEndpointAdapter。");
+                GameDebug.LogError($"[FlowEndpointComponent] {name} 初始化失败：未找到有效的 IFlowEndpointAdapter。");
                 return;
             }
 
@@ -112,7 +113,7 @@ namespace Kernel.Flow
             _adapter = adapterBehaviour as IFlowEndpointAdapter;
             if (_adapter == null)
             {
-                Debug.LogError(
+                GameDebug.LogError(
                     $"[FlowEndpointComponent] {name} 绑定的组件 {adapterBehaviour.GetType().Name} 未实现 IFlowEndpointAdapter 接口。");
             }
         }

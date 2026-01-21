@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Kernel.Factory.Connections;
 using Kernel.UI;
+using Lonize.Logging;
 using UnityEngine;
 
 namespace Kernel.Building
@@ -548,7 +549,7 @@ namespace Kernel.Building
         /// </summary>
         private void LogOutputSelectionFallback(string message)
         {
-            Debug.LogWarning($"[OutputSelection] Building {BuildingLocalId}: {message}");
+            GameDebug.LogWarning($"[OutputSelection] Building {BuildingLocalId}: {message}");
         }
 
         /// <summary>

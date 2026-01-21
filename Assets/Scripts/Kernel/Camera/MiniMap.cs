@@ -1,3 +1,4 @@
+using Lonize.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,14 +32,14 @@ public class MiniMapInitializer : MonoBehaviour
         var camObj = GameObject.FindGameObjectWithTag(_miniMapCameraTag);
         if (camObj == null)
         {
-            Debug.LogError("[MiniMap] 找不到带 MiniMapCamera 标签的相机！");
+            GameDebug.LogError("[MiniMap] 找不到带 MiniMapCamera 标签的相机！");
             return;
         }
 
         _miniMapCamera = camObj.GetComponentInChildren<Camera>();
         if (_miniMapCamera == null)
         {
-            Debug.LogError("[MiniMap] MiniMapCamera 对象上没有 Camera 组件！");
+            GameDebug.LogError("[MiniMap] MiniMapCamera 对象上没有 Camera 组件！");
             return;
         }
 
@@ -55,7 +56,7 @@ public class MiniMapInitializer : MonoBehaviour
             _miniMapImage.texture = _rt;
         }
 
-        Debug.Log($"[MiniMap] RT 实例ID = {_rt.GetInstanceID()}  已绑定到相机和UI");
+        GameDebug.Log($"[MiniMap] RT 实例ID = {_rt.GetInstanceID()}  已绑定到相机和UI");
     }
 
     /// <summary>

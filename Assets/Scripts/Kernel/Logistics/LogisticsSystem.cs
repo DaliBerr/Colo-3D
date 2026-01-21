@@ -134,7 +134,7 @@ namespace Kernel.Logistics
                 if (!StorageSystem.Instance.ConfirmReservedStore(order.ReservationId))
                 {
                     StorageSystem.Instance.CancelReservation(order.ReservationId);
-                    Debug.LogWarning($"[Logistics] 确认预占失败，已尝试取消：{order.ItemId} x{order.Count} reservation {order.ReservationId}.");
+                    GameDebug.LogWarning($"[Logistics] 确认预占失败，已尝试取消：{order.ItemId} x{order.Count} reservation {order.ReservationId}.");
                 }
 
                 _queue.RemoveAt(i);
