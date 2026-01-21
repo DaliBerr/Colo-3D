@@ -4,7 +4,7 @@
   "description": "自动开采所在区块的矿物并输出。",
   "icon": "icons/building_miner_small",
   "defType": "Miner",
-  "prefab": "Prefabs/Building/Runtime",
+  "prefab": "Prefabs/Building/Building_Miner_Small",
   "buildingCategory": "Single",
   "width": 2,
   "height": 2,

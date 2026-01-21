@@ -3,6 +3,7 @@ using UnityEngine;
 using Kernel.Pool;
 using Kernel.Storage;
 using Lonize.Tick;
+using Lonize.Logging;
 
 namespace Kernel.Logistics
 {
@@ -89,7 +90,7 @@ namespace Kernel.Logistics
         {
             if (!StorageSystem.Instance.TryReserveBest(itemId, count, fromCell, out var reservation))
             {
-                Debug.LogWarning($"[Logistics] 预占失败：{itemId} x{count} from {fromCell}.");
+                GameDebug.LogWarning($"[Logistics] 预占失败：{itemId} x{count} from {fromCell}.");
                 return false;
             }
 

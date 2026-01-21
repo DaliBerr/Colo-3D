@@ -20,6 +20,7 @@ namespace Kernel.UI
         public Button Btn3;
         public Button Btn4;
         public Button Btn5;
+        public Button Btn6;
 
         public override Status currentStatus { get; } = StatusList.PlayingStatus;
 
@@ -36,6 +37,7 @@ namespace Kernel.UI
             Btn3.onClick.AddListener(() => TrybuildingPlacementMode("storehouse"));
             Btn4.onClick.AddListener(() => TryOpenFactoryUI());
             Btn5.onClick.AddListener(() => TrybuildingPlacementMode("factory_small"));
+            Btn6.onClick.AddListener(() => TrybuildingPlacementMode("miner_small"));
 
             
         }

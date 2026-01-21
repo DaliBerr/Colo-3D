@@ -39,7 +39,7 @@ public abstract class SliderHolder : MonoBehaviour
     {
         if (slider == null)
         {
-            Debug.LogWarning($"[{nameof(SliderHolder)}] slider 为空：{name}", this);
+            GameDebug.LogWarning($"[{nameof(SliderHolder)}] slider 为空：{name}");
             return;
         }
 

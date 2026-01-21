@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Model
   m_GUID: aabc3b7a4138149498b6a5e3c374dbb8
   m_SerializeEntries:
+  - m_GUID: 09665162c6fc0bf4487429dd4f4a9419
+    m_Address: Prefabs/Building/Building_Miner_Small
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2bf378cdd687bdc478a08d90d7c9c1b0
     m_Address: Prefabs/Building/Building_Storehouse
     m_ReadOnly: 0

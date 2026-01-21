@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\Lonize\Log\LogSink.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\Graph\FactoryInteriorConnectionsRuntime.cs" />
     <Compile Include="Assets\Scripts\Kernel\Item\ItemDataBase.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Logistics\LogisticsSystem.cs" />
     <Compile Include="Assets\Scripts\Kernel\Storage\StorageDevTest.cs" />
     <Compile Include="Assets\Scripts\Kernel\UI\Sub UI\DropDown\UIScaleDropDown.cs" />
     <Compile Include="Assets\Scripts\Lonize\Scribe\SerializedFieldConverter.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="Assets\Scripts\Colo\Def\Building\Miner.cs" />
     <Compile Include="Assets\Scripts\Colo\Animation\Instantiate.cs" />
     <Compile Include="Assets\Scripts\Lonize\Localization\LocalizationManager.cs" />
+    <Compile Include="Assets\Scripts\Kernel\Pool\DataPool.cs" />
     <Compile Include="Assets\InputSystem\SpeedControl.cs" />
     <Compile Include="Assets\Scripts\Kernel\Building\Graph\InteriorPayloads.cs" />
     <Compile Include="Assets\Scripts\Kernel\TickControl.cs" />

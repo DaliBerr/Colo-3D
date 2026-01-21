@@ -21,6 +21,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - BuildingDef
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b09353fa2ba5294399a649216120ed6
+    m_Address: Defs/Buildings/miner_small
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BuildingDef
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a02e80b7cb279494a995afece5e1151f
     m_Address: Defs/Buildings/interior_default
     m_ReadOnly: 0
