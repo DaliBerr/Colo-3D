@@ -38,6 +38,29 @@ namespace Kernel.Building
         private readonly List<string> _defaultInputPortIds = new();
         private readonly HashSet<string> _inactivePorts = new(StringComparer.Ordinal);
         private bool _portsActive = true;
+        /// <summary>
+        /// summary: 是否启用输出端口选择策略，默认 false。
+        /// return: 当前是否启用策略
+        /// </summary>
+        public bool EnableOutputSelection { get; set; } = false;
+
+        /// <summary>
+        /// summary: 输出端口选择模式，默认 Default。
+        /// return: 当前输出端口选择模式
+        /// </summary>
+        public OutputSelectionMode SelectionMode { get; set; } = OutputSelectionMode.Default;
+
+        /// <summary>
+        /// summary: 首选输出端口索引，默认 0。
+        /// return: 首选输出端口索引
+        /// </summary>
+        public int PreferredOutputIndex { get; set; } = 0;
+
+        /// <summary>
+        /// summary: 轮询输出端口的游标，默认 0。
+        /// return: 当前轮询游标
+        /// </summary>
+        private int _roundRobinCursor = 0;
 
         /// <summary>
         /// summary: UI 端口与系统端口是两套列表，System 端口默认不参与 UI 连接。
