@@ -32,6 +32,7 @@ namespace Kernel.Storage
         private readonly List<string> _allowTags;
         private readonly List<string> _allowItemIds;
         private readonly Dictionary<string, int> _items = new();
+        private readonly Dictionary<string, int> _reservedByItem = new();
         private int _used;
         private int _reserved;
 
@@ -257,6 +258,22 @@ namespace Kernel.Storage
             if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
             if (!CanAccept(itemId, itemTags)) return false;
 
+            return Reserve(itemId, count, occupation, out reserved);
+        }
+
+        /// <summary>
+        /// summary: 预占容量（按物品记录）。
+        /// param: itemId 物品ID
+        /// param: count 请求数量
+        /// param: occupation 单件占用值
+        /// param: reserved 实际预占数量
+        /// return: 是否预占成功
+        /// </summary>
+        public bool Reserve(string itemId, int count, int occupation, out int reserved)
+        {
+            reserved = 0;
+            if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
+
             int free = GetFree();
             if (free <= 0) return false;
 
@@ -265,9 +282,13 @@ namespace Kernel.Storage
             if (maxByFree <= 0) return false;
 
             reserved = Mathf.Min(count, maxByFree);
+            if (reserved <= 0) return false;
+
+            _reservedByItem.TryGetValue(itemId, out var old);
+            _reservedByItem[itemId] = old + reserved;
             _reserved += reserved * per;
 
-            return reserved > 0;
+            return true;
         }
 
         /// <summary>
@@ -281,34 +302,52 @@ namespace Kernel.Storage
         {
             if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
 
-            int per = Mathf.Max(1, occupation);
-            int total = count * per;
-            if (total <= 0 || total > _reserved) return false;
+            if (!ReleaseReserve(itemId, count, occupation))
+                return false;
 
-            _reserved -= total;
             _items.TryGetValue(itemId, out var old);
             _items[itemId] = old + count;
-            _used += total;
+            _used += Mathf.Max(1, occupation) * count;
 
             return true;
         }
 
         /// <summary>
         /// summary: 释放预占容量。
+        /// param: itemId 物品ID
         /// param: count 数量
         /// param: occupation 单件占用值
         /// return: 是否成功释放
         /// </summary>
-        public bool CancelReserved(int count, int occupation)
+        public bool ReleaseReserve(string itemId, int count, int occupation)
         {
-            if (count <= 0) return false;
+            if (string.IsNullOrEmpty(itemId) || count <= 0) return false;
 
             int per = Mathf.Max(1, occupation);
             int total = count * per;
             if (total <= 0 || total > _reserved) return false;
 
+            if (!_reservedByItem.TryGetValue(itemId, out var reservedCount) || reservedCount < count)
+                return false;
+
+            int left = reservedCount - count;
+            if (left <= 0) _reservedByItem.Remove(itemId);
+            else _reservedByItem[itemId] = left;
+
             _reserved -= total;
             return true;
+        }
+
+        /// <summary>
+        /// summary: 释放预占容量。
+        /// param: itemId 物品ID
+        /// param: count 数量
+        /// param: occupation 单件占用值
+        /// return: 是否成功释放
+        /// </summary>
+        public bool CancelReserved(string itemId, int count, int occupation)
+        {
+            return ReleaseReserve(itemId, count, occupation);
         }
 
         /// <summary>
@@ -369,6 +408,7 @@ namespace Kernel.Storage
         public void Import(string[] itemIds, int[] counts, int[] occupations)
         {
             _items.Clear();
+            _reservedByItem.Clear();
             _used = 0;
             _reserved = 0;
 
